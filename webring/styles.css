@@ -1,0 +1,21 @@
+/* styles.css */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #000;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+th, td {
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+th {
+    background-color: #f2f2f2;
+}

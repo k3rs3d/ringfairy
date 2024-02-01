@@ -16,8 +16,23 @@ fn parse_website_list(file_path: &str) -> Result<Vec<Website>, Box<dyn std::erro
     Ok(websites)
 }
 
+fn copy_template_files() -> Result<(), Box<dyn std::error::Error>> {
+    // Create webring directory (if it doesn't exist)
+    fs::create_dir_all("webring")?;
+
+    // Copy styles.css to webring folder
+    fs::copy("templates/styles.css", "webring/styles.css")?;
+
+    Ok(())
+}
+
 
 fn main() {
+    match copy_template_files() {
+        Ok(_) => println!("Copied CSS template(s) to webring folder"),
+        Err(err) => eprintln!("Error copying: {}", err),
+    }
+
     let file_path = "websites.json";
     match parse_website_list(file_path) {
         Ok(websites) => {

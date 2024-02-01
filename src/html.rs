@@ -15,8 +15,8 @@ pub fn generate_html_files(websites: &[Website], website: &Website) -> Result<()
     let next_html_path = Path::new(&directory_path).join("next.html");
     let previous_html_path = Path::new(&directory_path).join("previous.html");
 
-    let next_html_content = format!("<meta http-equiv=\"refresh\" content=\"0; url={}\">", websites[next_index].url);
-    let previous_html_content = format!("<meta http-equiv=\"refresh\" content=\"0; url={}\">", websites[previous_index].url);
+    let next_html_content = format!("<link rel=\"stylesheet\" href=\"../styles.css\"><meta http-equiv=\"refresh\" content=\"0; url={}\">", websites[next_index].url);
+    let previous_html_content = format!("<link rel=\"stylesheet\" href=\"../styles.css\"><meta http-equiv=\"refresh\" content=\"0; url={}\">", websites[previous_index].url);
 
     fs::write(&next_html_path, next_html_content)?;
     fs::write(&previous_html_path, previous_html_content)?;
