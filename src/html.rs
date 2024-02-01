@@ -27,53 +27,53 @@ pub fn generate_html_files(websites: &[Website], website: &Website) -> Result<()
 
 
 pub fn generate_list_html(websites: &[Website]) -> Result<(), Box<dyn std::error::Error>> {
+    // Load the list template
+    let template = fs::read_to_string("templates/list_template.html")?;
+
+    // Create the list HTML
     let mut file = fs::File::create("webring/list.html")?;
 
     write!(
         file,
-        r#"
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Webring List</title>
-        </head>
-        <body>
-            <h1>Webring List</h1>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>URL</th>
-                    </tr>
-                </thead>
-                <tbody>
-    "#
-    )?;
-
-    for website in websites {
-        write!(
-            file,
-            r#"
-                    <tr>
-                        <td>{}</td>
-                        <td><a href="{}">{}</a></td>
-                    </tr>
-            "#,
-            website.name, website.url, website.url
-        )?;
-    }
-
-    write!(
-        file,
-        r#"
-                </tbody>
-            </table>
-        </body>
-        </html>
-    "#
+        "{}",
+        template.replace("<!-- TABLE_OF_WEBSITES -->", &generate_sites_table(websites)?)
     )?;
 
     Ok(())
+}
+
+pub fn generate_sites_table(websites: &[Website]) -> Result<String, Box<dyn std::error::Error>> {
+    let mut table_html = String::new();
+
+    // Open table tag
+    table_html.push_str("<table>\n");
+
+    // Table header
+    table_html.push_str("    <thead>\n");
+    table_html.push_str("        <tr>\n");
+    table_html.push_str("            <th>Name</th>\n");
+    table_html.push_str("            <th>URL</th>\n");
+    table_html.push_str("        </tr>\n");
+    table_html.push_str("    </thead>\n");
+
+    // Table body
+    table_html.push_str("    <tbody>\n");
+    for website in websites {
+        table_html.push_str("        <tr>\n");
+        table_html.push_str("            <td>");
+        table_html.push_str(&website.name);
+        table_html.push_str("</td>\n");
+        table_html.push_str("            <td><a href=\"");
+        table_html.push_str(&website.url);
+        table_html.push_str("\">");
+        table_html.push_str(&website.url);
+        table_html.push_str("</a></td>\n");
+        table_html.push_str("        </tr>\n");
+    }
+    table_html.push_str("    </tbody>\n");
+
+    // Close table tag
+    table_html.push_str("</table>\n");
+
+    Ok(table_html)
 }

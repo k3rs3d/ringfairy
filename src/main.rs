@@ -1,6 +1,4 @@
-use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::Path;
 use std::io::{BufReader, Write};
 
 mod html;
@@ -29,8 +27,8 @@ fn copy_template_files() -> Result<(), Box<dyn std::error::Error>> {
 
 fn main() {
     match copy_template_files() {
-        Ok(_) => println!("Copied CSS template(s) to webring folder"),
-        Err(err) => eprintln!("Error copying: {}", err),
+        Ok(_) => println!("Copied template(s) to webring folder"),
+        Err(err) => eprintln!("Error copying templates: {}", err),
     }
 
     let file_path = "websites.json";
