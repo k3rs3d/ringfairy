@@ -4,6 +4,9 @@ Cargo.lock
 # Compiled files
 /target/
 
+# Generated webring files
+/webring/
+
 # Backup files created by editors
 *~
 *.swp
