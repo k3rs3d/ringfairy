@@ -1,0 +1,20 @@
+# Cargo.lock
+Cargo.lock
+
+# Compiled files
+/target/
+
+# Backup files created by editors
+*~
+*.swp
+
+# IDE files
+.idea/
+.vscode/
+.vs/
+
+# Debug files
+log.txt
+
+# Conversation files
+*.txt
