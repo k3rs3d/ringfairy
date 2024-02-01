@@ -1,11 +1,14 @@
 use std::fs;
 use std::io::{BufReader, Write};
+use clap::{Arg, Command};
 
+mod cli;
 mod html;
 mod website;
 
 use crate::website::Website;
 use crate::html::*;
+use crate::cli::*;
 
 // Load the websites from JSON
 fn parse_website_list(file_path: &str) -> Result<Vec<Website>, Box<dyn std::error::Error>> {
@@ -35,14 +38,17 @@ fn copy_template_files() -> Result<(), Box<dyn std::error::Error>> {
 
 
 fn main() {
+    // Parse the arguments and get the settings struct
+    let settings = cli::parse_args();
+
     // Currently just used for `styles.css` I think
     match copy_template_files() {
         Ok(_) => println!("Copied template(s) to webring folder"),
         Err(err) => eprintln!("Error copying templates: {}", err),
     }
 
-    let file_path = "websites.json"; // Name of the website list
-    match parse_website_list(file_path) {
+    //let file_path = "websites.json"; // Name of the website list
+    match parse_website_list(&settings.unwrap().list_filepath) {
         Ok(websites) => {
             // Generate folder + HTML files for each website in the list
             for website in &websites {
