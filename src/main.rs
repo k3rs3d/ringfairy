@@ -28,7 +28,7 @@ fn copy_template_files() -> Result<(), Box<dyn std::error::Error>> {
     // (try to) Copy styles.css to webring folder
     fs::copy("templates/styles.css", "webring/styles.css")
         .map_err(|e| format!("Failed to copy styles.css: {}", e))?;
-        // TODO: Copy all css? 
+        // TODO: Copy all css?
     Ok(())
 }
 

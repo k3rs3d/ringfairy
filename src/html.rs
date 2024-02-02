@@ -6,7 +6,7 @@ use crate::website::Website;
 
 pub fn generate_websites_html(websites: &[Website], verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     // Load the redirect template
-    let template_redirect = fs::read_to_string("templates/redirect_template.html")?;
+    let template_redirect = fs::read_to_string("templates/redirect_template.html").unwrap_or_default();
     
     // Generate HTML for each website
     for website in websites {
@@ -23,7 +23,7 @@ pub fn generate_websites_html(websites: &[Website], verbose: bool) -> Result<(),
 
     // Then generate the index/list page
     // Load the list template
-    let template = fs::read_to_string("templates/list_template.html")?;
+    let template = fs::read_to_string("templates/list_template.html").unwrap_or_default();
 
     // Create the list HTML
     let mut file = fs::File::create("webring/list.html")?;
