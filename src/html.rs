@@ -5,9 +5,12 @@ use std::path::Path;
 use crate::website::Website;
 
 pub fn generate_websites_html(websites: &[Website], verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
+    // Load the redirect template
+    let template_redirect = fs::read_to_string("templates/redirect_template.html")?;
+    
     // Generate HTML for each website
     for website in websites {
-        match generate_html(websites, website) {
+        match generate_html(websites, website, &template_redirect) {
             Ok(_) => {
                 if verbose {
                     println!("Generated HTML for {}", website.url);
@@ -24,6 +27,7 @@ pub fn generate_websites_html(websites: &[Website], verbose: bool) -> Result<(),
     // Create the list HTML
     let mut file = fs::File::create("webring/list.html")?;
 
+    // Generate the list table 
     write!(
         file,
         "{}",
@@ -43,6 +47,7 @@ pub fn generate_websites_html(websites: &[Website], verbose: bool) -> Result<(),
 fn generate_html(
     websites: &[Website],
     website: &Website,
+    template_redirect: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let index = websites
         .iter()
@@ -65,8 +70,8 @@ fn generate_html(
     let next_html_path = Path::new(&directory_path).join("next.html");
     let previous_html_path = Path::new(&directory_path).join("previous.html");
 
-    let next_html_content = format!("<link rel=\"stylesheet\" href=\"../styles.css\"><meta http-equiv=\"refresh\" content=\"0; url={}\">", websites[next_index].url);
-    let previous_html_content = format!("<link rel=\"stylesheet\" href=\"../styles.css\"><meta http-equiv=\"refresh\" content=\"0; url={}\">", websites[previous_index].url);
+    let next_html_content = template_redirect.replace("<!-- REDIRECT -->", &format!("<meta http-equiv=\"refresh\" content=\"0; url={}\">", websites[next_index].url));
+    let previous_html_content = template_redirect.replace("<!-- REDIRECT -->", &format!("<meta http-equiv=\"refresh\" content=\"0; url={}\">", websites[previous_index].url));
 
     fs::write(&next_html_path, next_html_content)?;
     fs::write(&previous_html_path, previous_html_content)?;
