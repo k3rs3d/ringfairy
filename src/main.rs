@@ -1,38 +1,25 @@
-use std::fs;
-use std::io::BufReader;
-
 mod cli;
+mod file;
 mod html;
+mod http;
 mod website;
 
 use crate::website::Website;
 
 // Load the websites from JSON
-fn parse_website_list(file_path: &str) -> Result<Vec<Website>, Box<dyn std::error::Error>> {
-    // Load JSON file
-    let file = fs::File::open(file_path).map_err(|e| format!("Failed to open file: {}", e))?;
+async fn parse_website_list(file_path_or_url: &str) -> Result<Vec<Website>, Box<dyn std::error::Error>> {
+    // Use the abstract function to acquire data
+    let file_data = file::acquire_file_data(file_path_or_url).await?;
 
-    // Parse JSON contents
-    let reader = BufReader::new(file);
-    let websites: Vec<Website> =
-        serde_json::from_reader(reader).map_err(|e| format!("Failed to parse JSON: {}", e))?;
+    // Parse JSON contents from the string
+    let websites: Vec<Website> = serde_json::from_str(&file_data)
+        .map_err(|e| Box::<dyn std::error::Error>::from(e.to_string()))?;
 
     Ok(websites)
 }
 
-fn copy_template_files() -> Result<(), Box<dyn std::error::Error>> {
-    // Create webring directory (if it doesn't exist)
-    fs::create_dir_all("webring")
-        .map_err(|e| format!("Failed to create webring directory: {}", e))?;
-
-    // (try to) Copy styles.css to webring folder
-    fs::copy("templates/styles.css", "webring/styles.css")
-        .map_err(|e| format!("Failed to copy styles.css: {}", e))?;
-    // TODO: Copy all css?
-    Ok(())
-}
-
-fn main() {
+#[tokio::main]
+async fn main() {
     // Parse the arguments and get the settings struct
     let settings = match cli::parse_args() {
         Ok(settings) => settings,
@@ -44,7 +31,7 @@ fn main() {
     };
 
     //let file_path = "websites.json"; // Name of the website list
-    match parse_website_list(&settings.list_filepath) {
+    match parse_website_list(&settings.list_filepath).await {
         Ok(websites) => {
             // Verify websites
             if !settings.skip_verify {
@@ -72,13 +59,13 @@ fn main() {
         Err(err) => eprintln!("Error parsing website list: {} - ", err),
     }
 
-    // Currently just used for `styles.css` I think
-    match copy_template_files() {
+    // Finally, copy files from /assets/ into the output folder 
+    match file::copy_asset_files() {
         Ok(_) => {
             if settings.verbose {
-                println!("Copied template(s) to webring folder");
+                println!("Copied asset file(s) to webring folder");
             }
         }
-        Err(err) => eprintln!("Error copying templates: {}", err),
+        Err(err) => eprintln!("Error copying asset file(s): {}", err),
     }
 }

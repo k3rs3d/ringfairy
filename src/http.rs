@@ -1,11 +1,7 @@
 use std::error::Error;
 use reqwest;
 
-fn is_url(s: &str) -> bool {
-    s.starts_with("http://") || s.starts_with("https://") || s.starts_with("file://")
-}
-
-async fn download_file(url: &str) -> Result<String, Box<dyn Error>> {
+pub async fn download_file(url: &str) -> Result<String, Box<dyn Error>> {
     let response = reqwest::get(url).await?;
 
     if !response.status().is_success() {
