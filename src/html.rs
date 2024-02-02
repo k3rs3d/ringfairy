@@ -1,13 +1,66 @@
 use std::fs;
-use std::path::Path;
 use std::io::Write;
+use std::path::Path;
 
 use crate::website::Website;
 
-pub fn generate_html_files(websites: &[Website], website: &Website) -> Result<(), Box<dyn std::error::Error>> {
-    let index = websites.iter().position(|w| w.name == website.name).unwrap();
-    let previous_index = if index == 0 { websites.len() - 1 } else { index - 1 };
-    let next_index = if index == websites.len() - 1 { 0 } else { index + 1 };
+pub fn generate_websites_html(websites: &[Website], verbose: bool) {
+    for website in websites {
+        match generate_html(websites, website) {
+            Ok(_) => {
+                if verbose {
+                    println!("Generated HTML for {}", website.url);
+                }
+            }
+            Err(err) => eprintln!("Error generating for: {} - ", err),
+        }
+    }
+}
+
+pub fn generate_index_html(
+    websites: &[Website],
+    verbose: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
+    // Load the list template
+    let template = fs::read_to_string("templates/list_template.html")?;
+
+    // Create the list HTML
+    let mut file = fs::File::create("webring/list.html")?;
+
+    write!(
+        file,
+        "{}",
+        template.replace(
+            "<!-- TABLE_OF_WEBSITES -->",
+            &generate_sites_table(websites)?
+        )
+    )?;
+
+    if verbose {
+        println!("Generated list.html");
+    }
+
+    Ok(())
+}
+
+fn generate_html(
+    websites: &[Website],
+    website: &Website,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let index = websites
+        .iter()
+        .position(|w| w.name == website.name)
+        .unwrap();
+    let previous_index = if index == 0 {
+        websites.len() - 1
+    } else {
+        index - 1
+    };
+    let next_index = if index == websites.len() - 1 {
+        0
+    } else {
+        index + 1
+    };
 
     let directory_path = format!("webring/{}", website.name);
     fs::create_dir_all(&directory_path)?;
@@ -20,24 +73,6 @@ pub fn generate_html_files(websites: &[Website], website: &Website) -> Result<()
 
     fs::write(&next_html_path, next_html_content)?;
     fs::write(&previous_html_path, previous_html_content)?;
-
-    Ok(())
-}
-
-
-
-pub fn generate_list_html(websites: &[Website]) -> Result<(), Box<dyn std::error::Error>> {
-    // Load the list template
-    let template = fs::read_to_string("templates/list_template.html")?;
-
-    // Create the list HTML
-    let mut file = fs::File::create("webring/list.html")?;
-
-    write!(
-        file,
-        "{}",
-        template.replace("<!-- TABLE_OF_WEBSITES -->", &generate_sites_table(websites)?)
-    )?;
 
     Ok(())
 }

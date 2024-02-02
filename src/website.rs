@@ -9,23 +9,32 @@ pub struct Website {
     pub owner: String,
 }
 
-pub fn verify_websites(websites: &[Website]) -> Result<(), Box<dyn std::error::Error>> {
+pub fn verify_websites(
+    websites: &[Website],
+    skip_verify: bool,
+    verbose: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
+    if skip_verify {
+        if verbose {
+            println!("Skipping website verification.");
+        }
+        return Ok(());
+    }
+
     let mut names = HashSet::new();
     let mut urls = HashSet::new();
-    //let url_pattern = Regex::new(r"^https://.+\..+$")?;
+    // let url_pattern = Regex::new(r"^https://.+\..+$")?;
 
     for website in websites {
-        // Check for duplicate names
+        // Check for duplicate names and URLs
         if !names.insert(&website.name) {
             return Err(format!("Duplicate website name found: {}", website.name).into());
         }
-
-        // Check for duplicate URLs
         if !urls.insert(&website.url) {
             return Err(format!("Duplicate website URL found: {}", website.url).into());
         }
 
-        // Validate URLs with regex
+        // Uncomment to check URL format (needs regex set up)
         /*
         if !url_pattern.is_match(&website.url) {
             return Err(format!("Invalid URL format detected: {}", website.url).into());
@@ -33,6 +42,9 @@ pub fn verify_websites(websites: &[Website]) -> Result<(), Box<dyn std::error::E
         */
     }
 
-    println!("All websites verified successfully.");
+    if verbose {
+        println!("All websites verified successfully.");
+    }
+
     Ok(())
 }

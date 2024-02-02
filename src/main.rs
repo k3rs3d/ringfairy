@@ -5,7 +5,6 @@ mod cli;
 mod html;
 mod website;
 
-use crate::html::*;
 use crate::website::Website;
 
 // Load the websites from JSON
@@ -46,40 +45,20 @@ fn main() {
 
     // Currently just used for `styles.css` I think
     match copy_template_files() {
-        Ok(_) => println!("Copied template(s) to webring folder"),
+        Ok(_) => {
+            if settings.verbose {
+            println!("Copied template(s) to webring folder");
+        }
+    }
         Err(err) => eprintln!("Error copying templates: {}", err),
     }
 
     //let file_path = "websites.json"; // Name of the website list
     match parse_website_list(&settings.list_filepath) {
         Ok(websites) => {
-            // Website verification
-            if !settings.skip_verify {
-                match website::verify_websites(&websites) {
-                    Ok(_) => {
-                        if settings.verbose {
-                            println!("All websites verified successfully.");
-                        }
-                    }
-                    Err(err) => eprintln!("Verification error: {}", err),
-                }
-            } else if settings.verbose {
-                println!("Skipping website verification.");
-            }
-
-            // Generate folder + HTML files for each website in the list
-            for website in &websites {
-                match generate_html_files(&websites, website) {
-                    Ok(_) => println!("Generated HTML for {}", website.url),
-                    Err(err) => eprintln!("Error generating for: {} - ", err),
-                }
-            }
-
-            // Create the main list/index page
-            match generate_list_html(&websites) {
-                Ok(_) => println!("Generated list.html"),
-                Err(err) => eprintln!("Error generating list.html: {} - ", err),
-            }
+            website::verify_websites(&websites, settings.skip_verify, settings.verbose);
+            html::generate_websites_html(&websites, settings.verbose);
+            html::generate_index_html(&websites, settings.verbose);
         }
         Err(err) => eprintln!("Error parsing website list: {} - ", err),
     }
