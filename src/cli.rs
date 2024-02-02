@@ -1,6 +1,8 @@
 use clap::{Arg, ArgAction, Command};
 
 pub struct RingSettings {
+    pub path_output: String,                // name of folder to save generated files 
+    pub path_assets: String,                // name of assets folder (contents will be simply copied)
     pub filepath_list: String,              // list of websites (JSON)
     pub filepath_template_redirect: String, // template for each redirect (HTML)
     pub filepath_template_index: String,    // template for the main list page (HTML)
@@ -23,6 +25,24 @@ pub fn parse_args() -> Result<RingSettings, &'static str> {
                 .value_name("FILE") // Name of the value in help messages
                 .default_value("./websites.json")
                 .help("Sets the input list file to use"),
+        )
+        .arg(
+            Arg::new("output")
+                .short('o')
+                .long("path-output")
+                .ignore_case(true)
+                .value_name("DIRECTORY") // Name of the value in help messages
+                .default_value("./webring")
+                .help("Define the directory where the generated files will be saved."),
+        )
+        .arg(
+            Arg::new("path-assets")
+                .short('a')
+                .long("path-assets")
+                .ignore_case(true)
+                .value_name("DIRECTORY") // Name of the value in help messages
+                .default_value("./assets")
+                .help("Define the directory where asset files (e.g. CSS, images, other extras) can be found. NOTE: All contents will be copied into the output directory!"),
         )
         .arg(
             Arg::new("path-template-redirect")
@@ -73,12 +93,16 @@ pub fn parse_args() -> Result<RingSettings, &'static str> {
 
     // Check string inputs 
     // These should all have default values
+    let path_output = get_arg(&matches, "output")?;
+    let path_assets = get_arg(&matches, "path-assets")?;
     let filepath_list = get_arg(&matches, "list")?;
     let filepath_template_redirect = get_arg(&matches, "path-template-redirect")?;
     let filepath_template_index = get_arg(&matches, "path-template-index")?;
 
     // Construct settings struct
     Ok(RingSettings {
+        path_output,
+        path_assets,
         filepath_list,
         filepath_template_redirect,
         filepath_template_index,

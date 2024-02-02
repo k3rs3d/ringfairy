@@ -16,20 +16,18 @@ pub async fn acquire_file_data(path_or_url: &str) -> Result<String, Box<dyn Erro
     }
 }
 
-pub fn copy_asset_files() -> Result<(), Box<dyn std::error::Error>> {
-    let source_dir = "assets";
-    let target_dir = "webring";
+pub fn copy_asset_files(source_dir: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
 
     // Create the target directory if it doesn't exist
-    fs::create_dir_all(target_dir)?;
+    fs::create_dir_all(output_dir)?;
 
-    // Iterate over each entry in the source directory
+    // Iterate over each entry in the assets directory
     for entry in fs::read_dir(source_dir)? {
         let entry = entry?;
         let file_name = entry.file_name();
-        let target_path = std::path::Path::new(target_dir).join(file_name);
+        let target_path = std::path::Path::new(output_dir).join(file_name);
 
-        // If the entry is a file, copy it to the target directory
+        // If the entry is a file, copy it to the output directory
         if entry.file_type()?.is_file() {
             fs::copy(entry.path(), target_path)?;
         }

@@ -29,8 +29,9 @@ Because processing is front-loaded to occur during the generation step, this is 
 ## Usage
 
 - Clone the repo.
-- Modify the `websites.json` file to include the details of the websites you want to include in the webring.
-- (Optional) Customize the generated HTML by modifying the templates, located in the `templates` folder. See the section below. 
+- Modify the `websites.json` (by default) file to include the details of the websites you want to include in the webring. Each website must be added to the list. 
+- (Optional) Add any extra files (such as CSS or images) into the `assets` folder. Everything in this folder will simply be copied over into the output directory. 
+- (Optional) Customize the generated HTML by modifying the templates, located in the `templates` folder. You can also use remote HTML files as templates. See the section below. 
 - Run `rustring` to generate HTML files containing the redirects. Each site will link to the next/previous site in the `websites.json` file, forming your webring! 
 - Host the generated HTML files on your preferred hosting platform. 
 

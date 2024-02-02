@@ -46,7 +46,7 @@ async fn main() {
             }
 
             if !settings.dry_run {
-                match html::generate_websites_html(&websites, &settings.filepath_template_redirect, &settings.filepath_template_index, settings.verbose).await {
+                match html::generate_websites_html(&websites, &settings.path_output, &settings.filepath_template_redirect, &settings.filepath_template_index, settings.verbose).await {
                     Ok(_) => {
                         if settings.verbose {
                             println!("Finished generating webring HTML.");
@@ -60,7 +60,7 @@ async fn main() {
     }
 
     // Finally, copy files from /assets/ into the output folder 
-    match file::copy_asset_files() {
+    match file::copy_asset_files(&settings.path_assets, &settings.path_output) {
         Ok(_) => {
             if settings.verbose {
                 println!("Copied asset file(s) to webring folder");

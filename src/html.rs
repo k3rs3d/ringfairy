@@ -5,13 +5,13 @@ use std::path::Path;
 use crate::website::Website;
 use crate::file::acquire_file_data;
 
-pub async fn generate_websites_html(websites: &[Website], path_template_redirects: &str, path_template_index: &str, verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn generate_websites_html(websites: &[Website], path_output: &str, path_template_redirects: &str, path_template_index: &str, verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     // Load the redirect template
     let template_redirect = acquire_file_data(path_template_redirects).await?;
     
     // Generate HTML for each website
     for website in websites {
-        match generate_html(websites, website, &template_redirect) {
+        match generate_html(websites, website, &path_output, &template_redirect) {
             Ok(_) => {
                 if verbose {
                     println!("Generated HTML for {}", website.url);
@@ -26,7 +26,7 @@ pub async fn generate_websites_html(websites: &[Website], path_template_redirect
     let template_index = acquire_file_data(path_template_index).await?;
 
     // Create the list HTML
-    let mut file = fs::File::create("webring/list.html")?;
+    let mut file = fs::File::create(format!("{}/list.html", path_output))?;
 
     // Generate the list table 
     write!(
@@ -48,6 +48,7 @@ pub async fn generate_websites_html(websites: &[Website], path_template_redirect
 fn generate_html(
     websites: &[Website],
     website: &Website,
+    path_output: &str,
     template_redirect: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let index = websites
@@ -65,7 +66,7 @@ fn generate_html(
         index + 1
     };
 
-    let directory_path = format!("webring/{}", website.name);
+    let directory_path = format!("{}/{}", path_output, website.name);
     fs::create_dir_all(&directory_path)?;
 
     let next_html_path = Path::new(&directory_path).join("next.html");
