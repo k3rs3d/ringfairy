@@ -28,8 +28,6 @@ Because processing is front-loaded to occur during the generation step, this is 
 
 ## Usage
 
-To use this webring generator, follow these steps:
-
 - Clone the repo.
 - Modify the `websites.json` file to include the details of the websites you want to include in the webring.
 - (Optional) Customize the generated HTML by modifying the templates, located in the `templates` folder. See the section below. 
