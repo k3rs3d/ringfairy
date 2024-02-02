@@ -59,7 +59,14 @@ fn main() {
                 }
             }
 
-            html::generate_websites_html(&websites, settings.verbose);
+            match html::generate_websites_html(&websites, settings.verbose) {
+                Ok(_) => {
+                    if settings.verbose {
+                        println!("Generated webring HTML.");
+                    }
+                }
+                Err(err) => eprintln!("Generation error: {}", err),
+            }
         }
         Err(err) => eprintln!("Error parsing website list: {} - ", err),
     }
