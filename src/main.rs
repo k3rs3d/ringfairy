@@ -31,7 +31,7 @@ async fn main() {
     };
 
     //let file_path = "websites.json"; // Name of the website list
-    match parse_website_list(&settings.list_filepath).await {
+    match parse_website_list(&settings.filepath_list).await {
         Ok(websites) => {
             // Verify websites
             if !settings.skip_verify {
@@ -46,7 +46,7 @@ async fn main() {
             }
 
             if !settings.dry_run {
-                match html::generate_websites_html(&websites, settings.verbose) {
+                match html::generate_websites_html(&websites, &settings.filepath_template_redirect, &settings.filepath_template_index, settings.verbose).await {
                     Ok(_) => {
                         if settings.verbose {
                             println!("Finished generating webring HTML.");

@@ -3,10 +3,11 @@ use std::io::Write;
 use std::path::Path;
 
 use crate::website::Website;
+use crate::file::acquire_file_data;
 
-pub fn generate_websites_html(websites: &[Website], verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn generate_websites_html(websites: &[Website], path_template_redirects: &str, path_template_index: &str, verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
     // Load the redirect template
-    let template_redirect = fs::read_to_string("templates/redirect_template.html").unwrap_or_default();
+    let template_redirect = acquire_file_data(path_template_redirects).await?;
     
     // Generate HTML for each website
     for website in websites {
@@ -22,8 +23,7 @@ pub fn generate_websites_html(websites: &[Website], verbose: bool) -> Result<(),
 
 
     // Then generate the index/list page
-    // Load the list template
-    let template = fs::read_to_string("templates/list_template.html").unwrap_or_default();
+    let template_index = acquire_file_data(path_template_index).await?;
 
     // Create the list HTML
     let mut file = fs::File::create("webring/list.html")?;
@@ -32,7 +32,7 @@ pub fn generate_websites_html(websites: &[Website], verbose: bool) -> Result<(),
     write!(
         file,
         "{}",
-        template.replace(
+        template_index.replace(
             "<!-- TABLE_OF_WEBSITES -->",
             &generate_sites_table(websites)?
         )
