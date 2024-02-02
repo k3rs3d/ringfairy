@@ -21,7 +21,9 @@ async fn parse_website_list(file_path_or_url: &str) -> Result<Vec<Website>, Box<
 #[tokio::main]
 async fn main() {
     // Parse the arguments and get the settings struct
-    let settings = match cli::parse_args() {
+    let settings = cli::parse_args();
+    /*
+    {
         Ok(settings) => settings,
         Err(e) => {
             eprintln!("Error parsing arguments: {}", e);
@@ -29,6 +31,7 @@ async fn main() {
             std::process::exit(1);
         }
     };
+    */
 
     //let file_path = "websites.json"; // Name of the website list
     match parse_website_list(&settings.filepath_list).await {
