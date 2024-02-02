@@ -1,6 +1,5 @@
 use std::fs;
-use std::io::{BufReader, Write};
-use clap::{Arg, Command};
+use std::io::BufReader;
 
 mod cli;
 mod html;
@@ -8,7 +7,6 @@ mod website;
 
 use crate::website::Website;
 use crate::html::*;
-use crate::cli::*;
 
 // Load the websites from JSON
 fn parse_website_list(file_path: &str) -> Result<Vec<Website>, Box<dyn std::error::Error>> {
@@ -39,7 +37,14 @@ fn copy_template_files() -> Result<(), Box<dyn std::error::Error>> {
 
 fn main() {
     // Parse the arguments and get the settings struct
-    let settings = cli::parse_args();
+    let settings = match cli::parse_args() {
+        Ok(settings) => settings,
+        Err(e) => {
+            eprintln!("Error parsing arguments: {}", e);
+            // Arguments unclear; simply exit 
+            std::process::exit(1);
+        }
+    };
 
     // Currently just used for `styles.css` I think
     match copy_template_files() {
@@ -48,21 +53,21 @@ fn main() {
     }
 
     //let file_path = "websites.json"; // Name of the website list
-    match parse_website_list(&settings.unwrap().list_filepath) {
+    match parse_website_list(&settings.list_filepath) {
         Ok(websites) => {
-            // Generate folder + HTML files for each website in the list
-            for website in &websites {
-                match generate_html_files(&websites, website) {
-                    Ok(_) => println!("Generated HTML for {}", website.url),
-                    Err(err) => eprintln!("Error generating for: {} - ", err),
+                // Generate folder + HTML files for each website in the list
+                for website in &websites {
+                    match generate_html_files(&websites, website) {
+                        Ok(_) => println!("Generated HTML for {}", website.url),
+                        Err(err) => eprintln!("Error generating for: {} - ", err),
+                    }
                 }
-            }
 
-            // Create the main list/index page
-            match generate_list_html(&websites) {
-                Ok(_) => println!("Generated list.html"),
-                Err(err) => eprintln!("Error generating list.html: {} - ", err),
-            }
+                // Create the main list/index page
+                match generate_list_html(&websites) {
+                    Ok(_) => println!("Generated list.html"),
+                    Err(err) => eprintln!("Error generating list.html: {} - ", err),
+                }
         }
         Err(err) => eprintln!("Error parsing website list: {} - ", err),
     }

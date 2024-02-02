@@ -1,6 +1,6 @@
 use std::fs;
 use std::path::Path;
-use std::io::{BufReader, Write};
+use std::io::Write;
 
 use crate::website::Website;
 
