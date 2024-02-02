@@ -20,6 +20,7 @@ pub fn generate_websites_html(websites: &[Website], verbose: bool) -> Result<(),
         }
     }
 
+    
     // Then generate the index/list page
     // Load the list template
     let template = fs::read_to_string("templates/list_template.html")?;
@@ -69,7 +70,7 @@ fn generate_html(
 
     let next_html_path = Path::new(&directory_path).join("next.html");
     let previous_html_path = Path::new(&directory_path).join("previous.html");
-
+    // TODO: Handle if there is no template
     let next_html_content = template_redirect.replace("<!-- REDIRECT -->", &format!("<meta http-equiv=\"refresh\" content=\"0; url={}\">", websites[next_index].url));
     let previous_html_content = template_redirect.replace("<!-- REDIRECT -->", &format!("<meta http-equiv=\"refresh\" content=\"0; url={}\">", websites[previous_index].url));
 

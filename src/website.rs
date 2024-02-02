@@ -19,10 +19,10 @@ pub fn verify_websites(
     for website in websites {
         // Check for duplicate names and URLs
         if !names.insert(&website.name) {
-            return Err(format!("Duplicate website name found: {}", website.name).into());
+            return Err(format!("Duplicate website name found: {} - {}", website.name, website.owner).into());
         }
         if !urls.insert(&website.url) {
-            return Err(format!("Duplicate website URL found: {}", website.url).into());
+            return Err(format!("Duplicate website URL found: {} - {}", website.url, website.owner).into());
         }
 
         // Uncomment to check URL format (needs regex set up)

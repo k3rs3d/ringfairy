@@ -28,7 +28,7 @@ fn copy_template_files() -> Result<(), Box<dyn std::error::Error>> {
     // (try to) Copy styles.css to webring folder
     fs::copy("templates/styles.css", "webring/styles.css")
         .map_err(|e| format!("Failed to copy styles.css: {}", e))?;
-
+        // TODO: Copy all css? 
     Ok(())
 }
 
@@ -59,14 +59,16 @@ fn main() {
                 }
             }
 
+            if !settings.dry_run {
             match html::generate_websites_html(&websites, settings.verbose) {
                 Ok(_) => {
                     if settings.verbose {
-                        println!("Generated webring HTML.");
+                        println!("Finished generating webring HTML.");
                     }
                 }
                 Err(err) => eprintln!("Generation error: {}", err),
             }
+        }
         }
         Err(err) => eprintln!("Error parsing website list: {} - ", err),
     }
