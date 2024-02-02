@@ -20,7 +20,7 @@ pub fn generate_websites_html(websites: &[Website], verbose: bool) -> Result<(),
         }
     }
 
-    
+
     // Then generate the index/list page
     // Load the list template
     let template = fs::read_to_string("templates/list_template.html")?;
@@ -89,23 +89,38 @@ pub fn generate_sites_table(websites: &[Website]) -> Result<String, Box<dyn std:
     // Table header
     table_html.push_str("    <thead>\n");
     table_html.push_str("        <tr>\n");
-    table_html.push_str("            <th>Name</th>\n");
-    table_html.push_str("            <th>URL</th>\n");
+    table_html.push_str("            <th scope=\"col\">#</th>\n");
+    table_html.push_str("            <th scope=\"col\">Name</th>\n");
+    table_html.push_str("            <th scope=\"col\">URL</th>\n");
+    table_html.push_str("            <th scope=\"col\">About</th>\n");
+    table_html.push_str("            <th scope=\"col\">Owner</th>\n");
     table_html.push_str("        </tr>\n");
     table_html.push_str("    </thead>\n");
 
     // Table body
-    table_html.push_str("    <tbody>\n");
-    for website in websites {
+        table_html.push_str("    <tbody>\n");
+        for (index, website) in websites.iter().enumerate() {
         table_html.push_str("        <tr>\n");
+
+        table_html.push_str(&format!("            <td>{}</td>\n", index + 1)); 
+
         table_html.push_str("            <td>");
         table_html.push_str(&website.name);
         table_html.push_str("</td>\n");
+
         table_html.push_str("            <td><a href=\"");
         table_html.push_str(&website.url);
-        table_html.push_str("\">");
+        table_html.push_str("\" target=\"_blank\">"); // target="_blank" to open in a new tab
         table_html.push_str(&website.url);
         table_html.push_str("</a></td>\n");
+
+        table_html.push_str("            <td>");
+        table_html.push_str(&website.about);
+        table_html.push_str("</td>\n");
+
+        table_html.push_str("            <td>");
+        table_html.push_str(&website.owner);
+        table_html.push_str("</td>\n");
         table_html.push_str("        </tr>\n");
     }
     table_html.push_str("    </tbody>\n");

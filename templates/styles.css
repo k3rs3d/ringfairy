@@ -1,21 +1,67 @@
 /* styles.css */
 
 body {
-    font-family: Arial, sans-serif;
-    background-color: #000;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	line-height: 1.6;
+    background-color: #111;
+}
+
+h1 {
+	color: #fff;
+	text-align: center;
+}
+
+a {
+    color: #08f;
+    text-decoration: none;
+}
+
+a:hover, a:focus {
+    text-decoration: underline; 
+    color: #0bf; 
 }
 
 table {
-    width: 100%;
+	color: #fff;
+	
+    width: 90%;
     border-collapse: collapse;
-    margin-bottom: 20px;
+    margin: 20px auto;
+	font-size: 1em;
+}
+
+tr { 
+    margin-bottom: 10px; 
+}
+
+tr:nth-child(odd) {
+        background-color: #333; /* Light gray for odd rows */
+}
+
+tr:hover {
+    background-color: #445; /*  hover effect for table rows */
 }
 
 th, td {
-    padding: 8px;
-    border: 1px solid #ddd;
+    padding: 12px;
+    border: 1px solid #777;
+	text-align: left; 
 }
 
 th {
-    background-color: #f2f2f2;
+    background-color: #444;
+	color: #fff;
+	font-size: 1.1em;
+}
+
+.container {
+    max-width: 800px; 
+    margin: auto;
+    padding: 20px;
+}
+
+@media screen and (max-width: 600px) {
+    table {
+        width: 100%; /* Allows the table to be 100% width on smaller screens */
+    }
 }

@@ -32,9 +32,9 @@ To use this webring generator, follow these steps:
 
 - Clone the repo.
 - Modify the `websites.json` file to include the details of the websites you want to include in the webring.
-- (Optional) Customize the appearance by modifying the templates, located in the `templates` folder. 
-- Run the application to generate HTML files containing the redirects. Each site will link to the next/previous site in the `websites.json` file. 
-- Host the generated HTML files on your preferred hosting platform.
+- (Optional) Customize the generated HTML by modifying the templates, located in the `templates` folder. 
+- Run the application to generate HTML files containing the redirects. Each site will link to the next/previous site in the `websites.json` file, forming a webring! 
+- Host the generated HTML files on your preferred hosting platform. 
 
 ## Contributing
 
