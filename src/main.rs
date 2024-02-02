@@ -43,6 +43,29 @@ fn main() {
         }
     };
 
+    //let file_path = "websites.json"; // Name of the website list
+    match parse_website_list(&settings.list_filepath) {
+        Ok(websites) => {
+            // Verify websites
+            if !settings.skip_verify
+            {
+                match website::verify_websites(&websites) {
+                    Ok(_) => {
+                        if settings.verbose {
+                            println!("All websites verified.");
+                        }
+                    }
+                    Err(err) => eprintln!("Verification error: {}", err),
+                }
+            }
+
+            html::generate_websites_html(&websites, settings.verbose);
+
+            html::generate_index_html(&websites, settings.verbose);
+        }
+        Err(err) => eprintln!("Error parsing website list: {} - ", err),
+    }
+
     // Currently just used for `styles.css` I think
     match copy_template_files() {
         Ok(_) => {
@@ -51,15 +74,5 @@ fn main() {
         }
     }
         Err(err) => eprintln!("Error copying templates: {}", err),
-    }
-
-    //let file_path = "websites.json"; // Name of the website list
-    match parse_website_list(&settings.list_filepath) {
-        Ok(websites) => {
-            website::verify_websites(&websites, settings.skip_verify, settings.verbose);
-            html::generate_websites_html(&websites, settings.verbose);
-            html::generate_index_html(&websites, settings.verbose);
-        }
-        Err(err) => eprintln!("Error parsing website list: {} - ", err),
     }
 }

@@ -4,19 +4,6 @@ use std::path::Path;
 
 use crate::website::Website;
 
-pub fn generate_websites_html(websites: &[Website], verbose: bool) {
-    for website in websites {
-        match generate_html(websites, website) {
-            Ok(_) => {
-                if verbose {
-                    println!("Generated HTML for {}", website.url);
-                }
-            }
-            Err(err) => eprintln!("Error generating for: {} - ", err),
-        }
-    }
-}
-
 pub fn generate_index_html(
     websites: &[Website],
     verbose: bool,
@@ -41,6 +28,19 @@ pub fn generate_index_html(
     }
 
     Ok(())
+}
+
+pub fn generate_websites_html(websites: &[Website], verbose: bool) {
+    for website in websites {
+        match generate_html(websites, website) {
+            Ok(_) => {
+                if verbose {
+                    println!("Generated HTML for {}", website.url);
+                }
+            }
+            Err(err) => eprintln!("Error generating for: {} - ", err),
+        }
+    }
 }
 
 fn generate_html(

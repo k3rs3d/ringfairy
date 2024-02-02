@@ -11,16 +11,7 @@ pub struct Website {
 
 pub fn verify_websites(
     websites: &[Website],
-    skip_verify: bool,
-    verbose: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    if skip_verify {
-        if verbose {
-            println!("Skipping website verification.");
-        }
-        return Ok(());
-    }
-
     let mut names = HashSet::new();
     let mut urls = HashSet::new();
     // let url_pattern = Regex::new(r"^https://.+\..+$")?;
@@ -41,10 +32,5 @@ pub fn verify_websites(
         }
         */
     }
-
-    if verbose {
-        println!("All websites verified successfully.");
-    }
-
     Ok(())
 }
