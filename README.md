@@ -48,6 +48,21 @@ Templates are located in the `./templates/` folder. They contain tags which will
 - *`list_template.html`*: This will be used to generate the main index page which lists all the websites in the webring. The tag `<!-- TABLE_OF_WEBSITES -->` will be replaced with the list. 
 - *`redirect_template.html`*: This template is for the `next.html`/`previous.html` pages generated for each website. The tag `<!-- REDIRECT -->` is used for the HTML that powers the webring.
 
+```
+                    __
+                  .-'  |
+                 /   <\|
+                /     \'
+                |_.- o-o
+                / C  -._)\
+               / ',        |
+              |   `-,_,__,'
+              (,,)====[_]=|
+                '.   ____/
+                 | -|-|_
+                 |____)_)
+```
+
 ## To Do 
 - Ability to load website/template files over network
 - Time tag to show when the page was generated
