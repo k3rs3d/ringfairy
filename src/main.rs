@@ -60,8 +60,6 @@ fn main() {
             }
 
             html::generate_websites_html(&websites, settings.verbose);
-
-            html::generate_index_html(&websites, settings.verbose);
         }
         Err(err) => eprintln!("Error parsing website list: {} - ", err),
     }

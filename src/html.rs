@@ -4,10 +4,20 @@ use std::path::Path;
 
 use crate::website::Website;
 
-pub fn generate_index_html(
-    websites: &[Website],
-    verbose: bool,
-) -> Result<(), Box<dyn std::error::Error>> {
+pub fn generate_websites_html(websites: &[Website], verbose: bool) -> Result<(), Box<dyn std::error::Error>> {
+    // Generate HTML for each website
+    for website in websites {
+        match generate_html(websites, website) {
+            Ok(_) => {
+                if verbose {
+                    println!("Generated HTML for {}", website.url);
+                }
+            }
+            Err(err) => eprintln!("Error generating for: {} - ", err),
+        }
+    }
+
+    // Then generate the index/list page
     // Load the list template
     let template = fs::read_to_string("templates/list_template.html")?;
 
@@ -28,19 +38,6 @@ pub fn generate_index_html(
     }
 
     Ok(())
-}
-
-pub fn generate_websites_html(websites: &[Website], verbose: bool) {
-    for website in websites {
-        match generate_html(websites, website) {
-            Ok(_) => {
-                if verbose {
-                    println!("Generated HTML for {}", website.url);
-                }
-            }
-            Err(err) => eprintln!("Error generating for: {} - ", err),
-        }
-    }
 }
 
 fn generate_html(
