@@ -14,11 +14,11 @@ Webrings were popular in the early days of the internet as a way for website own
 
 ## How This Implementation Differs
 
-Rustring differs from traditional webrings in a couple of ways:
+Rustring differs from other webrings in a couple of ways:
 
 ### No Server-Side Processing: 
 
-Instead of relying on server-side processing (such as a PHP script that handles redirects), this webring generates static HTML files with redirects embedded directly into the files. There is no need for server-side scripting to handle the redirects. Rustring operates entirely using static files. This simplifies hosting requirements and improves performance - the generated static HTML files can be hosted on barebones platforms (like GitHub Pages), allowing for easy and free hosting of the webring.
+Instead of relying on server-side processing (such as a PHP script that handles redirects), this webring generates static HTML files with redirects embedded directly into the files. There's no need for server-side scripting to handle the redirects. `rustring` operates entirely using static files. This simplifies hosting requirements and improves performance - the generated files can be hosted on barebones platforms (like GitHub Pages) or on minimal devices, allowing for easy and free hosting of the webring.
 
 ### Manual Updates: 
 
@@ -33,8 +33,22 @@ To use this webring generator, follow these steps:
 - Clone the repo.
 - Modify the `websites.json` file to include the details of the websites you want to include in the webring.
 - (Optional) Customize the generated HTML by modifying the templates, located in the `templates` folder. 
-- Run the application to generate HTML files containing the redirects. Each site will link to the next/previous site in the `websites.json` file, forming a webring! 
+- Run `rustring` to generate HTML files containing the redirects. Each site will link to the next/previous site in the `websites.json` file, forming your webring! 
 - Host the generated HTML files on your preferred hosting platform. 
+
+## Command-Line Arguments
+
+- *`-l`/`--list`*: Specify the file containing the list of websites. Default: `./websites.json`
+- *`-v`/`--verbose`*: Output information to the console
+- *`--skip-verification`*: Generates files without checking for potential problems
+- *`--dry-run`*: Runs the application without outputting any files
+
+## Templates
+
+Templates are located in the `/templates/` folder. They contain tags which will be replaced with generated content from `rustring`. So you can customize the generated files by adding content before and after the tags. 
+
+- *`list_template.html`*: This will be used to generate the main index pagem which lists all the websites in the webring. The tag `<!-- TABLE_OF_WEBSITES -->` will be replaced with the list. 
+- *`redirect_template.html`*: This template is for the `next.html`/`previous.html` pages generated for each website. The tag `<!-- REDIRECT -->` is used for the HTML that powers the webring. 
 
 ## Contributing
 
