@@ -11,8 +11,7 @@ async fn main() {
 
     // Init logging
     env_logger::init();
-    log::debug!("Initialized logging.");
-    log::trace!("Parsed arguments.");
+    log::info!("Starting generator with settings: {:?}", settings);
 
     // Perform webring generation
     if let Err(e) = website::process_websites(&settings).await {

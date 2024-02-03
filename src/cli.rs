@@ -6,6 +6,7 @@ use crate::file;
 // Main/final settings struct
 #[derive(Debug)]
 pub struct AppSettings {
+    pub filepath_config: String,
     pub filepath_list: String,
     pub path_output: String,
     pub path_assets: String,
@@ -21,6 +22,7 @@ pub struct AppSettings {
 impl Default for AppSettings {
     fn default() -> Self {
         AppSettings {
+            filepath_config: "./config.json".into(),
             filepath_list: "./websites.json".into(),
             path_output: "./webring".into(),
             path_assets: "./assets".into(),
@@ -61,6 +63,7 @@ pub struct ClapSettings {
         short = 'c',
         long = "cfg",
         ignore_case = false,
+        default_value = "./config.json",
         help = "Specify the config file path. Useful for settings that stay constant across many runs of your application, like path locations. Remember, any settings specified via command-line arguments will override the corresponding ones from this file"
     )]
     pub filepath_config: Option<String>,
@@ -204,16 +207,13 @@ fn merge_configs(cli_args: ClapSettings, config: Option<ConfigSettings>) -> AppS
 }
 
 pub async fn parse_args() -> AppSettings {
-    log::debug!("Parsing command-line arguments...");
     let clap_args = ClapSettings::parse();
 
     // Check if a config file path is provided, and it's not empty
-    log::debug!("Checking config file arguments...");
     let config_args = match clap_args.filepath_config.as_deref() {
         Some("") | Some("none") | None => None, // Treat as no config specified
         Some(path) => load_config(path).await,
     };
 
-    log::debug!("Merging command-line arguments with config arguments...");
     merge_configs(clap_args, config_args)
 }
