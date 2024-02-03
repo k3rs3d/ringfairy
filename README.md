@@ -1,6 +1,8 @@
 # Rustring: Static Webring Generator
 
-This is a simple implementation of a webring generator using Rust. Unlike traditional webrings which rely on server-side code (such as PHP) to handle redirects, this implementation generates static HTML files with predetermined redirects.
+This is a webring generator written in Rust. 
+
+Unlike most webrings which rely on server-side code (e.g. PHP, JS) to redirect visitors, this implementation pre-generates static HTML files. 
 
 The static approach allows for simpler hosting requirements (it can be hosted on GitHub Pages, etc), plus better performance as it eliminates the need for server-side processing. 
 
@@ -8,32 +10,34 @@ The downside: updating the webring will require you to regenerate the whole thin
 
 ## What's a Webring?
 
-A webring is a collection of websites linked together in a circular structure. Each website contains links to the previous and next websites in the ring. So, if you navigate far enough along the ring, eventually you end up back where you started! 
+A webring is a collection of websites linked together in a loop. Each website contains links to the previous and next websites in the ring, so if you navigate far enough along the ring, eventually you end up back where you started! 
 
-Webrings were popular in the early days of the internet as a way for website owners to promote each other's content and facilitate community engagement. You can use this tool to grow your own online community from scratch. 
+Webrings were popular in the early days of the internet as a way for website owners to promote each other's content and encourage community engagement. 
+
+This is a tool for anyone who has some kind of personal website or blog and wishes to connect with others. You can use a webring to grow your own online community from scratch. 
 
 ## How This Implementation Differs
 
 ### No Server-Side Processing: 
 
-Instead of relying on server-side processing (such as a PHP script that handles redirects), this webring generates static HTML files with redirects embedded directly into the files. There's no need to run anything to handle the redirects; `rustring` operates entirely using static files. 
+Instead of relying on a server-side application to process redirects, this webring generates HTML with the redirects embedded directly in the files.
 
-This simplifies hosting requirements and improves performance. The generated files can be hosted on barebones platforms (like GitHub Pages) or on minimal devices, allowing for easy & free hosting.
+This simplifies hosting requirements and improves performance. The generated files can be hosted on barebones platforms (like GitHub Pages) or on minimal devices, allowing for easy & free hosting. You can run it darn near anywhere. 
 
 ### Manual Updates: 
 
-Making changes to the webring might require you to regenerate all of the HTML (whereas webrings with server-side processing can be updated by simply modifying a file or database).
+Updating your webring requires you to regenerate all of the HTML, whereas other webrings (with server-side processing) can be updated by simply modifying a file or database. This step can be automated, but it's still an extra step to be aware of. 
 
-Because processing is front-loaded to occur during the generation step, this is probably the most performant & secure method to build a webring (aside from doing the entire thing by hand). 
+Because processing is front-loaded to occur during page generation, this is probably the most performant & secure method to build a webring aside from doing the entire thing by hand. 
 
 ## Usage
 
 - Clone the repo.
 - Modify the `websites.json` (by default) file to include the details of the websites you want to include in the webring. Each website must be added to the list. 
-- (Optional) Add any extra files (such as CSS or images) into the `assets` folder (can be changed). Everything in the assets folder will simply be copied over into the output directory. Here you can add things like logo images, additional HTML/CSS files, etc. 
-- (Optional) Customize the generated HTML by modifying the templates, located in the `templates` folder. You can also use remote HTML files as templates. See the section below. 
-- Run `rustring` to generate HTML files containing the redirects. Each site will link to the next/previous site in the `websites.json` file, forming your webring! 
-- Host the generated HTML files on your preferred hosting platform. 
+- (Optional) Add any extra files (such as CSS or images) into the `assets` folder (can be changed). Everything in this folder will simply be copied over into the output directory. Here you can add things like logo images, additional HTML/CSS, etc. 
+- (Optional) Customize pages by modifying the templates, located in the `templates` folder. You can also use remote files as templates. See the section below. 
+- Run `rustring` to generate the webring by writing HTML files containing the redirects. Each site will link to the next/previous site in the `websites.json` file, forming your webring!
+- Host the generated files on your preferred hosting platform. 
 
 ## Command-Line Arguments
 
@@ -51,14 +55,26 @@ Command-line arguments take precedence over any settings in the config file.
 - *`-h`, `--help`*: Print help
 - *`-V`, `--version`*: Print version
 
+### Note: Logging
+
+By default, the application only logs error messages. By passing `-v`/`--verbose` (on the command line) or setting `"verbose": true` (in the config JSON file), you can tell the application to show logs. 
+
+To save logs to a file, you can redirect standard output and standard error to a file when running your application. For example:
+
+```
+$ ./rustring > log.txt 2>&1
+```
+
 ## Templates
 
-Templates are located in the `./templates/` folder by default. You can also load them remotely by passing a URL into `--path-template-redirect` and/or `--path-template-index` (on the command line), or `filepath_template_redirect` and/or `filepath_template_index` (within the config file). 
+Templates are located in the `./templates` folder by default. You can also load them remotely by passing a URL into `--path-template-redirect` and/or `--path-template-index` (on the command line), or `filepath_template_redirect` and/or `filepath_template_index` (within the config file). 
 
-Templates contain tags which will be replaced with generated content. You can customize the generated files by adding content before and after the tags. The repo includes basic template examples to get you started. 
+Templates contain tags which will be replaced with generated content. You can customize generated files by adding content before/after the tags. The repo includes basic template examples to get you started. 
 
 - *`list_template.html`*: This will be used to generate the main index page which lists all the websites in the webring. The tag `<!-- TABLE_OF_WEBSITES -->` will be replaced with the list. It can be specified with the command-line argument `--path-template-index`, or with `filepath_template_index` in the config file. 
-- *`redirect_template.html`*: This template is for the `next.html`/`previous.html` pages generated for each website. The tag `<!-- REDIRECT -->` is used for the HTML that powers the webring. It can be specified with the command-line argument `--path-template-redirect`, or with `filepath_template_redirect` in the config file. 
+- *`redirect_template.html`*: This template is for the `next.html`/`previous.html` pages generated for each website. The tag `<!-- REDIRECT -->` is used for the HTML that powers the webring. It can be specified with the command-line argument `--path-template-redirect`, or with `filepath_template_redirect` in the config file.
+
+----------------------------
 
 ```
                     __
