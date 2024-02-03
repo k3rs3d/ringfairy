@@ -30,30 +30,35 @@ Because processing is front-loaded to occur during the generation step, this is 
 
 - Clone the repo.
 - Modify the `websites.json` (by default) file to include the details of the websites you want to include in the webring. Each website must be added to the list. 
-- (Optional) Add any extra files (such as CSS or images) into the `assets` folder. Everything in this folder will simply be copied over into the output directory. 
+- (Optional) Add any extra files (such as CSS or images) into the `assets` folder (can be changed). Everything in the assets folder will simply be copied over into the output directory. Here you can add things like logo images, additional HTML/CSS files, etc. 
 - (Optional) Customize the generated HTML by modifying the templates, located in the `templates` folder. You can also use remote HTML files as templates. See the section below. 
 - Run `rustring` to generate HTML files containing the redirects. Each site will link to the next/previous site in the `websites.json` file, forming your webring! 
 - Host the generated HTML files on your preferred hosting platform. 
 
 ## Command-Line Arguments
 
-- *`-v`, `--verbose`*: Output information to the console
+Command-line arguments take precedence over any settings in the config file. 
+
+- *`-c`, `--config`*: Specify the location of the optional config file. It can be remote; for example an HTTP link to an appropriate JSON file on Pastebin, GitHub, etc. 
 - *`-l`, `--list`*: Specify the file containing the list of websites. Default: `./websites.json`
+- *`-o`, `--output`*: Define the output folder, where the generated files will be saved. Default: `./webring`
+- *`-a`, `--assets`*: Specify the assets folder. Any files in here will be copied to the output folder. This lets you include any extra files you want, such as images or extra web pages, etc. 
 - *`-r`, `--path-template-redirect`*: Specify path to the template for redirect pages (i.e. the HTML which composes the webring). Can be a local or remote HTML file. Default: `./templates/redirect_template.html`
 - *`-i`, `--path-template-index`*: Specify path to the template for the main index page (i.e. the formatted list of all websites in the webring). Can be a local or remote HTML file. Default: `./templates/list_template.html`
 - *`--skip-verification`*: Generates files without checking for potential problems...unwise!
 - *`--dry-run`*: Runs the application without outputting any files
+- *`-v`, `--verbose`*: Output information to the console
 - *`-h`, `--help`*: Print help
 - *`-V`, `--version`*: Print version
 
 ## Templates
 
-Templates are located in the `./templates/` folder by default. You can also load them remotely by passing a URL into `--path-template-redirect` and/or `--path-template-index`.
+Templates are located in the `./templates/` folder by default. You can also load them remotely by passing a URL into `--path-template-redirect` and/or `--path-template-index` (on the command line), or `filepath_template_redirect` and/or `filepath_template_index` (within the config file). 
 
 Templates contain tags which will be replaced with generated content. You can customize the generated files by adding content before and after the tags. The repo includes basic template examples to get you started. 
 
-- *`list_template.html`*: This will be used to generate the main index page which lists all the websites in the webring. The tag `<!-- TABLE_OF_WEBSITES -->` will be replaced with the list. It can be specified with the command-line argument `--path-template-index`.
-- *`redirect_template.html`*: This template is for the `next.html`/`previous.html` pages generated for each website. The tag `<!-- REDIRECT -->` is used for the HTML that powers the webring. It can be specified with the command-line argument `--path-template-redirect`.
+- *`list_template.html`*: This will be used to generate the main index page which lists all the websites in the webring. The tag `<!-- TABLE_OF_WEBSITES -->` will be replaced with the list. It can be specified with the command-line argument `--path-template-index`, or with `filepath_template_index` in the config file. 
+- *`redirect_template.html`*: This template is for the `next.html`/`previous.html` pages generated for each website. The tag `<!-- REDIRECT -->` is used for the HTML that powers the webring. It can be specified with the command-line argument `--path-template-redirect`, or with `filepath_template_redirect` in the config file. 
 
 ```
                     __
@@ -69,10 +74,6 @@ Templates contain tags which will be replaced with generated content. You can cu
                  | -|-|_
                  |____)_)
 ```
-
-## To Do 
-- Time tag to show when the page was generated?
-- Support CSV import?
 
 ## Contributing
 
