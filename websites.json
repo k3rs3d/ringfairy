@@ -1,14 +1,32 @@
 [
     {
-        "name": "kersed",
-		"about": "Kersed Website!",
-        "url": "https://kersed.net",
-		"owner": "@kern@hol.ogra.ph"
+        "name": "Example1",
+		"about": "Example Website 1!",
+        "url": "https://example1.com",
+		"owner": "owner 1"
+    },
+	{
+        "name": "Example2",
+		"about": "Example Website 2!",
+        "url": "https://example2.com",
+		"owner": "owner 2"
     },
     {
-        "name": "gil",
-		"about": "The Nexus of Gilness!",
-        "url": "https://gils.nexus",
-		"owner": "@gil@hol.ogra.ph"
+        "name": "Example3",
+		"about": "Example Website 3!",
+        "url": "https://example3.com",
+		"owner": "owner 3"
+    },
+    {
+        "name": "Example4",
+		"about": "Example Website 4!",
+        "url": "https://example4.com",
+		"owner": "owner 4"
+    },
+    {
+        "name": "Example5",
+		"about": "Example Website 5!",
+        "url": "https://example5.com",
+		"owner": "owner 5"
     }
 ]

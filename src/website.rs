@@ -14,6 +14,13 @@ pub struct Website {
     pub owner: String,
 }
 
+#[derive(Debug)]
+pub struct WebringSite {
+    pub website: Website,
+    pub next: usize, 
+    pub previous: usize, 
+}
+
 pub async fn process_websites(settings: &AppSettings) -> Result<(), Box<dyn std::error::Error>> {
     let websites = parse_website_list(&settings.filepath_list).await?;
 
@@ -24,6 +31,9 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Box<dyn std:
         log::info!("All websites verified.");
     }
 
+    // Organize site into the webring sequence
+    let webring = build_webring_sites(websites).await;
+
     // Proceed with HTML generation (if not a dry run)
     if !settings.dry_run {
         let html_generator = HtmlGenerator::new(settings.skip_minify);
@@ -31,7 +41,7 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Box<dyn std:
         log::info!("Generating websites HTML...");
 
         html_generator.generate_websites_html(
-            &websites,
+            &webring,
             &settings.path_output,
             &settings.filepath_template_redirect,
             &settings.filepath_template_index,
@@ -80,4 +90,22 @@ pub fn verify_websites(
         */
     }
     Ok(())
+}
+
+async fn build_webring_sites(websites: Vec<Website>) -> Vec<WebringSite> {
+    let websites_len = websites.len(); // Capture length before consuming vector
+    let mut webring_sites: Vec<WebringSite> = Vec::with_capacity(websites_len);
+    
+    for (index, website) in websites.into_iter().enumerate() {
+        let next_index = if index + 1 == websites_len { 0 } else { index + 1 }; // Use captured length
+        let prev_index = if index == 0 { websites_len - 1 } else { index - 1 }; // Use captured length
+
+        webring_sites.push(WebringSite {
+            website,
+            next: next_index,
+            previous: prev_index,
+        });
+    }
+
+    webring_sites
 }

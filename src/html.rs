@@ -4,7 +4,7 @@ use std::io::Write;
 use std::path::Path;
 
 use crate::file::acquire_file_data;
-use crate::website::Website;
+use crate::website::{Website, WebringSite};
 
 pub struct HtmlGenerator {
     cfg: Cfg,
@@ -47,7 +47,7 @@ impl HtmlGenerator {
 
     pub async fn generate_websites_html(
         &self,
-        websites: &[Website],
+        websites: &[WebringSite],
         path_output: &str,
         path_template_redirects: &str,
         path_template_index: &str,
@@ -56,23 +56,12 @@ impl HtmlGenerator {
         log::debug!("Attempting to load webring redirect HTML template...");
         let template_redirect = self.acquire_template(path_template_redirects).await?;
 
-        for (index, website) in websites.iter().enumerate() {
-            // Determine index
-            let prev_index = if index == 0 {
-                websites.len() - 1
-            } else {
-                index - 1
-            };
-            let next_index = if index == websites.len() - 1 {
-                0
-            } else {
-                index + 1
-            };
-            let previous_website = &websites[prev_index];
-            let next_website = &websites[next_index];
+        for webring_site in websites.iter() {
+            let previous_site = &websites[webring_site.previous].website;
+            let next_site = &websites[webring_site.next].website;
 
             // Generate HTML for this website
-            self.generate_html(website, previous_website, next_website, path_output, &template_redirect)?;
+            self.generate_html(webring_site, previous_site, next_site, path_output, &template_redirect)?;
         }
 
         self.generate_list_html(websites, path_output, path_template_index)
@@ -83,30 +72,30 @@ impl HtmlGenerator {
 
     fn generate_html(
         &self,
-        website: &Website,
-        previous_website: &Website,
-        next_website: &Website,
+        website: &WebringSite,
+        previous_site: &Website,
+        next_site: &Website,
         path_output: &str,
         template_redirect: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let directory_path = format!("{}/{}", path_output, website.name);
+        let directory_path = format!("{}/{}", path_output, website.website.name);
         fs::create_dir_all(&directory_path)?;
 
         let next_html_path = Path::new(&directory_path).join("next.html");
         let previous_html_path = Path::new(&directory_path).join("previous.html");
-        // TODO: Handle if there is no template
+        
         let next_html_content = template_redirect.replace(
             "<!-- REDIRECT -->",
             &format!(
                 "<meta http-equiv=\"refresh\" content=\"0; url={}\">",
-                next_website.url
+                next_site.url
             ),
         );
         let previous_html_content = template_redirect.replace(
             "<!-- REDIRECT -->",
             &format!(
                 "<meta http-equiv=\"refresh\" content=\"0; url={}\">",
-                previous_website.url
+                previous_site.url
             ),
         );
 
@@ -118,7 +107,7 @@ impl HtmlGenerator {
 
     async fn generate_list_html(
         &self,
-        websites: &[Website],
+        websites: &[WebringSite],
         path_output: &str,
         path_template_index: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
@@ -136,7 +125,7 @@ impl HtmlGenerator {
 
     fn generate_sites_table(
         &self,
-        websites: &[Website],
+        websites: &[WebringSite],
     ) -> Result<String, Box<dyn std::error::Error>> {
         log::debug!("Generating webring list table...");
 
@@ -164,21 +153,21 @@ impl HtmlGenerator {
             table_html.push_str(&format!("            <td>{}</td>\n", index + 1));
 
             table_html.push_str("            <td>");
-            table_html.push_str(&website.name);
+            table_html.push_str(&website.website.name);
             table_html.push_str("</td>\n");
 
             table_html.push_str("            <td><a href=\"");
-            table_html.push_str(&website.url);
+            table_html.push_str(&website.website.url);
             table_html.push_str("\" target=\"_blank\">"); // target="_blank" to open in a new tab
-            table_html.push_str(&website.url);
+            table_html.push_str(&website.website.url);
             table_html.push_str("</a></td>\n");
 
             table_html.push_str("            <td>");
-            table_html.push_str(&website.about);
+            table_html.push_str(&website.website.about);
             table_html.push_str("</td>\n");
 
             table_html.push_str("            <td>");
-            table_html.push_str(&website.owner);
+            table_html.push_str(&website.website.owner);
             table_html.push_str("</td>\n");
             table_html.push_str("        </tr>\n");
         }
