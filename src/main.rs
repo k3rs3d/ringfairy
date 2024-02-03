@@ -5,6 +5,7 @@ mod http;
 mod website;
 
 use crate::website::Website;
+use crate::html::HtmlGenerator;
 
 // Load the websites from JSON
 async fn parse_website_list(file_path_or_url: &str) -> Result<Vec<Website>, Box<dyn std::error::Error>> {
@@ -49,12 +50,20 @@ async fn main() {
             }
 
             if !settings.dry_run {
-                match html::generate_websites_html(&websites, &settings.path_output, &settings.filepath_template_redirect, &settings.filepath_template_index, settings.skip_minify, settings.verbose).await {
+                let html_generator = HtmlGenerator::new(settings.skip_minify, settings.verbose);
+
+                // Use the html_generator instance to generate websites html
+                match html_generator.generate_websites_html(
+                    &websites, 
+                    &settings.path_output, 
+                    &settings.filepath_template_redirect, 
+                    &settings.filepath_template_index
+                ).await {
                     Ok(_) => {
                         if settings.verbose {
                             println!("Finished generating webring HTML.");
                         }
-                    }
+                    },
                     Err(err) => eprintln!("Generation error: {}", err),
                 }
             }
