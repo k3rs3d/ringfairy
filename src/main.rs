@@ -6,6 +6,9 @@ mod website;
 
 #[tokio::main]
 async fn main() {
+    // Start a timer 
+    let start = std::time::Instant::now();
+
     // Parse the arguments and get settings struct
     let settings = cli::parse_args().await;
 
@@ -24,5 +27,8 @@ async fn main() {
         log::error!("Error copying asset file(s): {}", e);
     }
 
-    log::info!("Done!");
+    // Calculate the elapsed time.
+    let elapsed = start.elapsed();
+
+    log::info!("Done in {} ms!", elapsed.as_millis());
 }
