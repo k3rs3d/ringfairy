@@ -55,6 +55,16 @@ Command-line arguments take precedence over any settings in the config file.
 - *`-h`, `--help`*: Print help
 - *`-V`, `--version`*: Print version
 
+### Note: Logging
+
+By default, the application only logs error messages. By passing `-v`/`--verbose` (on the command line) or setting `"verbose": true` (in the config JSON file), you can tell the application to show logs. 
+
+To save logs to a file, you can redirect standard output and standard error to a file when running your application. For example:
+
+```
+$ ./rustring > log.txt 2>&1
+```
+
 ## Templates
 
 Templates are located in the `./templates` folder by default. You can also load them remotely by passing a URL into `--path-template-redirect` and/or `--path-template-index` (on the command line), or `filepath_template_redirect` and/or `filepath_template_index` (within the config file). 
@@ -62,7 +72,9 @@ Templates are located in the `./templates` folder by default. You can also load 
 Templates contain tags which will be replaced with generated content. You can customize generated files by adding content before/after the tags. The repo includes basic template examples to get you started. 
 
 - *`list_template.html`*: This will be used to generate the main index page which lists all the websites in the webring. The tag `<!-- TABLE_OF_WEBSITES -->` will be replaced with the list. It can be specified with the command-line argument `--path-template-index`, or with `filepath_template_index` in the config file. 
-- *`redirect_template.html`*: This template is for the `next.html`/`previous.html` pages generated for each website. The tag `<!-- REDIRECT -->` is used for the HTML that powers the webring. It can be specified with the command-line argument `--path-template-redirect`, or with `filepath_template_redirect` in the config file. 
+- *`redirect_template.html`*: This template is for the `next.html`/`previous.html` pages generated for each website. The tag `<!-- REDIRECT -->` is used for the HTML that powers the webring. It can be specified with the command-line argument `--path-template-redirect`, or with `filepath_template_redirect` in the config file.
+
+----------------------------
 
 ```
                     __
