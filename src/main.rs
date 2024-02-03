@@ -21,7 +21,7 @@ async fn parse_website_list(file_path_or_url: &str) -> Result<Vec<Website>, Box<
 #[tokio::main]
 async fn main() {
     // Parse the arguments and get the settings struct
-    let settings = cli::parse_args();
+    let settings = cli::parse_args().await;
     /*
     {
         Ok(settings) => settings,
