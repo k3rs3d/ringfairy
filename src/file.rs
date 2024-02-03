@@ -1,12 +1,12 @@
 use std::fs;
 use std::error::Error;
-use crate::http;
+use crate::http::download_file;
 
 pub async fn acquire_file_data(path_or_url: &str) -> Result<String, Box<dyn Error>> {
     // Check if the path_or_url is likely a URL by looking for a scheme
     if path_or_url.starts_with("http://") || path_or_url.starts_with("https://") {
         // It's a URL, download the file
-        http::download_file(path_or_url).await
+        download_file(path_or_url).await
     } else {
         // Assume it's a local file path
         match fs::read_to_string(path_or_url) {

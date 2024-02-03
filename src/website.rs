@@ -19,22 +19,16 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Box<dyn std:
 
     // Verify websites if required
     if !settings.skip_verify {
-        if settings.verbose {
-            println!("Verifying websites...");
-        }
+        log::debug!("Verifying websites...");
         verify_websites(&websites)?;
-        if settings.verbose {
-            println!("All websites verified.");
-        }
+        log::info!("All websites verified.");
     }
 
     // Proceed with HTML generation (if not a dry run)
     if !settings.dry_run {
-        let html_generator = HtmlGenerator::new(settings.skip_minify, settings.verbose);
+        let html_generator = HtmlGenerator::new(settings.skip_minify);
 
-        if settings.verbose {
-            println!("Generating websites HTML...");
-        }
+        log::info!("Generating websites HTML...");
 
         html_generator.generate_websites_html(
             &websites,
@@ -44,9 +38,7 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Box<dyn std:
         )
         .await?;
     
-        if settings.verbose {
-            println!("Finished generating webring HTML.");
-        }
+        log::info!("Finished generating webring HTML.");
     }
 
     Ok(())

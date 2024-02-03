@@ -9,17 +9,15 @@ use crate::website::Website;
 pub struct HtmlGenerator {
     cfg: Cfg,
     skip_minify: bool,
-    verbose: bool,
 }
 
 impl HtmlGenerator {
-    pub fn new(skip_minify: bool, verbose: bool) -> Self {
+    pub fn new(skip_minify: bool) -> Self {
         let mut cfg = Cfg::new();
         cfg.keep_comments = true;
         Self {
             cfg,
             skip_minify,
-            verbose,
         }
     }
 
@@ -39,10 +37,11 @@ impl HtmlGenerator {
             let minified = minify(content.as_bytes(), &self.cfg);
             String::from_utf8(minified)?
         };
+
         file.write_all(final_content.as_bytes())?;
-        if self.verbose {
-            println!("Generated HTML file {}", file_path.display());
-        }
+
+        log::info!("Generated HTML file {}", file_path.display());
+
         Ok(())
     }
 
@@ -54,6 +53,7 @@ impl HtmlGenerator {
         path_template_index: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
         // Get template file for redirect pages
+        log::debug!("Attempting to load webring redirect HTML template...");
         let template_redirect = self.acquire_template(path_template_redirects).await?;
 
         for (index, website) in websites.iter().enumerate() {
@@ -127,8 +127,10 @@ impl HtmlGenerator {
             "<!-- TABLE_OF_WEBSITES -->",
             &self.generate_sites_table(websites)?,
         );
+
         let file_path = Path::new(path_output).join("list.html");
         self.write_content(&file_path, &replaced_content)?;
+
         Ok(())
     }
 
@@ -136,6 +138,8 @@ impl HtmlGenerator {
         &self,
         websites: &[Website],
     ) -> Result<String, Box<dyn std::error::Error>> {
+        log::debug!("Generating webring list table...");
+
         let mut table_html = String::new();
 
         // Open table tag

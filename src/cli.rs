@@ -193,17 +193,27 @@ fn merge_configs(cli_args: ClapSettings, config: Option<ConfigSettings>) -> AppS
         final_settings.dry_run = cli_args.dry_run;
     }
 
+    // HACK ish: apply log level settings here
+        if final_settings.verbose {
+            std::env::set_var("RUST_LOG", "info");
+        } else {
+            std::env::set_var("RUST_LOG", "error"); // Default to only showing errors.
+        }
+
     final_settings
 }
 
 pub async fn parse_args() -> AppSettings {
+    log::debug!("Parsing command-line arguments...");
     let clap_args = ClapSettings::parse();
 
     // Check if a config file path is provided, and it's not empty
+    log::debug!("Checking config file arguments...");
     let config_args = match clap_args.filepath_config.as_deref() {
         Some("") | Some("none") | None => None, // Treat as no config specified
         Some(path) => load_config(path).await,
     };
 
+    log::debug!("Merging command-line arguments with config arguments...");
     merge_configs(clap_args, config_args)
 }
