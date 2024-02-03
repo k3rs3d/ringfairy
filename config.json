@@ -4,4 +4,5 @@
   "filepath_list": "./websites.json",
   "filepath_template_redirect": "./templates/redirect_template.html",
   "filepath_template_index": "./templates/list_template.html"
+  "skip_minify": false,
 }

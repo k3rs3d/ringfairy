@@ -49,7 +49,7 @@ async fn main() {
             }
 
             if !settings.dry_run {
-                match html::generate_websites_html(&websites, &settings.path_output, &settings.filepath_template_redirect, &settings.filepath_template_index, settings.verbose).await {
+                match html::generate_websites_html(&websites, &settings.path_output, &settings.filepath_template_redirect, &settings.filepath_template_index, settings.skip_minify, settings.verbose).await {
                     Ok(_) => {
                         if settings.verbose {
                             println!("Finished generating webring HTML.");

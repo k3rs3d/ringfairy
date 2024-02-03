@@ -23,16 +23,12 @@ a:hover, a:focus {
     color: #fff; 
 }
 
-a::before {
-    content: '→ ';
-}
-
 table {
 	color: #fff;
 	
-    width: 80%;
+    width: 90%;
     border-collapse: collapse;
-    margin: 20px auto;
+    margin: 12px auto;
 	font-size: 1em;
 }
 
@@ -45,7 +41,7 @@ tr:nth-child(odd) {
 }
 
 tr:hover {
-    background-color: #445; /*  hover effect for table rows */
+    background-color: #555; /*  hover effect for table rows */
 }
 
 th, td {
@@ -65,7 +61,7 @@ th {
 .container {
     max-width: 800px; 
     margin: auto;
-    padding: 20px;
+    padding: 12px;
 }
 
 @media screen and (max-width: 600px) {

@@ -12,6 +12,7 @@ pub struct AppSettings {
     pub filepath_template_redirect: String,
     pub filepath_template_index: String,
     pub verbose: bool,
+    pub skip_minify: bool,
     pub skip_verify: bool,
     pub dry_run: bool,
 }
@@ -26,6 +27,7 @@ impl Default for AppSettings {
             filepath_template_redirect: "./templates/redirect_template.html".into(),
             filepath_template_index: "./templates/list_template.html".into(),
             verbose: false,
+            skip_minify: false,
             skip_verify: false,
             dry_run: false,
         }
@@ -41,6 +43,7 @@ pub struct ConfigSettings {
     pub filepath_template_redirect: Option<String>,
     pub filepath_template_index: Option<String>,
     pub verbose: Option<bool>,
+    pub skip_minify: Option<bool>,
     pub skip_verify: Option<bool>,
     pub dry_run: Option<bool>,
 }
@@ -105,6 +108,9 @@ pub struct ClapSettings {
     #[clap(short = 'v', long, action = ArgAction::SetTrue, help = "Enables verbose logging")]
     pub verbose: bool,
 
+    #[clap(long = "skip-minification", action = ArgAction::SetTrue, help = "Skips 'minification' of HTML files, which tries to reduce their file size. If your generated HTML files are having issues, try skipping minification.")]
+    pub skip_minify: bool,
+
     #[clap(long = "skip-verification", action = ArgAction::SetTrue, help = "Skips verification of the URLs in the list. Probably unwise!")]
     pub skip_verify: bool,
 
@@ -151,6 +157,7 @@ fn merge_configs(cli_args: ClapSettings, config: Option<ConfigSettings>) -> AppS
             .filepath_template_index
             .unwrap_or(final_settings.filepath_template_index);
         final_settings.verbose = conf.verbose.unwrap_or(final_settings.verbose);
+        final_settings.skip_minify = conf.skip_minify.unwrap_or(final_settings.skip_minify);
         final_settings.skip_verify = conf.skip_verify.unwrap_or(final_settings.skip_verify);
         final_settings.dry_run = conf.dry_run.unwrap_or(final_settings.dry_run);
     }
@@ -175,6 +182,9 @@ fn merge_configs(cli_args: ClapSettings, config: Option<ConfigSettings>) -> AppS
     // Boolean flags can simply be overridden as they don't have a `None` state
     if cli_args.verbose {
         final_settings.verbose = cli_args.verbose;
+    }
+    if cli_args.skip_minify {
+        final_settings.skip_minify = cli_args.skip_minify;
     }
     if cli_args.skip_verify {
         final_settings.skip_verify = cli_args.skip_verify;
