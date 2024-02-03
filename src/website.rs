@@ -1,6 +1,9 @@
 use serde::Deserialize;
 use std::collections::HashSet;
+use std::result::Result;
 
+use crate::html::HtmlGenerator; 
+use crate::cli::AppSettings; 
 use crate::file;
 
 #[derive(Debug, Deserialize)]
@@ -9,6 +12,44 @@ pub struct Website {
     pub about: String,
     pub url: String,
     pub owner: String,
+}
+
+pub async fn process_websites(settings: &AppSettings) -> Result<(), Box<dyn std::error::Error>> {
+    let websites = parse_website_list(&settings.filepath_list).await?;
+
+    // Verify websites if required
+    if !settings.skip_verify {
+        if settings.verbose {
+            println!("Verifying websites...");
+        }
+        verify_websites(&websites)?;
+        if settings.verbose {
+            println!("All websites verified.");
+        }
+    }
+
+    // Proceed with HTML generation (if not a dry run)
+    if !settings.dry_run {
+        let html_generator = HtmlGenerator::new(settings.skip_minify, settings.verbose);
+
+        if settings.verbose {
+            println!("Generating websites HTML...");
+        }
+
+        html_generator.generate_websites_html(
+            &websites,
+            &settings.path_output,
+            &settings.filepath_template_redirect,
+            &settings.filepath_template_index,
+        )
+        .await?;
+    
+        if settings.verbose {
+            println!("Finished generating webring HTML.");
+        }
+    }
+
+    Ok(())
 }
 
 // Load the websites from JSON
