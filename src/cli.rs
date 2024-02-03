@@ -54,7 +54,7 @@ pub struct ConfigSettings {
     name = "rustring",
     version = "0.1.0",
     author = "Kern AKA Kersed",
-    about = "Generates HTML files to create a static webring system."
+    about = "Creates a webring by generating HTML files for a set of websites, linking them together."
 )]
 pub struct ClapSettings {
     #[clap(
