@@ -1,12 +1,26 @@
 use serde::Deserialize;
 use std::collections::HashSet;
 
+use crate::file;
+
 #[derive(Debug, Deserialize)]
 pub struct Website {
     pub name: String,
     pub about: String,
     pub url: String,
     pub owner: String,
+}
+
+// Load the websites from JSON
+pub async fn parse_website_list(file_path_or_url: &str) -> Result<Vec<Website>, Box<dyn std::error::Error>> {
+    // Able to get data from local or from remote 
+    let file_data = file::acquire_file_data(file_path_or_url).await?;
+
+    // Parse JSON contents from the string
+    let websites: Vec<Website> = serde_json::from_str(&file_data)
+        .map_err(|e| Box::<dyn std::error::Error>::from(e.to_string()))?;
+
+    Ok(websites)
 }
 
 pub fn verify_websites(

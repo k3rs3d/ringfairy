@@ -4,38 +4,12 @@ mod html;
 mod http;
 mod website;
 
-use crate::website::Website;
-use crate::html::HtmlGenerator;
-
-// Load the websites from JSON
-async fn parse_website_list(file_path_or_url: &str) -> Result<Vec<Website>, Box<dyn std::error::Error>> {
-    // Use the abstract function to acquire data
-    let file_data = file::acquire_file_data(file_path_or_url).await?;
-
-    // Parse JSON contents from the string
-    let websites: Vec<Website> = serde_json::from_str(&file_data)
-        .map_err(|e| Box::<dyn std::error::Error>::from(e.to_string()))?;
-
-    Ok(websites)
-}
-
 #[tokio::main]
 async fn main() {
     // Parse the arguments and get the settings struct
     let settings = cli::parse_args().await;
-    /*
-    {
-        Ok(settings) => settings,
-        Err(e) => {
-            eprintln!("Error parsing arguments: {}", e);
-            // Arguments unclear; simply exit
-            std::process::exit(1);
-        }
-    };
-    */
 
-    //let file_path = "websites.json"; // Name of the website list
-    match parse_website_list(&settings.filepath_list).await {
+    match website::parse_website_list(&settings.filepath_list).await {
         Ok(websites) => {
             // Verify websites
             if !settings.skip_verify {
@@ -50,7 +24,7 @@ async fn main() {
             }
 
             if !settings.dry_run {
-                let html_generator = HtmlGenerator::new(settings.skip_minify, settings.verbose);
+                let html_generator = html::HtmlGenerator::new(settings.skip_minify, settings.verbose);
 
                 // Use the html_generator instance to generate websites html
                 match html_generator.generate_websites_html(
