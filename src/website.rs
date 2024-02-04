@@ -10,10 +10,10 @@ use crate::file;
 #[derive(Debug, Deserialize)]
 pub struct Website {
     pub name: String,
-    pub about: String,
+    pub about: Option<String>,
     pub url: String,
     pub rss: Option<String>,
-    pub owner: String,
+    pub owner: Option<String>,
 }
 
 #[derive(Debug)]
@@ -78,10 +78,10 @@ pub fn verify_websites(
     for website in websites {
         // Check for duplicate names and URLs
         if !names.insert(&website.name) {
-            return Err(format!("Duplicate website name found: {} - {}", website.name, website.owner).into());
+            return Err(format!("Duplicate website name found: {} - {}", website.name, website.owner.as_deref().unwrap_or("")).into());
         }
         if !urls.insert(&website.url) {
-            return Err(format!("Duplicate website URL found: {} - {}", website.url, website.owner).into());
+            return Err(format!("Duplicate website URL found: {} - {}", website.url, website.owner.as_deref().unwrap_or("")).into());
         }
 
         // Uncomment to check URL format (needs regex set up)

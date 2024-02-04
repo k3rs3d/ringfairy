@@ -163,11 +163,11 @@ impl HtmlGenerator {
         table_html.push_str("</td>\n");
             // About
             table_html.push_str("            <td>");
-            table_html.push_str(&website.website.about);
+            table_html.push_str(&website.website.about.as_deref().unwrap_or(""));
             table_html.push_str("</td>\n");
             // Owner
             table_html.push_str("            <td>");
-            table_html.push_str(&website.website.owner);
+            table_html.push_str(&website.website.owner.as_deref().unwrap_or(""));
             table_html.push_str("</td>\n");
             table_html.push_str("        </tr>\n");
         }
