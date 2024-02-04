@@ -12,6 +12,7 @@ pub struct Website {
     pub name: String,
     pub about: String,
     pub url: String,
+    pub rss: Option<String>,
     pub owner: String,
 }
 

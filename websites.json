@@ -9,12 +9,14 @@
         "name": "Example2",
 		"about": "Example Website 2!",
         "url": "https://example2.com",
+        "rss": "https://example2.com/index.xml",
 		"owner": "owner 2"
     },
     {
         "name": "Example3",
 		"about": "Example Website 3!",
         "url": "https://example3.com",
+        "rss": "https://example.3com/rss/index.xml",
 		"owner": "owner 3"
     },
     {

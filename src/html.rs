@@ -149,23 +149,23 @@ impl HtmlGenerator {
         table_html.push_str("    <tbody>\n");
         for (index, website) in websites.iter().enumerate() {
             table_html.push_str("        <tr>\n");
-
+            // Index #
             table_html.push_str(&format!("            <td>{}</td>\n", index + 1));
-
+            // Name
             table_html.push_str("            <td>");
             table_html.push_str(&website.website.name);
             table_html.push_str("</td>\n");
-
-            table_html.push_str("            <td><a href=\"");
-            table_html.push_str(&website.website.url);
-            table_html.push_str("\" target=\"_blank\">"); // target="_blank" to open in a new tab
-            table_html.push_str(&website.website.url);
-            table_html.push_str("</a></td>\n");
-
+            // URL
+            table_html.push_str(&format!("            <td><a href=\"{}\" target=\"_blank\">{}</a>", website.website.url, website.website.url));
+        if let Some(rss_url) = website.website.rss.as_ref().filter(|url| !url.is_empty()) {
+            table_html.push_str(&format!(" <a href=\"{}\" target=\"_blank\">[rss]</a>", rss_url));
+        }
+        table_html.push_str("</td>\n");
+            // About
             table_html.push_str("            <td>");
             table_html.push_str(&website.website.about);
             table_html.push_str("</td>\n");
-
+            // Owner
             table_html.push_str("            <td>");
             table_html.push_str(&website.website.owner);
             table_html.push_str("</td>\n");
