@@ -166,9 +166,13 @@ impl HtmlGenerator {
             table_html.push_str(&website.website.about.as_deref().unwrap_or(""));
             table_html.push_str("</td>\n");
             // Owner
-            table_html.push_str("            <td>");
-            table_html.push_str(&website.website.owner.as_deref().unwrap_or(""));
-            table_html.push_str("</td>\n");
+            if let Some(owner) = &website.website.owner {
+                let formatted_owner = Self::format_owner(owner);
+                table_html.push_str(&format!("            <td>{}</td>\n", formatted_owner));
+            } else {
+                // If owner is None, output an empty td
+                table_html.push_str("            <td></td>\n");
+            }
             table_html.push_str("        </tr>\n");
         }
         table_html.push_str("    </tbody>\n");
@@ -177,5 +181,29 @@ impl HtmlGenerator {
         table_html.push_str("</table>\n");
 
         Ok(table_html)
+    }
+
+    fn format_owner(owner: &str) -> String {
+        owner.split_whitespace().map(|part| {
+            if part.starts_with("http://") || part.starts_with("https://") {
+                // Website URL format
+                format!("<a href=\"{}\" target=\"_blank\">{}</a>", part, part)
+            } else if part.contains('@') {
+                if part.matches('@').count() > 1 {
+                    // Assumes Fediverse format: @username@domain
+                    let parts: Vec<&str> = part.split('@').collect();
+                    if parts.len() == 3 {
+                        format!("<a href=\"https://{}/@{}\">{}</a>", parts[2], parts[1], part)
+                    } else {
+                        part.to_string()
+                    }
+                } else {
+                    // Email format
+                    format!("<a href=\"mailto:{}\">{}</a>", part, part)
+                }
+            } else {
+                part.to_string()
+            }
+        }).collect::<Vec<String>>().join(" ")
     }
 }
