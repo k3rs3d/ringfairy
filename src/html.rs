@@ -16,7 +16,8 @@ pub struct HtmlGenerator {
 // Stores pre-generated data for potential reuse
 struct PrecomputedTags {
     table_of_sites: String,
-    // More later
+    number_of_sites: usize,
+    current_time: String,
 }
 
 impl HtmlGenerator {
@@ -112,6 +113,8 @@ impl HtmlGenerator {
         // Pre-generate expensive tag data for reuse
         let precomputed = PrecomputedTags {
             table_of_sites: self.generate_sites_table(webring)?,
+            number_of_sites: webring.len(),
+            current_time: chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
         };
 
         // Load template files
@@ -137,7 +140,10 @@ impl HtmlGenerator {
     
         // Process the "{{ table_of_sites }}" tag
         context.insert("table_of_sites", &precomputed.table_of_sites);
-        // TODO: More tags
+        // {{ number_of_sites }}
+        context.insert("number_of_sites", &precomputed.number_of_sites);
+        // {{ current_time }}
+        context.insert("current_time", &precomputed.current_time);
     
         Ok(context)
     }
