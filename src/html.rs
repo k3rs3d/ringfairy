@@ -13,6 +13,12 @@ pub struct HtmlGenerator {
     skip_minify: bool,
 }
 
+// Stores pre-generated data for potential reuse
+struct PrecomputedTags {
+    table_of_sites: String,
+    // More later
+}
+
 impl HtmlGenerator {
     pub fn new(template_path: impl Into<PathBuf>, skip_minify: bool)  -> Result<Self, Box<dyn std::error::Error>> {
         let cfg = Cfg::new();
@@ -103,16 +109,16 @@ impl HtmlGenerator {
         path_output: &str,
         webring: &[WebringSite],
     ) -> Result<(), Box<dyn std::error::Error>> {
-        // Generate the HTML table content for the "{{ table_of_sites }}" tag
-        let table_of_sites_html = self.generate_sites_table(webring)?;
+        // Pre-generate expensive tag data for reuse
+        let precomputed = PrecomputedTags {
+            table_of_sites: self.generate_sites_table(webring)?,
+        };
 
         // Load template files
         let template_paths = self.tera.get_template_names().filter(|name| *name != "template.html");
 
         for template_name in template_paths {
-            let mut context = Context::new();
-            // "Table of Sites" tag:
-            context.insert("table_of_sites", &table_of_sites_html);
+            let context = self.process_tags(&precomputed)?;
 
             let template_file_name = Path::new(template_name)
                 .file_name().unwrap()
@@ -124,6 +130,16 @@ impl HtmlGenerator {
         }
 
         Ok(())
+    }
+
+    fn process_tags(&self, precomputed: &PrecomputedTags) -> Result<Context, Box<dyn std::error::Error>> {
+        let mut context = Context::new();
+    
+        // Process the "{{ table_of_sites }}" tag
+        context.insert("table_of_sites", &precomputed.table_of_sites);
+        // TODO: More tags
+    
+        Ok(context)
     }
 
     fn generate_sites_table(
