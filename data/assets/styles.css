@@ -1,7 +1,5 @@
-/* styles.css */
-
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: Courier New, Courier, Lucida Sans Typewriter, Lucida Typewriter, Consolas, monospace, sans-serif;
 	line-height: 1.6;
     background-color: #111;
 }
@@ -37,16 +35,16 @@ tr {
 }
 
 tr:nth-child(odd) {
-        background-color: #333; /* Light gray for odd rows */
+        background-color: #222; /* Light gray for odd rows */
 }
 
 tr:hover {
-    background-color: #555; /*  hover effect for table rows */
+    background-color: #444; /*  hover effect for table rows */
 }
 
 th, td {
-    padding: 12px;
-    border: 2px solid #777;
+    padding: 10px;
+    border: 2px solid #666;
     border-radius: 8px;
 	text-align: left; 
 }
