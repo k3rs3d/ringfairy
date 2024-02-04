@@ -73,6 +73,16 @@ In the templates folder, `template.html` is used to generate each of the `next.h
 
 Besides `template.html`, the templates folder can contain any other templates you want. 
 
+### Template Tags
+
+The following tags are currently usable in templates: 
+
+- *`{{ table_of_sites }}`* produces a formatted HTML table listing information for all sites in the webring. 
+- *`{{ number_of_sites }}`* shows the current size of the webring.
+- *`{{ current_time }}`* displays the time of generating, showing when the page was last updated. 
+
+Right now, `{{ url }}`` is a special tag that only works in `template.html` for the next/previous links.  
+
 ----------------------------
 
 ```
