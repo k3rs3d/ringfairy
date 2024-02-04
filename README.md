@@ -51,6 +51,7 @@ Command-line arguments take precedence over any settings in the config file.
 - *`-i`, `--path-template-index`*: Specify path to the template for the main index page (i.e. the formatted list of all websites in the webring). Can be a local or remote HTML file. Default: `./data/templates/list_template.html`
 - *`--skip-verification`*: Generates files without checking for potential problems...unwise!
 - *`--dry-run`*: Runs the application without outputting any files
+- *`-s`, `--shuffle`*: Randomly shuffles the order of websites during generation. This is totally internal and does not affect the input list of websites; you can shuffle the same webring repeatedly without losing the original sequence. 
 - *`-v`, `--verbose`*: Output information to the console
 - *`-h`, `--help`*: Print help
 - *`-V`, `--version`*: Print version

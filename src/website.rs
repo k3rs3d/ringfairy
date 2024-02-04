@@ -1,3 +1,4 @@
+use rand::{seq::SliceRandom, thread_rng};
 use serde::Deserialize;
 use std::collections::HashSet;
 use std::result::Result;
@@ -32,7 +33,7 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Box<dyn std:
     }
 
     // Organize site into the webring sequence
-    let webring = build_webring_sites(websites).await;
+    let webring = build_webring_sites(websites, settings.shuffle).await;
 
     // Proceed with HTML generation (if not a dry run)
     if !settings.dry_run {
@@ -92,13 +93,21 @@ pub fn verify_websites(
     Ok(())
 }
 
-async fn build_webring_sites(websites: Vec<Website>) -> Vec<WebringSite> {
+async fn build_webring_sites(websites: Vec<Website>, shuffle: bool) -> Vec<WebringSite> {
+    // Shuffle first (if set to do so)
+    let mut websites = websites; // Make mutable
+    if shuffle {
+        log::info!("Shuffling website sequence...");
+        let mut rng = thread_rng(); // shuffle needs an RNG
+        websites.as_mut_slice().shuffle(&mut rng); 
+    }
+    
     let websites_len = websites.len(); // Capture length before consuming vector
     let mut webring_sites: Vec<WebringSite> = Vec::with_capacity(websites_len);
     
     for (index, website) in websites.into_iter().enumerate() {
-        let next_index = if index + 1 == websites_len { 0 } else { index + 1 }; // Use captured length
-        let prev_index = if index == 0 { websites_len - 1 } else { index - 1 }; // Use captured length
+        let next_index = if index + 1 == websites_len { 0 } else { index + 1 }; 
+        let prev_index = if index == 0 { websites_len - 1 } else { index - 1 }; 
 
         webring_sites.push(WebringSite {
             website,

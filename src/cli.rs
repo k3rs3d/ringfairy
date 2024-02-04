@@ -12,6 +12,7 @@ pub struct AppSettings {
     pub path_assets: String,
     pub filepath_template_redirect: String,
     pub filepath_template_index: String,
+    pub shuffle: bool,
     pub verbose: bool,
     pub skip_minify: bool,
     pub skip_verify: bool,
@@ -28,6 +29,7 @@ impl Default for AppSettings {
             path_assets: "./data/assets".into(),
             filepath_template_redirect: "./data/templates/redirect_template.html".into(),
             filepath_template_index: "./data/templates/list_template.html".into(),
+            shuffle: false,
             verbose: false,
             skip_minify: false,
             skip_verify: false,
@@ -44,6 +46,7 @@ pub struct ConfigSettings {
     pub path_assets: Option<String>,
     pub filepath_template_redirect: Option<String>,
     pub filepath_template_index: Option<String>,
+    pub shuffle: Option<bool>,
     pub verbose: Option<bool>,
     pub skip_minify: Option<bool>,
     pub skip_verify: Option<bool>,
@@ -108,7 +111,10 @@ pub struct ClapSettings {
     )]
     pub filepath_template_index: Option<String>,
 
-    #[clap(short = 'v', long, action = ArgAction::SetTrue, help = "Enables verbose logging")]
+    #[clap(short = 's', long = "shuffle", action = ArgAction::SetTrue, help = "Randomly shuffles the website sequence when generating the webring (does not modify the website list file).")]
+    pub shuffle: bool,
+
+    #[clap(short = 'v', long = "verbose", action = ArgAction::SetTrue, help = "Enables verbose logging")]
     pub verbose: bool,
 
     #[clap(long = "skip-minification", action = ArgAction::SetTrue, help = "Skips 'minification' of HTML files, which tries to reduce their file size. If your generated HTML files are having issues, try skipping minification.")]
@@ -183,6 +189,9 @@ fn merge_configs(cli_args: ClapSettings, config: Option<ConfigSettings>) -> AppS
     }
 
     // Boolean flags can simply be overridden as they don't have a `None` state
+    if cli_args.shuffle {
+        final_settings.shuffle = cli_args.shuffle;
+    }
     if cli_args.verbose {
         final_settings.verbose = cli_args.verbose;
     }
