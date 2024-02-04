@@ -6,7 +6,7 @@ Unlike most webrings which rely on server-side code (e.g. PHP, JS) to redirect v
 
 The static approach allows for simpler hosting requirements (it can be hosted on GitHub Pages, etc), plus better performance as it eliminates the need for server-side processing. 
 
-The catch: updating the webring will require you to regenerate the whole thing. This is quick & simple and shouldn't need to be done frequently, but it's still an extra step which conventional server-side webring systems might not have. 
+The catch: updating the webring will require you to regenerate the whole thing. This is quick & simple, and shouldn't need to be done frequently, but it's still an extra step which conventional server-side webring systems might not have. 
 
 ## What's a Webring?
 
@@ -16,25 +16,23 @@ Webrings were popular in the early days of the internet as a way for website own
 
 This is a tool for anyone who has some kind of personal website or blog and wishes to connect with others. You can use a webring to grow your own online community from scratch. 
 
-## How This Implementation Differs
+## Features 
 
-### No Server-Side Processing: 
-
-Instead of relying on a server-side application to process redirects, this webring generates HTML with the redirects embedded directly in the files.
-
-This simplifies hosting requirements and improves performance. The generated files can be hosted on barebones platforms (like GitHub Pages) or on minimal devices, allowing for easy & free hosting. You can run it darn near anywhere. 
-
-### Manual Updates: 
-
-Updating your webring requires you to regenerate all of the HTML, whereas other webrings (with server-side processing) can be updated by simply modifying a file or database. This step can be automated, but it's still an extra step to be aware of. 
-
-Because processing is front-loaded to occur during page generation, this is probably the most performant & secure method to build a webring aside from doing the entire thing by hand. 
+- Highly optimized
+- Customizable via templates
+- Ability to shuffle webring
+- Choice of using command-line interface or config file
+- Able to use remote files (including for config)
+- HTML minification
+- Catches duplicate entries
+- Auto-link website owner contact info
+- Detailed logging
 
 ## Usage
 
 - Clone the repo.
 - Modify the `websites.json` (by default) file to include the details of the websites you want to include in the webring. Each website must be added to the list. 
-- (Optional) Add any extra files (such as CSS or images) into the `data/assets` folder (by default). Everything in this folder will simply be copied over into the output directory. Here you can add things like logo images, additional HTML/CSS, etc. 
+- (Optional) Add any additional files into the `data/assets` folder (by default). Everything in this folder will simply be copied over into the output directory. Here you can add extras like images, HTML/CSS, etc. 
 - (Optional) Customize pages by modifying the templates, located in the `data/templates` folder (by default). You can also use remote files as templates. See the "Templates" section below. 
 - Run `rustring` to generate the webring by writing HTML files containing the redirects. Each site will link to the next/previous site in the `websites.json` file, forming your webring!
 - Host the generated files on your preferred hosting platform. 
@@ -53,14 +51,14 @@ Command-line arguments take precedence over any settings in the config file.
 - *`--dry-run`*: Runs the application without outputting any files
 - *`-s`, `--shuffle`*: Randomly shuffles the order of websites during generation. This is totally internal and does not affect the input list of websites; you can shuffle the same webring repeatedly without losing the original sequence. 
 - *`-v`, `--verbose`*: Output information to the console
-- *`-h`, `--help`*: Print help
 - *`-V`, `--version`*: Print version
+- *`-h`, `--help`*: Print help
 
 ### Note: Logging
 
-By default, the application only logs error messages. By passing `-v`/`--verbose` (on the command line) or setting `"verbose": true` (in the config JSON file), you can tell the application to show logs. 
+By default, the application only logs error messages. By passing `-v`/`--verbose` (on the command line) or setting `"verbose": true` (in the config JSON), you can tell the application to show info level logs. 
 
-To save logs to a file, you can redirect standard output and standard error to a file when running your application. For example:
+To save these logs to a file, you can redirect standard output and standard error to a file when running your application. For example:
 
 ```
 $ ./rustring > log.txt 2>&1
