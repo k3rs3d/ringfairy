@@ -17,5 +17,8 @@ serde_json = "1.0"
 tokio = { version = "1", features = ["full"] }
 
 [profile.release]
+lto = true
 opt-level = 3
+strip = true
 debug = false
+panic = "abort"
