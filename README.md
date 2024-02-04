@@ -81,7 +81,7 @@ The following tags are currently usable in templates:
 - *`{{ number_of_sites }}`* shows the current size of the webring.
 - *`{{ current_time }}`* displays the time of generating, showing when the page was last updated. 
 
-Right now, `{{ url }}`` is a special tag that only works in `template.html` for the next/previous links.  
+Right now, `{{ url }}` is a special tag that only works in `template.html` for the next/previous links.  
 
 ----------------------------
 
