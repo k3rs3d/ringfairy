@@ -1,4 +1,4 @@
-# Rustic Ring
+# ring fairy
 
 This is a webring generator written in Rust. 
 
@@ -34,7 +34,7 @@ This is a tool for anyone who has some kind of personal website or blog and wish
 - Modify the `websites.json` (by default) file to include the details of the websites you want to include in the webring. Each website must be added to the list. 
 - (Optional) Customize pages by modifying the templates, located in the `data/templates` folder (by default). You can also use remote files as templates. See the "Templates" section below. 
 - (Optional) Add any additional files into the `data/assets` folder (by default). Everything in this folder will simply be copied over into the output directory. Here you can add extras like images, HTML/CSS, etc. 
-- Run `rustring` to generate the webring by writing HTML files containing the redirects. Each site will link to the next/previous site in the `websites.json` file, forming your webring!
+- Run `ringfairy` to generate the webring by writing HTML files containing the redirects. Each site will link to the next/previous site in the `websites.json` file, forming your webring!
 - Host the generated files on your preferred hosting platform. 
 
 ## Command-Line Arguments
@@ -60,7 +60,7 @@ By default, the application only logs error messages. By passing `-v`/`--verbose
 To save these logs to a file, you can redirect standard output and standard error to a file when running your application. For example:
 
 ```
-$ ./rustring > log.txt 2>&1
+$ ./ringfairy > log.txt 2>&1
 ```
 
 ## Templates

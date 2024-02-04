@@ -53,7 +53,7 @@ pub struct ConfigSettings {
 // Clap-specific settings struct - able to contain Options
 #[derive(Parser, Debug)]
 #[clap(
-    name = "rustring",
+    name = "ringfairy",
     version = "0.1.0",
     author = "Kern AKA Kersed",
     about = "Creates a webring by generating HTML files for a set of websites, linking them together."
