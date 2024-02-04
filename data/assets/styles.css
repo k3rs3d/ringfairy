@@ -2,10 +2,10 @@ body {
     font-family: Courier New, Courier, Lucida Sans Typewriter, Lucida Typewriter, Consolas, monospace, sans-serif;
 	line-height: 1.6;
     background-color: #111;
+    color: #fff;
 }
 
 h1 {
-	color: #fff;
 	text-align: center;
 }
 
@@ -21,9 +21,7 @@ a:hover, a:focus {
     color: #fff; 
 }
 
-table {
-	color: #fff;
-	
+table {	
     width: 90%;
     border-collapse: collapse;
     margin: 12px auto;
@@ -51,7 +49,6 @@ th, td {
 
 th {
     background-color: #444;
-	color: #fff;
     text-align: center;
 	font-size: 1.1em;
 }
