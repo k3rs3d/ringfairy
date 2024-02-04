@@ -1,4 +1,4 @@
-# `ringfairy`
+# `ringfairy` 🧚
 
 This is a webring generator written in Rust. 
 
