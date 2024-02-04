@@ -44,9 +44,8 @@ Command-line arguments take precedence over any settings in the config file.
 - *`-c`, `--config`*: Specify the location of the optional config file. It can be remote; for example an HTTP link to an appropriate JSON file on Pastebin, GitHub, etc. 
 - *`-l`, `--list`*: Specify the file containing the list of websites. Default: `./websites.json`
 - *`-o`, `--output`*: Define the output folder, where the generated files will be saved. Default: `./webring`
-- *`-a`, `--assets`*: Specify the assets folder. Any files in here will be copied to the output folder. This lets you include any extra files you want, such as images or extra web pages, etc. 
-- *`-r`, `--path-template-redirect`*: Specify path to the template for redirect pages (i.e. the HTML which composes the webring). Can be a local or remote HTML file. Default: `./data/templates/redirect_template.html`
-- *`-i`, `--path-template-index`*: Specify path to the template for the main index page (i.e. the formatted list of all websites in the webring). Can be a local or remote HTML file. Default: `./data/templates/list_template.html`
+- *`-a`, `--assets`*: Specify the assets folder. Any files in here will be copied to the output folder. This lets you include any extra files you want, such as images or extra web pages, etc. Default: `./data/assets`
+- *`-t`, `--templates`*: Specify path to the template folder. Use `template.html` for redirect pages (i.e. the HTML which composes the webring). Any extra pages can be added here if you want them to be populated with generated content. Default: `./data/templates`
 - *`--skip-verification`*: Generates files without checking for potential problems...unwise!
 - *`--dry-run`*: Runs the application without outputting any files
 - *`-s`, `--shuffle`*: Randomly shuffles the order of websites during generation. This is totally internal and does not affect the input list of websites; you can shuffle the same webring repeatedly without losing the original sequence. 
@@ -66,12 +65,13 @@ $ ./rustring > log.txt 2>&1
 
 ## Templates
 
-Templates are located in the `./data/templates` folder by default. You can also load them remotely by passing a URL into `--path-template-redirect` and/or `--path-template-index` (on the command line), or `filepath_template_redirect` and/or `filepath_template_index` (within the config file). 
+Templates are located in the `./data/templates` folder by default; this path can be specified with the command-line argument `--templates`, or with `path_templates` in the config file.
 
 Templates contain tags which will be replaced with generated content. You can customize generated files by adding content before/after the tags. The repo includes basic template examples to get you started. 
 
-- *`list_template.html`*: This will be used to generate the main index page which lists all the websites in the webring. The tag `<!-- TABLE_OF_WEBSITES -->` will be replaced with the list. It can be specified with the command-line argument `--path-template-index`, or with `filepath_template_index` in the config file. 
-- *`redirect_template.html`*: This template is for each of the `next.html`/`previous.html` pages generated for each website. The tag `<!-- REDIRECT -->` is used for the HTML that powers the webring. It can be specified with the command-line argument `--path-template-redirect`, or with `filepath_template_redirect` in the config file.
+In the templates folder, `template.html` is used to generate each of the `next.html`/`previous.html` pages, containing the redirects for each website. The tag `{{ url }}` is inserted by the generator in each page, and that powers the webring. 
+
+Besides `template.html`, the templates folder can contain any other templates you want. 
 
 ----------------------------
 

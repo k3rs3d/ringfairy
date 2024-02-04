@@ -1,28 +1,31 @@
 use minify_html::{minify, Cfg};
-use std::fs;
+use std::fs::{self};
 use std::io::Write;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use tera::{Context, Tera};
 
-use crate::file::acquire_file_data;
-use crate::website::{Website, WebringSite};
+//use crate::file::acquire_file_data;
+use crate::website::WebringSite;
 
 pub struct HtmlGenerator {
+    tera: Tera,
     cfg: Cfg,
     skip_minify: bool,
 }
 
 impl HtmlGenerator {
-    pub fn new(skip_minify: bool) -> Self {
-        let mut cfg = Cfg::new();
-        cfg.keep_comments = true;
-        Self {
+    pub fn new(template_path: impl Into<PathBuf>, skip_minify: bool)  -> Result<Self, Box<dyn std::error::Error>> {
+        let cfg = Cfg::new();
+        //cfg.keep_comments = true;
+
+        let template_path_str = template_path.into().join("**/*").to_string_lossy().to_string();
+        let tera = Tera::new(&template_path_str).map_err(|err| Box::new(err) as Box<dyn std::error::Error>)?;
+
+        Ok(Self {
+            tera,
             cfg,
             skip_minify,
-        }
-    }
-
-    async fn acquire_template(&self, path: &str) -> Result<String, Box<dyn std::error::Error>> {
-        acquire_file_data(path).await
+        })
     }
 
     fn write_content(
@@ -45,80 +48,80 @@ impl HtmlGenerator {
         Ok(())
     }
 
-    pub async fn generate_websites_html(
+    pub async fn generate_html(
         &self,
-        websites: &[WebringSite],
+        webring: &[WebringSite],
         path_output: &str,
-        path_template_redirects: &str,
-        path_template_index: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        // Get template file for redirect pages
-        log::debug!("Attempting to load webring redirect HTML template...");
-        let template_redirect = self.acquire_template(path_template_redirects).await?;
+        // Ensure output directory exists
+        fs::create_dir_all(path_output)?;
 
-        for webring_site in websites.iter() {
-            let previous_site = &websites[webring_site.previous].website;
-            let next_site = &websites[webring_site.next].website;
+        let mut context = Context::new();
+        context.insert("websites", webring);
 
-            // Generate HTML for this website
-            self.generate_html(webring_site, previous_site, next_site, path_output, &template_redirect)?;
+        // Generate site-specific "next"/"previous" pages
+        for site in webring.iter() {
+            self.generate_site(site, webring,&context, path_output)?;
         }
 
-        self.generate_list_html(websites, path_output, path_template_index)
-            .await?;
+        // Process all other custom templates
+        self.generate_custom_templates(path_output, &webring).await?;
 
         Ok(())
     }
 
-    fn generate_html(
+    fn generate_site(
         &self,
-        website: &WebringSite,
-        previous_site: &Website,
-        next_site: &Website,
+        site: &WebringSite,
+        webring: &[WebringSite],
+        context: &Context,
         path_output: &str,
-        template_redirect: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let directory_path = format!("{}/{}", path_output, website.website.name);
-        fs::create_dir_all(&directory_path)?;
+        // Create directory for the site
+        let site_path = Path::new(path_output).join(&site.website.name);
+        fs::create_dir_all(&site_path)?;
 
-        let next_html_path = Path::new(&directory_path).join("next.html");
-        let previous_html_path = Path::new(&directory_path).join("previous.html");
-        
-        let next_html_content = template_redirect.replace(
-            "<!-- REDIRECT -->",
-            &format!(
-                "<meta http-equiv=\"refresh\" content=\"0; url={}\">",
-                next_site.url
-            ),
-        );
-        let previous_html_content = template_redirect.replace(
-            "<!-- REDIRECT -->",
-            &format!(
-                "<meta http-equiv=\"refresh\" content=\"0; url={}\">",
-                previous_site.url
-            ),
-        );
+        // Determine previous/next links
+        let previous_site = &webring[site.previous].website.url;
+        let next_site = &webring[site.next].website.url;
 
-        self.write_content(&previous_html_path, &previous_html_content)?;
-        self.write_content(&next_html_path, &next_html_content)?;
+        let mut next_context = context.clone();
+        next_context.insert("url", next_site);
+        let content_next = self.tera.render("template.html", &next_context)?;
+        self.write_content(&site_path.join("next.html"), &content_next)?;
+
+        let mut previous_context = context.clone();
+        previous_context.insert("url", previous_site);
+        let content_previous = self.tera.render("template.html", &previous_context)?;
+        self.write_content(&site_path.join("previous.html"), &content_previous)?;
 
         Ok(())
     }
 
-    async fn generate_list_html(
+    async fn generate_custom_templates(
         &self,
-        websites: &[WebringSite],
         path_output: &str,
-        path_template_index: &str,
+        webring: &[WebringSite],
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let template_index = self.acquire_template(path_template_index).await?;
-        let replaced_content = template_index.replace(
-            "<!-- TABLE_OF_WEBSITES -->",
-            &self.generate_sites_table(websites)?,
-        );
+        // Generate the HTML table content for the "{{ table_of_sites }}" tag
+        let table_of_sites_html = self.generate_sites_table(webring)?;
 
-        let file_path = Path::new(path_output).join("list.html");
-        self.write_content(&file_path, &replaced_content)?;
+        // Load template files
+        let template_paths = self.tera.get_template_names().filter(|name| *name != "template.html");
+
+        for template_name in template_paths {
+            let mut context = Context::new();
+            // "Table of Sites" tag:
+            context.insert("table_of_sites", &table_of_sites_html);
+
+            let template_file_name = Path::new(template_name)
+                .file_name().unwrap()
+                .to_str().unwrap();
+
+            let content = self.tera.render(template_name, &context)?;
+            let file_path = Path::new(path_output).join(template_file_name);
+            self.write_content(&file_path, &content)?;
+        }
 
         Ok(())
     }
@@ -156,11 +159,17 @@ impl HtmlGenerator {
             table_html.push_str(&website.website.name);
             table_html.push_str("</td>\n");
             // URL
-            table_html.push_str(&format!("            <td><a href=\"{}\" target=\"_blank\">{}</a>", website.website.url, website.website.url));
-        if let Some(rss_url) = website.website.rss.as_ref().filter(|url| !url.is_empty()) {
-            table_html.push_str(&format!(" <a href=\"{}\" target=\"_blank\">[rss]</a>", rss_url));
-        }
-        table_html.push_str("</td>\n");
+            table_html.push_str(&format!(
+                "            <td><a href=\"{}\" target=\"_blank\">{}</a>",
+                website.website.url, website.website.url
+            ));
+            if let Some(rss_url) = website.website.rss.as_ref().filter(|url| !url.is_empty()) {
+                table_html.push_str(&format!(
+                    " <a href=\"{}\" target=\"_blank\">[rss]</a>",
+                    rss_url
+                ));
+            }
+            table_html.push_str("</td>\n");
             // About
             table_html.push_str("            <td>");
             table_html.push_str(&website.website.about.as_deref().unwrap_or(""));
@@ -184,26 +193,33 @@ impl HtmlGenerator {
     }
 
     fn format_owner(owner: &str) -> String {
-        owner.split_whitespace().map(|part| {
-            if part.starts_with("http://") || part.starts_with("https://") {
-                // Website URL format
-                format!("<a href=\"{}\" target=\"_blank\">{}</a>", part, part)
-            } else if part.contains('@') {
-                if part.matches('@').count() > 1 {
-                    // Assumes Fediverse format: @username@domain
-                    let parts: Vec<&str> = part.split('@').collect();
-                    if parts.len() == 3 {
-                        format!("<a href=\"https://{}/@{}\">{}</a>", parts[2], parts[1], part)
+        owner
+            .split_whitespace()
+            .map(|part| {
+                if part.starts_with("http://") || part.starts_with("https://") {
+                    // Website URL format
+                    format!("<a href=\"{}\" target=\"_blank\">{}</a>", part, part)
+                } else if part.contains('@') {
+                    if part.matches('@').count() > 1 {
+                        // Assumes Fediverse format: @username@domain
+                        let parts: Vec<&str> = part.split('@').collect();
+                        if parts.len() == 3 {
+                            format!(
+                                "<a href=\"https://{}/@{}\">{}</a>",
+                                parts[2], parts[1], part
+                            )
+                        } else {
+                            part.to_string()
+                        }
                     } else {
-                        part.to_string()
+                        // Email format
+                        format!("<a href=\"mailto:{}\">{}</a>", part, part)
                     }
                 } else {
-                    // Email format
-                    format!("<a href=\"mailto:{}\">{}</a>", part, part)
+                    part.to_string()
                 }
-            } else {
-                part.to_string()
-            }
-        }).collect::<Vec<String>>().join(" ")
+            })
+            .collect::<Vec<String>>()
+            .join(" ")
     }
 }

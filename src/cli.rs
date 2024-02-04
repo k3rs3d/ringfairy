@@ -10,8 +10,7 @@ pub struct AppSettings {
     pub filepath_list: String,
     pub path_output: String,
     pub path_assets: String,
-    pub filepath_template_redirect: String,
-    pub filepath_template_index: String,
+    pub path_templates: String,
     pub shuffle: bool,
     pub verbose: bool,
     pub skip_minify: bool,
@@ -27,8 +26,7 @@ impl Default for AppSettings {
             filepath_list: "./websites.json".into(),
             path_output: "./webring".into(),
             path_assets: "./data/assets".into(),
-            filepath_template_redirect: "./data/templates/redirect_template.html".into(),
-            filepath_template_index: "./data/templates/list_template.html".into(),
+            path_templates: "./data/templates".into(),
             shuffle: false,
             verbose: false,
             skip_minify: false,
@@ -44,8 +42,7 @@ pub struct ConfigSettings {
     pub filepath_list: Option<String>,
     pub path_output: Option<String>,
     pub path_assets: Option<String>,
-    pub filepath_template_redirect: Option<String>,
-    pub filepath_template_index: Option<String>,
+    pub path_templates: Option<String>,
     pub shuffle: Option<bool>,
     pub verbose: Option<bool>,
     pub skip_minify: Option<bool>,
@@ -75,46 +72,38 @@ pub struct ClapSettings {
         short = 'l',
         long = "list",
         ignore_case = false,
-        help = "Specify the file containing the list of websites to use as input"
+        help = "Specify the file containing the list of websites to use. It should be a JSON file with 'name', 'url', etc fields."
     )]
     pub filepath_list: Option<String>,
 
     #[clap(
         short = 'o',
-        long = "path-output",
+        long = "output",
         ignore_case = false,
-        help = "Define the directory where the generated files will be saved."
+        help = "Define the output directory. Generated files will be saved in this folder."
     )]
     pub path_output: Option<String>,
 
     #[clap(
         short = 'a',
-        long = "path-assets",
+        long = "assets",
         ignore_case = false,
         help = "Specify the directory where asset files (e.g. CSS, images, other extras) can be found. NOTE: All contents will be copied into the output directory!"
     )]
     pub path_assets: Option<String>,
 
     #[clap(
-        short = 'r',
-        long = "path-template-redirect",
+        short = 't',
+        long = "templates",
         ignore_case = false,
-        help = "Specify the HTML template used to generate each website's redirect pages. It should contain '<!-- REDIRECT -->' somewhere in the file."
+        help = "Specify the folder containing HTML templates to use. Should at least contain 'templates.html' for creating the 'next' and 'previous' pages."
     )]
-    pub filepath_template_redirect: Option<String>,
-
-    #[clap(
-        short = 'i',
-        long = "path-template-index",
-        ignore_case = false,
-        help = "Specify the HTML template used to generate the main list page. It should contain '<!-- TABLE_OF_WEBSITES -->' somewhere in the file."
-    )]
-    pub filepath_template_index: Option<String>,
+    pub path_templates: Option<String>,
 
     #[clap(short = 's', long = "shuffle", action = ArgAction::SetTrue, help = "Randomly shuffles the website sequence when generating the webring (does not modify the website list file).")]
     pub shuffle: bool,
 
-    #[clap(short = 'v', long = "verbose", action = ArgAction::SetTrue, help = "Enables verbose logging")]
+    #[clap(short = 'v', long = "verbose", action = ArgAction::SetTrue, help = "Enables verbose logging.")]
     pub verbose: bool,
 
     #[clap(long = "skip-minification", action = ArgAction::SetTrue, help = "Skips 'minification' of HTML files, which tries to reduce their file size. If your generated HTML files are having issues, try skipping minification.")]
@@ -123,7 +112,7 @@ pub struct ClapSettings {
     #[clap(long = "skip-verification", action = ArgAction::SetTrue, help = "Skips verification of the URLs in the list. Probably unwise!")]
     pub skip_verify: bool,
 
-    #[clap(long = "dry-run", action = ArgAction::SetTrue, help = "Perform a dry run without writing any files")]
+    #[clap(long = "dry-run", action = ArgAction::SetTrue, help = "Perform a dry run without writing any files.")]
     pub dry_run: bool,
 }
 
@@ -159,12 +148,9 @@ fn merge_configs(cli_args: ClapSettings, config: Option<ConfigSettings>) -> AppS
         final_settings.filepath_list = conf.filepath_list.unwrap_or(final_settings.filepath_list);
         final_settings.path_output = conf.path_output.unwrap_or(final_settings.path_output);
         final_settings.path_assets = conf.path_assets.unwrap_or(final_settings.path_assets);
-        final_settings.filepath_template_redirect = conf
-            .filepath_template_redirect
-            .unwrap_or(final_settings.filepath_template_redirect);
-        final_settings.filepath_template_index = conf
-            .filepath_template_index
-            .unwrap_or(final_settings.filepath_template_index);
+        final_settings.path_templates = conf
+            .path_templates
+            .unwrap_or(final_settings.path_templates);
         final_settings.verbose = conf.verbose.unwrap_or(final_settings.verbose);
         final_settings.skip_minify = conf.skip_minify.unwrap_or(final_settings.skip_minify);
         final_settings.skip_verify = conf.skip_verify.unwrap_or(final_settings.skip_verify);
@@ -181,11 +167,8 @@ fn merge_configs(cli_args: ClapSettings, config: Option<ConfigSettings>) -> AppS
     if let Some(val) = cli_args.path_assets {
         final_settings.path_assets = val;
     }
-    if let Some(val) = cli_args.filepath_template_redirect {
-        final_settings.filepath_template_redirect = val;
-    }
-    if let Some(val) = cli_args.filepath_template_index {
-        final_settings.filepath_template_index = val;
+    if let Some(val) = cli_args.path_templates {
+        final_settings.path_templates = val;
     }
 
     // Boolean flags can simply be overridden as they don't have a `None` state

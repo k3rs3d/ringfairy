@@ -2,8 +2,7 @@
   "filepath_list": "./websites.json",
   "path_output": "./webring",
   "path_assets": "./data/assets",
-  "filepath_template_redirect": "./data/templates/redirect_template.html",
-  "filepath_template_index": "./data/templates/list_template.html",
+  "path_templates": "./data/templates",
   "shuffle": false,
   "verbose": false,
   "skip_minify": false
