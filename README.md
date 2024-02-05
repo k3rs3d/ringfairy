@@ -6,29 +6,30 @@ Unlike most webrings which rely on server-side code (e.g. PHP, JS) to redirect v
 
 The static approach allows for simpler hosting requirements (it can be hosted on GitHub Pages, etc), plus better performance as it eliminates the need for server-side processing. 
 
-The catch: updating the webring will require you to regenerate the whole thing. This is quick & simple, and shouldn't need to be done frequently, but it's still an extra step which conventional server-side systems might not have. 
+Updating the webring will require you to regenerate the whole thing. This is quick & simple, and shouldn't need to be done frequently, but it's still an extra step which conventional server-side systems might not have. 
 
-## What's a Webring?
+## 🔮 What's a Webring?
 
 A webring is a collection of websites linked together in a loop. Each website contains links to the previous and next websites in the ring, so if you navigate far enough, eventually you end up back where you started! 
 
 Webrings were popular in the early days of the internet as a way for website owners to promote each other's content and encourage community engagement. 
 
-This is a tool for anyone who has some kind of personal website or blog and wishes to connect with others. You can use it to grow your own online community from scratch. 
+This is a tool for anyone who has some kind of personal website or blog and wishes to connect with others. You can use it to grow your own online community from scratch!
 
-## Features 
+## 🔬 Features 
 
 - Highly optimized
 - Fully customizable via templates
-- Ability to shuffle webring
 - Choice of command-line interface or config file
 - Remote config file support
+- Shuffle option
 - HTML minification
 - Catches duplicate entries
+- RSS linking 
 - Auto-link website owner contact info
 - Detailed logging
 
-## Usage
+## 🪄 Usage
 
 - Clone the repo.
 - Modify the `websites.json` (by default) file to include the details of the websites you want to include in the webring. Each website must be added to the list. 
@@ -37,7 +38,7 @@ This is a tool for anyone who has some kind of personal website or blog and wish
 - Run `ringfairy` to generate the webring by writing HTML files containing the redirects. Each site will link to the next/previous site in the `websites.json` file, forming your webring!
 - Host the generated files on your preferred hosting platform. 
 
-## Command-Line Arguments
+## ⚙️ Command-Line Arguments
 
 Command-line arguments take precedence over any settings in the config file. 
 
@@ -63,7 +64,7 @@ To save these logs to a file, you can redirect standard output and standard erro
 $ ./ringfairy > log.txt 2>&1
 ```
 
-## Templates
+## 🎭 Templates
 
 Templates are located in the `./data/templates` folder by default; this path can be specified with the command-line argument `--templates`, or with `path_templates` in the config file.
 
@@ -100,6 +101,6 @@ Right now, `{{ url }}` is a special tag that only works in `template.html` for t
                  |____)_)
 ```
 
-## Contributing
+## 🧿 Contributing
 
 Contributions are welcome! If you have any suggestions for improvements or new features, feel free to open an issue or submit a pull request.
