@@ -2,7 +2,7 @@
 
 This is a webring generator written in Rust. 
 
-Unlike most webrings which rely on server-side code (e.g. PHP, JS) to redirect visitors, this implementation pre-generates static HTML files. It's similar to a static site generator, but specialized for webrings.  
+Unlike most webrings which rely on server-side code (e.g. PHP, JS) to redirect visitors, this implementation embeds the redirects in pre-generated HTML files. It's similar to a static site generator, but specialized for webrings.  
 
 The static approach allows for simpler hosting requirements (it can be hosted on GitHub Pages, etc), plus better performance as it eliminates the need for server-side processing. 
 
@@ -49,6 +49,7 @@ Command-line arguments take precedence over any settings in the config file.
 - *`-o`, `--output`*: Define the output folder, where the generated files will be saved. Default: `./webring`
 - *`-a`, `--assets`*: Specify the assets folder. Any files in here will be copied to the output folder. This lets you include any extra files you want, such as images or extra web pages, etc. Default: `./data/assets`
 - *`-t`, `--templates`*: Specify path to the template folder. Use `template.html` for redirect pages (i.e. the HTML which composes the webring). Any extra pages can be added here if you want them to be populated with generated content. Default: `./data/templates`
+- *`--skip-minification`*: Outputs pages without optimizing or modifying them. Try this if you want your generated files to be hand-editable later, or if you experience any unexpected issues with the output. 
 - *`--skip-verification`*: Generates files without checking for potential problems...unwise!
 - *`--dry-run`*: Runs the application without outputting any files
 - *`-s`, `--shuffle`*: Randomly shuffles the order of websites during generation. This is totally internal and does not affect the input list of websites; you can shuffle the same webring repeatedly without losing the original sequence. 
@@ -103,6 +104,6 @@ Right now, `{{ url }}` is a special tag that only works in `template.html` for t
                  |____)_)
 ```
 
-## 🧿 Contributing
+## ✨ Contributing
 
 Contributions are welcome! If you have any suggestions for improvements or new features, feel free to open an issue or submit a pull request.
