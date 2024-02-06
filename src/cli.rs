@@ -11,6 +11,7 @@ pub struct AppSettings {
     pub path_output: String,
     pub path_assets: String,
     pub path_templates: String,
+    pub no_slug: bool,
     pub shuffle: bool,
     pub verbose: bool,
     pub skip_minify: bool,
@@ -27,6 +28,7 @@ impl Default for AppSettings {
             path_output: "./webring".into(),
             path_assets: "./data/assets".into(),
             path_templates: "./data/templates".into(),
+            no_slug: false,
             shuffle: false,
             verbose: false,
             skip_minify: false,
@@ -43,6 +45,7 @@ pub struct ConfigSettings {
     pub path_output: Option<String>,
     pub path_assets: Option<String>,
     pub path_templates: Option<String>,
+    pub no_slug: Option<bool>,
     pub shuffle: Option<bool>,
     pub verbose: Option<bool>,
     pub skip_minify: Option<bool>,
@@ -106,6 +109,9 @@ pub struct ClapSettings {
     #[clap(short = 'v', long = "verbose", action = ArgAction::SetTrue, help = "Enables verbose logging.")]
     pub verbose: bool,
 
+    #[clap(long = "no-slug", action = ArgAction::SetTrue, help = "Makes the webring reference sites by their index, rather than their slug. So the first website would be under /1/, the second /2/, etc. The default behavior is to create directories named for the site slug. ")]
+    pub no_slug: bool,
+
     #[clap(long = "skip-minification", action = ArgAction::SetTrue, help = "Skips 'minification' of HTML files, which tries to reduce their file size. If your generated HTML files are having issues, try skipping minification.")]
     pub skip_minify: bool,
 
@@ -151,6 +157,7 @@ fn merge_configs(cli_args: ClapSettings, config: Option<ConfigSettings>) -> AppS
         final_settings.path_templates = conf
             .path_templates
             .unwrap_or(final_settings.path_templates);
+        final_settings.no_slug = conf.no_slug.unwrap_or(final_settings.no_slug);
         final_settings.verbose = conf.verbose.unwrap_or(final_settings.verbose);
         final_settings.skip_minify = conf.skip_minify.unwrap_or(final_settings.skip_minify);
         final_settings.skip_verify = conf.skip_verify.unwrap_or(final_settings.skip_verify);
@@ -172,6 +179,9 @@ fn merge_configs(cli_args: ClapSettings, config: Option<ConfigSettings>) -> AppS
     }
 
     // Boolean flags can simply be overridden as they don't have a `None` state
+    if cli_args.no_slug {
+        final_settings.no_slug = cli_args.no_slug;
+    }
     if cli_args.shuffle {
         final_settings.shuffle = cli_args.shuffle;
     }
