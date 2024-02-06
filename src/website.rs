@@ -9,7 +9,8 @@ use crate::file;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Website {
-    pub name: String,
+    pub slug: String,
+    pub name: Option<String>,
     pub about: Option<String>,
     pub url: String,
     pub rss: Option<String>,
@@ -69,14 +70,14 @@ pub async fn parse_website_list(file_path_or_url: &str) -> Result<Vec<Website>, 
 pub fn verify_websites(
     websites: &[Website],
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let mut names = HashSet::new();
+    let mut slugs = HashSet::new();
     let mut urls = HashSet::new();
     // let url_pattern = Regex::new(r"^https://.+\..+$")?;
 
     for website in websites {
         // Check for duplicate names and URLs
-        if !names.insert(&website.name) {
-            return Err(format!("Duplicate website name found: {} - {}", website.name, website.owner.as_deref().unwrap_or("")).into());
+        if !slugs.insert(&website.slug) {
+            return Err(format!("Duplicate website slug found: {} - {}", website.slug, website.owner.as_deref().unwrap_or("")).into());
         }
         if !urls.insert(&website.url) {
             return Err(format!("Duplicate website URL found: {} - {}", website.url, website.owner.as_deref().unwrap_or("")).into());

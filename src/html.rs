@@ -85,7 +85,7 @@ impl HtmlGenerator {
         path_output: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
         // Create directory for the site
-        let site_path = Path::new(path_output).join(&site.website.name);
+        let site_path = Path::new(path_output).join(&site.website.slug);
         fs::create_dir_all(&site_path)?;
 
         // Determine previous/next links
@@ -178,7 +178,7 @@ impl HtmlGenerator {
             table_html.push_str(&format!("            <td>{}</td>\n", index + 1));
             // Name
             table_html.push_str("            <td>");
-            table_html.push_str(&website.website.name);
+            table_html.push_str(&website.website.slug);
             table_html.push_str("</td>\n");
             // URL
             table_html.push_str(&format!(
