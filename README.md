@@ -1,34 +1,37 @@
-# ring fairy
+# `ringfairy` 🧚
 
 This is a webring generator written in Rust. 
 
-Unlike most webrings which rely on server-side code (e.g. PHP, JS) to redirect visitors, this implementation pre-generates static HTML files. It's similar to a static site generator, but specialized for webrings.  
+Unlike most webrings which rely on server-side code (e.g. PHP, JS) to redirect visitors, this implementation embeds the redirects in pre-generated HTML files. It's similar to a static site generator, but specialized for webrings.  
 
 The static approach allows for simpler hosting requirements (it can be hosted on GitHub Pages, etc), plus better performance as it eliminates the need for server-side processing. 
 
-The catch: updating the webring will require you to regenerate the whole thing. This is quick & simple, and shouldn't need to be done frequently, but it's still an extra step which conventional server-side systems might not have. 
+Updating the webring will require you to regenerate the whole thing. This is quick & simple, and shouldn't need to be done frequently, but it's still an extra step which conventional server-side systems might not have. 
 
-## What's a Webring?
+## 🔮 What's a Webring?
 
 A webring is a collection of websites linked together in a loop. Each website contains links to the previous and next websites in the ring, so if you navigate far enough, eventually you end up back where you started! 
 
+![Hypothetical webring example](https://upload.wikimedia.org/wikipedia/commons/9/97/Webringwork.png)
+
 Webrings were popular in the early days of the internet as a way for website owners to promote each other's content and encourage community engagement. 
 
-This is a tool for anyone who has some kind of personal website or blog and wishes to connect with others. You can use it to grow your own online community from scratch. 
+This is a tool for anyone who has some kind of personal website or blog and wishes to connect with others. You can use it to grow your own online community from scratch!
 
-## Features 
+## 🔬 Features 
 
 - Highly optimized
 - Fully customizable via templates
-- Ability to shuffle webring
 - Choice of command-line interface or config file
 - Remote config file support
+- Shuffle option
 - HTML minification
 - Catches duplicate entries
+- RSS linking 
 - Auto-link website owner contact info
 - Detailed logging
 
-## Usage
+## 🪄 Usage
 
 - Clone the repo.
 - Modify the `websites.json` (by default) file to include the details of the websites you want to include in the webring. Each website must be added to the list. 
@@ -37,7 +40,7 @@ This is a tool for anyone who has some kind of personal website or blog and wish
 - Run `ringfairy` to generate the webring by writing HTML files containing the redirects. Each site will link to the next/previous site in the `websites.json` file, forming your webring!
 - Host the generated files on your preferred hosting platform. 
 
-## Command-Line Arguments
+## ⚙️ Command-Line Arguments
 
 Command-line arguments take precedence over any settings in the config file. 
 
@@ -46,6 +49,7 @@ Command-line arguments take precedence over any settings in the config file.
 - *`-o`, `--output`*: Define the output folder, where the generated files will be saved. Default: `./webring`
 - *`-a`, `--assets`*: Specify the assets folder. Any files in here will be copied to the output folder. This lets you include any extra files you want, such as images or extra web pages, etc. Default: `./data/assets`
 - *`-t`, `--templates`*: Specify path to the template folder. Use `template.html` for redirect pages (i.e. the HTML which composes the webring). Any extra pages can be added here if you want them to be populated with generated content. Default: `./data/templates`
+- *`--skip-minification`*: Outputs pages without optimizing or modifying them. Try this if you want your generated files to be hand-editable later, or if you experience any unexpected issues with the output. 
 - *`--skip-verification`*: Generates files without checking for potential problems...unwise!
 - *`--dry-run`*: Runs the application without outputting any files
 - *`-s`, `--shuffle`*: Randomly shuffles the order of websites during generation. This is totally internal and does not affect the input list of websites; you can shuffle the same webring repeatedly without losing the original sequence. 
@@ -63,7 +67,7 @@ To save these logs to a file, you can redirect standard output and standard erro
 $ ./ringfairy > log.txt 2>&1
 ```
 
-## Templates
+## 🎭 Templates
 
 Templates are located in the `./data/templates` folder by default; this path can be specified with the command-line argument `--templates`, or with `path_templates` in the config file.
 
@@ -81,7 +85,7 @@ The following tags are currently usable in templates:
 - *`{{ number_of_sites }}`* shows the current size of the webring.
 - *`{{ current_time }}`* displays the time of generating, showing when the page was last updated. 
 
-Right now, `{{ url }}`` is a special tag that only works in `template.html` for the next/previous links.  
+Right now, `{{ url }}` is a special tag that only works in `template.html` for the next/previous links.  
 
 ----------------------------
 
@@ -100,6 +104,6 @@ Right now, `{{ url }}`` is a special tag that only works in `template.html` for 
                  |____)_)
 ```
 
-## Contributing
+## ✨ Contributing
 
 Contributions are welcome! If you have any suggestions for improvements or new features, feel free to open an issue or submit a pull request.
