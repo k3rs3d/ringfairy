@@ -86,7 +86,8 @@ impl HtmlGenerator {
     ) -> Result<(), Box<dyn std::error::Error>> {
         // Create directory for the site
         let site_path = Path::new(path_output).join(&site.website.slug);
-        fs::create_dir_all(&site_path)?;
+        fs::create_dir_all(&site_path.join("next"))?;
+        fs::create_dir_all(&site_path.join("previous"))?;
 
         // Determine previous/next links
         let previous_site = &webring[site.previous].website.url;
@@ -95,12 +96,12 @@ impl HtmlGenerator {
         let mut next_context = context.clone();
         next_context.insert("url", next_site);
         let content_next = self.tera.render("template.html", &next_context)?;
-        self.write_content(&site_path.join("next.html"), &content_next)?;
+        self.write_content(&site_path.join("next/index.html"), &content_next)?;
 
         let mut previous_context = context.clone();
         previous_context.insert("url", previous_site);
         let content_previous = self.tera.render("template.html", &previous_context)?;
-        self.write_content(&site_path.join("previous.html"), &content_previous)?;
+        self.write_content(&site_path.join("previous/index.html"), &content_previous)?;
 
         Ok(())
     }
