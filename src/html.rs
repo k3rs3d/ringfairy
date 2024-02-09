@@ -22,7 +22,8 @@ struct PrecomputedTags {
 
 impl HtmlGenerator {
     pub fn new(template_path: impl Into<PathBuf>, skip_minify: bool)  -> Result<Self, Box<dyn std::error::Error>> {
-        let cfg = Cfg::new();
+        let mut cfg = Cfg::new();
+        cfg.minify_css = true;
         //cfg.keep_comments = true;
 
         let template_path_str = template_path.into().join("**/*").to_string_lossy().to_string();
