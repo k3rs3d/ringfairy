@@ -159,6 +159,7 @@ fn merge_configs(cli_args: ClapSettings, config: Option<ConfigSettings>) -> AppS
             .unwrap_or(final_settings.path_templates);
         final_settings.no_slug = conf.no_slug.unwrap_or(final_settings.no_slug);
         final_settings.verbose = conf.verbose.unwrap_or(final_settings.verbose);
+        final_settings.shuffle = conf.shuffle.unwrap_or(final_settings.shuffle);
         final_settings.skip_minify = conf.skip_minify.unwrap_or(final_settings.skip_minify);
         final_settings.skip_verify = conf.skip_verify.unwrap_or(final_settings.skip_verify);
         final_settings.dry_run = conf.dry_run.unwrap_or(final_settings.dry_run);
