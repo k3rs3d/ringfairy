@@ -26,15 +26,22 @@ This is a tool for anyone who has some kind of personal website or blog and wish
 - Remote config file support
 - Shuffle option
 - HTML minification
-- Catches duplicate entries
 - RSS linking 
 - Auto-link website owner contact info
+- Catches duplicate entries
 - Detailed logging
+
+## 🔎 Webrings
+
+Currently, as far as I know, the only webring using `ringfairy` is [Ghostring](https://ghostring.neocities.org).
+
+If you decide to launch your own webring with this tool, let me know and I'll list it here! :) 
 
 ## 🪄 Usage
 
-- Clone the repo.
-- Modify the `websites.json` (by default) file to include the details of the websites you want to include in the webring. Each website must be added to the list. 
+- Download a release binary OR clone the repo and build from source. 
+- Modify the `websites.json` (by default) file to include the details of the websites you want to include in the webring. Each website must be added to the list.
+- Modify the `config.json` (by default) file according to your needs. 
 - (Optional) Customize pages by modifying the templates, located in the `data/templates` folder (by default). You can also use remote files as templates. See the "Templates" section below. 
 - (Optional) Add any additional files into the `data/assets` folder (by default). Everything in this folder will simply be copied over into the output directory. Here you can add extras like images, HTML/CSS, etc. 
 - Run `ringfairy` to generate the webring by writing HTML files containing the redirects. Each site will link to the next/previous site in the `websites.json` file, forming your webring!
