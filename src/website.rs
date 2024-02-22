@@ -1,11 +1,8 @@
-use futures::{
-    stream::{FuturesUnordered, StreamExt},
-};
+use futures::stream::{FuturesUnordered, StreamExt};
 use rand::{seq::SliceRandom, thread_rng};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::result::Result;
-use reqwest::Url;
 
 use crate::file;
 use crate::cli::AppSettings;
@@ -152,10 +149,9 @@ pub async fn audit_links(
 
     for website in websites {
         let website_clone = website.clone();
-        let base_url_clone = base_url.clone();
 
         tasks.push(async move {
-            does_html_contain_links(&website_clone, &base_url_clone)
+            does_html_contain_links(&website_clone, &base_url)
                 .await
         });
     }
