@@ -51,6 +51,7 @@ If you decide to launch your own webring with this tool, let me know and I'll li
 
 Command-line arguments take precedence over any settings in the config file. 
 
+- *`-A`, `--audit`*: Audit mode. Scrapes each website in the list, checking to see if the next/previous links can be found. Otherwise, the site won't be added to the webring for that build. This means you don't have to immediately remove non-compliant websites; sites simply won't show up until the links can be found. If you use this without verbose mode (`-v`), you might not see the results of the audit. Don't use audit mode if you're building the webring offline, or if you want the fastest possible build speed. 
 - *`-c`, `--config`*: Specify the location of the optional config file. It can be remote; for example an HTTP link to an appropriate JSON file on Pastebin, GitHub, etc. 
 - *`-l`, `--list`*: Specify the file containing the list of websites. Default: `./websites.json`
 - *`-o`, `--output`*: Define the output folder, where the generated files will be saved. Default: `./webring`
