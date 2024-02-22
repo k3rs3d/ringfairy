@@ -11,6 +11,8 @@ pub struct AppSettings {
     pub path_output: String,
     pub path_assets: String,
     pub path_templates: String,
+	pub base_url: String,
+    pub audit: bool,
     pub no_slug: bool,
     pub shuffle: bool,
     pub verbose: bool,
@@ -28,6 +30,8 @@ impl Default for AppSettings {
             path_output: "./webring".into(),
             path_assets: "./data/assets".into(),
             path_templates: "./data/templates".into(),
+			base_url: " ".to_string(),
+            audit: false,
             no_slug: false,
             shuffle: false,
             verbose: false,
@@ -45,6 +49,8 @@ pub struct ConfigSettings {
     pub path_output: Option<String>,
     pub path_assets: Option<String>,
     pub path_templates: Option<String>,
+	pub base_url: Option<String>,
+    pub audit: Option<bool>,
     pub no_slug: Option<bool>,
     pub shuffle: Option<bool>,
     pub verbose: Option<bool>,
@@ -102,6 +108,17 @@ pub struct ClapSettings {
         help = "Specify the folder containing HTML templates to use. Should at least contain 'templates.html' for creating the 'next' and 'previous' pages."
     )]
     pub path_templates: Option<String>,
+	
+	#[clap(
+		short = 'u',
+		long = "url",
+		ignore_case = false,
+		help = "The base URL for the webring. Something like 'https://example.com'"
+	)]
+    pub base_url: Option<String>,
+
+    #[clap(short = 'A', long = "audit", action = ArgAction::SetTrue, help = "Scrapes URLs to check for the webring links before adding them to the list. If the links can't be found, the site will get skipped. ")]
+    pub audit: bool,
 
     #[clap(short = 's', long = "shuffle", action = ArgAction::SetTrue, help = "Randomly shuffles the website sequence when generating the webring (does not modify the website list file).")]
     pub shuffle: bool,
@@ -157,7 +174,9 @@ fn merge_configs(cli_args: ClapSettings, config: Option<ConfigSettings>) -> AppS
         final_settings.path_templates = conf
             .path_templates
             .unwrap_or(final_settings.path_templates);
+		final_settings.base_url = conf.base_url.unwrap_or(final_settings.base_url);
         final_settings.no_slug = conf.no_slug.unwrap_or(final_settings.no_slug);
+        final_settings.audit = conf.audit.unwrap_or(final_settings.audit);
         final_settings.verbose = conf.verbose.unwrap_or(final_settings.verbose);
         final_settings.shuffle = conf.shuffle.unwrap_or(final_settings.shuffle);
         final_settings.skip_minify = conf.skip_minify.unwrap_or(final_settings.skip_minify);
@@ -178,8 +197,14 @@ fn merge_configs(cli_args: ClapSettings, config: Option<ConfigSettings>) -> AppS
     if let Some(val) = cli_args.path_templates {
         final_settings.path_templates = val;
     }
+	if let Some(val) = cli_args.base_url {
+		final_settings.base_url = val;
+	}
 
     // Boolean flags can simply be overridden as they don't have a `None` state
+    if cli_args.audit {
+        final_settings.audit = cli_args.audit;
+    }
     if cli_args.no_slug {
         final_settings.no_slug = cli_args.no_slug;
     }
@@ -203,7 +228,7 @@ fn merge_configs(cli_args: ClapSettings, config: Option<ConfigSettings>) -> AppS
         if final_settings.verbose {
             std::env::set_var("RUST_LOG", "info");
         } else {
-            std::env::set_var("RUST_LOG", "error"); // Default to only showing errors.
+            std::env::set_var("RUST_LOG", "error"); // Default to only showing errors
         }
 
     final_settings
@@ -214,7 +239,7 @@ pub async fn parse_args() -> AppSettings {
 
     // Check if a config file path is provided, and it's not empty
     let config_args = match clap_args.filepath_config.as_deref() {
-        Some("") | Some("none") | None => None, // Treat as no config specified
+        Some("") | Some("none") | None => None, // Treat empty as no config specified
         Some(path) => load_config(path).await,
     };
 

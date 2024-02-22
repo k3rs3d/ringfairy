@@ -3,6 +3,7 @@
   "path_output": "./webring",
   "path_assets": "./data/assets",
   "path_templates": "./data/templates",
+  "base_url": "https://ghostring.neocities.org",
   "shuffle": false,
   "verbose": false,
   "skip_minify": false
