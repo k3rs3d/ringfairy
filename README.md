@@ -1,16 +1,16 @@
 # `ringfairy` 🧚
 
-This is a webring generator written in Rust. 
+This is a webring generator written in Rust. It's similar to a static site generator, but specialized for webrings.  
 
-Unlike most webrings which rely on server-side code (e.g. PHP, JS) to redirect visitors, this implementation embeds the redirects in pre-generated HTML files. It's similar to a static site generator, but specialized for webrings.  
+Unlike most webrings which rely on some kind of server-side code (e.g. PHP, JS) to redirect visitors, this approach uses HTML redirects. 
 
-The static approach allows for simpler hosting requirements (it can be hosted on GitHub Pages, etc), plus better performance as it eliminates the need for server-side processing. 
+The static approach allows for simpler hosting requirements (it can be hosted on Neocities, GitHub Pages, etc) since it eliminates the need for server-side processing. 
 
-Updating the webring will require you to regenerate the whole thing. This is quick & simple, and shouldn't need to be done frequently, but it's still an extra step which conventional server-side systems might not have. 
+Updating the webring will require you to regenerate the whole thing. This is quick & simple, and shouldn't need to be done frequently. But it is an extra step which conventional server-side systems might not have, unless you automate it, such as through GitHub Actions. 
 
 ## 🔮 What's a Webring?
 
-A webring is a collection of websites linked together in a loop. Each website contains links to the previous and next websites in the ring, so if you navigate far enough, eventually you end up back where you started! 
+A webring is a collection of websites linked together in a loop. Each website contains links to the previous and next websites in the ring. If you navigate far enough, eventually you end up back where you started! 
 
 ![Hypothetical webring example](https://upload.wikimedia.org/wikipedia/commons/9/97/Webringwork.png)
 
@@ -21,19 +21,19 @@ This is a tool for anyone who has some kind of personal website or blog and wish
 ## 🔬 Features 
 
 - Highly optimized
+- Auto-detect webring links on sites 
 - Fully customizable via templates
 - Choice of command-line interface or config file
-- Remote config file support
+- Remote config file support too
 - Shuffle option
 - HTML minification
-- RSS linking 
 - Auto-link website owner contact info
 - Catches duplicate entries
 - Detailed logging
 
 ## 🔎 Webrings
 
-Currently, as far as I know, the only webring using `ringfairy` is [Ghostring](https://ghostring.neocities.org).
+As far as I know, the only webring using `ringfairy` is [Ghostring](https://ghostring.neocities.org).
 
 If you decide to launch your own webring with this tool, let me know and I'll list it here! :) 
 
@@ -84,6 +84,8 @@ Templates contain tags which will be replaced with generated content. You can cu
 In the templates folder, `template.html` is used to generate each of the `next.html`/`previous.html` pages, containing the redirects for each website. The tag `{{ url }}` is inserted by the generator in each page, and that powers the webring. 
 
 Besides `template.html`, the templates folder can contain any other templates you want. 
+
+For instance, it's a good idea for a webring to have a central hub page listing all of the sites. You can put this on `index.html`, or create a dedicated page such as `list.html`, `table.html`, etc. Simply use the tag `{{ table_of_sites }}` in the template, and `ringfairy` will generate a formatted list of the sites in the webring. 
 
 ### Template Tags
 
