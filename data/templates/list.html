@@ -2,22 +2,43 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<link rel="stylesheet" href="./styles.css">
-<head>
+  <link rel="stylesheet" href="./styles.css">
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Webring List</title>
-</head>
-<body>
-    <h1>Webring List</h1>
+  </head>
+  <body>
+	<h1>Webring List</h1>
+	<div class="webring">
+	  <p> Current list of webrings.</p>
+	</div>
 
     {{ table_of_sites | safe}}
 
-
-<br>
-<footer>
-<p>Last updated: {{ current_time }} </p>
-<p>Powered by ringfairy!</p>
-</footer>
-</body>
+	<br>
+	<div class="instructions">
+	  <h2>Community Rules</h2>
+	  <h2>Joining Process</h2>
+	  <h2>Instructions</h2>
+	  After your site is on the list, you can add the webring to your site by pasting in the following and replacing YOUR_NAME exactly as it appears in the table above:
+	  <pre>
+&lt;style&gt;
+  .webring {
+	  margin: auto;
+	  width: 50%;
+	  text-align: center;}
+&lt;/style&gt;
+&lt;div class="webring"&gt;
+  &lt;a href="https://webring.domain.tld/YOUR_NAME/previous"&gt;←&lt;/a&gt; &nbsp;
+  &lt;a href="https://webring.domain.tld/"&gt;webring&lt;/a&gt; &nbsp;
+  &lt;a href="https://webring.domain.tld/YOUR_NAME/next"&gt;→&lt;/a&gt;
+&lt;/div&gt;
+	  </pre>
+	</div>
+	<footer>
+	  <p>Last updated: {{ current_time }} </p>
+	  <p>Powered by <a href="https://github.com/k3rs3d/ringfairy">ringfairy!</a></p>
+	</footer>
+  </body>
 </html>

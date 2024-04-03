@@ -45,7 +45,8 @@ If you decide to launch your own webring with this tool, let me know and I'll li
 - (Optional) Customize pages by modifying the templates, located in the `data/templates` folder (by default). You can also use remote files as templates. See the "Templates" section below. 
 - (Optional) Add any additional files into the `data/assets` folder (by default). Everything in this folder will simply be copied over into the output directory. Here you can add extras like images, HTML/CSS, etc. 
 - Run `ringfairy` to generate the webring by writing HTML files containing the redirects. Each site will link to the next/previous site in the `websites.json` file, forming your webring!
-- Host the generated files on your preferred hosting platform. 
+- Host the generated files on your preferred hosting platform.
+- All ring participants only need to add simple `<a href>` links for `previous`, `next`, and main site.
 
 ## ⚙️ Command-Line Arguments
 

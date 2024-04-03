@@ -59,6 +59,18 @@ th {
     padding: 12px;
 }
 
+.webring {
+	margin: auto;
+	width: 50%;
+	text-align: center;
+	font-size: 1.5em;
+}
+
+.instructions {
+	margin-left: 10%;
+	margin-right: 10%;
+}
+
 @media screen and (max-width: 600px) {
     table {
         width: 100%; /* Allows the table to be 100% width on smaller screens */
