@@ -233,7 +233,9 @@ async fn does_html_contain_links(
 fn normalize_url(base_url: &str, url: &str) -> Result<String, Box<dyn std::error::Error>> {
     // Try to parse the URL (If it's an absolute URL, this will succeed)
     // otherwise this will fail and we'll attempt to resolve against the base URL
-    let parsed_url_result = reqwest::Url::parse(url);
+    // Double slashes are technically valid, replace with single slash to normalize
+    let processed_url = url.replace("//", "/").to_owned();
+    let parsed_url_result = reqwest::Url::parse(processed_url.as_str());
     
     let mut url = match parsed_url_result {
         Ok(url) => url, // If parsing succeeded, it's absolute
