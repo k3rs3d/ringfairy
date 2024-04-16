@@ -72,8 +72,9 @@ impl HtmlGenerator {
 
         let mut opml = OPML::default();
         opml.head = Some(Head {
-            title: Some("Craftering: System Crafters Community Webring".to_string()),
-            owner_name: Some("System Crafters Community".to_string()),
+            title: Some(settings.ring_description.to_owned()),
+            owner_name: Some(settings.ring_owner.to_owned()),
+            owner_id: Some(settings.ring_owner_site.to_owned()),
             ..Head::default()
         });
 
