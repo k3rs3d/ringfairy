@@ -6,6 +6,7 @@ use crate::file;
 // Main/final settings struct
 #[derive(Debug)]
 pub struct AppSettings {
+    pub ring_name: String,
     pub filepath_config: String,
     pub filepath_list: String,
     pub path_output: String,
@@ -25,6 +26,7 @@ pub struct AppSettings {
 impl Default for AppSettings {
     fn default() -> Self {
         AppSettings {
+            ring_name: "./config.json".into(),
             filepath_config: "./config.json".into(),
             filepath_list: "./websites.json".into(),
             path_output: "./webring".into(),
@@ -45,6 +47,7 @@ impl Default for AppSettings {
 // Contains settings loaded from config file, e.g., config.json
 #[derive(Deserialize, Debug)]
 pub struct ConfigSettings {
+    pub ring_name: Option<String>,
     pub filepath_list: Option<String>,
     pub path_output: Option<String>,
     pub path_assets: Option<String>,
@@ -168,6 +171,7 @@ fn merge_configs(cli_args: ClapSettings, config: Option<ConfigSettings>) -> AppS
 
     if let Some(conf) = config {
         // Apply settings from config.json where available (unwrap_or keeps original if None)
+        final_settings.ring_name = conf.ring_name.unwrap_or(final_settings.ring_name);
         final_settings.filepath_list = conf.filepath_list.unwrap_or(final_settings.filepath_list);
         final_settings.path_output = conf.path_output.unwrap_or(final_settings.path_output);
         final_settings.path_assets = conf.path_assets.unwrap_or(final_settings.path_assets);

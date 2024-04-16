@@ -4,6 +4,10 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use tera::{Context, Tera};
 
+use opml::*;
+use crate::website::Website;
+use crate::cli::AppSettings;
+
 //use crate::file::acquire_file_data;
 use crate::website::WebringSite;
 
@@ -52,6 +56,37 @@ impl HtmlGenerator {
         file.write_all(final_content.as_bytes())?;
 
         log::info!("Generated HTML file {}", file_path.display());
+
+        Ok(())
+    }
+
+    pub async fn generate_opml(
+        &self,
+        webring: &[WebringSite],
+        settings: &AppSettings,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+
+        let path_output = &settings.path_output;
+        // Ensure output directory exists
+        fs::create_dir_all(path_output)?;
+
+        let mut opml = OPML::default();
+        opml.head = Some(Head {
+            title: Some("Craftering: System Crafters Community Webring".to_string()),
+            owner_name: Some("System Crafters Community".to_string()),
+            ..Head::default()
+        });
+
+        for (index, website) in webring.iter().enumerate() {
+            if let Some(owner) = &website.website.owner {
+                if let Some(rss_url) = website.website.rss.as_ref().filter(|url| !url.is_empty()) {
+                    opml.add_feed(owner, rss_url);
+                }
+            }
+        }
+
+        let mut file = std::fs::File::create(path_output.to_owned() + "/" + &settings.ring_name + ".opml").unwrap();
+        let _xml = opml.to_writer(&mut file).unwrap();
 
         Ok(())
     }

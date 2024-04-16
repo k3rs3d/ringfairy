@@ -1,6 +1,6 @@
 [package]
 name = "ringfairy"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -20,6 +20,7 @@ serde_json = "1.0"
 tera = "1.19"
 tokio = { version = "1", features = ["full"] }
 url = "2.5"
+opml = "1.1.6"
 
 [profile.release]
 lto = true

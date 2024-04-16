@@ -1,4 +1,5 @@
 {
+  "ring_name": "YOUR_RING_NAME",
   "filepath_list": "./websites.json",
   "path_output": "./webring",
   "path_assets": "./data/assets",
