@@ -5,7 +5,6 @@ use std::path::{Path, PathBuf};
 use tera::{Context, Tera};
 
 use opml::*;
-use crate::website::Website;
 use crate::cli::AppSettings;
 
 //use crate::file::acquire_file_data;
@@ -79,7 +78,7 @@ impl HtmlGenerator {
             ..Head::default()
         });
 
-        for (index, website) in webring.iter().enumerate() {
+        for (_index, website) in webring.iter().enumerate() {
             if let Some(owner) = &website.website.owner {
                 if let Some(rss_url) = website.website.rss.as_ref().filter(|url| !url.is_empty()) {
                     opml.add_feed(owner, rss_url);
