@@ -22,6 +22,7 @@ struct PrecomputedTags {
     table_of_sites: String,
     number_of_sites: usize,
     current_time: String,
+    opml_link: String,
 }
 
 impl HtmlGenerator {
@@ -95,8 +96,9 @@ impl HtmlGenerator {
     pub async fn generate_html(
         &self,
         webring: &[WebringSite],
-        path_output: &str,
+        settings: &AppSettings,
     ) -> Result<(), Box<dyn std::error::Error>> {
+        let path_output = &settings.path_output;
         // Ensure output directory exists
         fs::create_dir_all(path_output)?;
 
@@ -109,7 +111,7 @@ impl HtmlGenerator {
         }
 
         // Process all other custom templates
-        self.generate_custom_templates(path_output, &webring).await?;
+        self.generate_custom_templates(&settings, &webring).await?;
 
         Ok(())
     }
@@ -145,14 +147,16 @@ impl HtmlGenerator {
 
     async fn generate_custom_templates(
         &self,
-        path_output: &str,
+        settings: &AppSettings,
         webring: &[WebringSite],
     ) -> Result<(), Box<dyn std::error::Error>> {
         // Pre-generate expensive tag data for reuse
+        let path_output = &settings.path_output;
         let precomputed = PrecomputedTags {
             table_of_sites: self.generate_sites_table(webring)?,
             number_of_sites: webring.len(),
             current_time: chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            opml_link: "./".to_owned() + &settings.ring_name + ".opml",
         };
 
         // Load template files
@@ -182,6 +186,8 @@ impl HtmlGenerator {
         context.insert("number_of_sites", &precomputed.number_of_sites);
         // {{ current_time }}
         context.insert("current_time", &precomputed.current_time);
+        // {{ opml }}
+        context.insert("opml", &precomputed.opml_link);
     
         Ok(context)
     }
