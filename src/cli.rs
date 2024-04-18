@@ -129,6 +129,38 @@ pub struct ClapSettings {
 	)]
     pub base_url: Option<String>,
 
+	#[clap(
+		short = 'n',
+		long = "name",
+		ignore_case = false,
+		help = "The name of the webring. Something like 'Ghostring'."
+	)]
+    pub ring_name: Option<String>,
+
+	#[clap(
+		short = 'd',
+		long = "description",
+		ignore_case = false,
+		help = "A short description/about the webring."
+	)]
+    pub ring_description: Option<String>,
+
+	#[clap(
+		short = 'm',
+		long = "maintainer",
+		ignore_case = false,
+		help = "The owner/maintainer of the webring, could be a person or an organization."
+	)]
+    pub ring_owner: Option<String>,
+
+	#[clap(
+		short = 'w',
+		long = "website",
+		ignore_case = false,
+		help = "The website link of the website owner, not the base URL of the webring."
+	)]
+    pub ring_owner_site: Option<String>,
+
     #[clap(short = 'A', long = "audit", action = ArgAction::SetTrue, help = "Scrapes URLs to check for the webring links before adding them to the list. If the links can't be found, the site will get skipped. ")]
     pub audit: bool,
 
@@ -201,6 +233,18 @@ fn merge_configs(cli_args: ClapSettings, config: Option<ConfigSettings>) -> AppS
     }
 
     // Then, override with CLI arguments if provided
+     if let Some(val) = cli_args.ring_name {
+        final_settings.ring_name = val;
+    }
+     if let Some(val) = cli_args.ring_description {
+        final_settings.ring_description = val;
+    }
+     if let Some(val) = cli_args.ring_owner {
+        final_settings.ring_owner = val;
+    }
+     if let Some(val) = cli_args.ring_owner_site {
+        final_settings.ring_owner_site = val;
+    }
     if let Some(val) = cli_args.filepath_list {
         final_settings.filepath_list = val;
     }

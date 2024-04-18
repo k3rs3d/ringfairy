@@ -23,6 +23,7 @@ This is a tool for anyone who has some kind of personal website or blog and wish
 - Highly optimized
 - Auto-detect webring links on sites 
 - Fully customizable via templates
+- Generates a [OPML](https://opml.org/) file with all sites that have a RSS feed
 - Choice of command-line interface or config file
 - Remote config file support too
 - Shuffle option
@@ -57,7 +58,12 @@ Command-line arguments take precedence over any settings in the config file.
 - *`-o`, `--output`*: Define the output folder, where the generated files will be saved. Default: `./webring`
 - *`-a`, `--assets`*: Specify the assets folder. Any files in here will be copied to the output folder. This lets you include any extra files you want, such as images or extra web pages, etc. Default: `./data/assets`
 - *`-t`, `--templates`*: Specify path to the template folder. Use `template.html` for redirect pages (i.e. the HTML which composes the webring). Any extra pages can be added here if you want them to be populated with generated content. Default: `./data/templates`
-- *`--skip-minification`*: Outputs pages without optimizing or modifying them. Try this if you want your generated files to be hand-editable later, or if you experience any unexpected issues with the output. 
+- *`-u`, `--url`*: The base URL for the webring. Something like 'https://example.com'. 
+- *`-n`, `--name`*: The name of the webring. Something like 'Ghostring'.
+- *`-d`, `--description`*: A short description/about the webring.
+- *`-m`, `--maintainer`*: The owner/maintainer of the webring, could be a person or an organization.
+- *`-w`, `--website`*: The website link of the website owner, not the base URL of the webring.
+- *`--skip-minification`*: Outputs pages without optimizing or modifying them. Try this if you want your generated files to be hand-editable later, or if you experience any unexpected issues with the output.
 - *`--skip-verification`*: Generates files without checking for potential problems...unwise!
 - *`--dry-run`*: Runs the application without outputting any files
 - *`-s`, `--shuffle`*: Randomly shuffles the order of websites during generation. This is totally internal and does not affect the input list of websites; you can shuffle the same webring repeatedly without losing the original sequence. 
@@ -94,6 +100,7 @@ The following tags are currently usable in templates:
 - *`{{ table_of_sites }}`* produces a formatted HTML table listing information for all sites in the webring. 
 - *`{{ number_of_sites }}`* shows the current size of the webring.
 - *`{{ current_time }}`* displays the time of generating, showing when the page was last updated. 
+- *`{{ opml }}`* inserts the relative path of the ring's OPML file.
 
 Right now, `{{ url }}` is a special tag that only works in `template.html` for the next/previous links.  
 
