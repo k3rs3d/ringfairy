@@ -58,10 +58,15 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Box<dyn std:
         log::info!("Generating websites HTML...");
 
         html_generator
-            .generate_html(&webring, &settings.path_output)
+            .generate_html(&webring, &settings)
             .await?;
 
         log::info!("Finished generating webring HTML.");
+
+        log::info!("Generating OPML file...");
+        html_generator
+            .generate_opml(&webring, &settings)
+            .await?;
     }
 
     Ok(())

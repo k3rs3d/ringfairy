@@ -2,22 +2,22 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<link rel="stylesheet" href="./styles.css">
-<head>
+  <link rel="stylesheet" href="./styles.css">
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Webring List</title>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Webring List</h1>
-
+    <p>Add all sites with declared RSS feeds to your feed reader with this <a href ="{{ opml }}">OPML</a> link.</p>
     {{ table_of_sites | safe}}
 
 
-<br>
-<footer>
-<p>Last updated: {{ current_time }} </p>
-<p>Powered by ringfairy!</p>
-</footer>
-</body>
+	<br>
+	<footer>
+	  <p>Last updated: {{ current_time }} </p>
+	  <p>Powered by ringfairy!</p>
+	</footer>
+  </body>
 </html>

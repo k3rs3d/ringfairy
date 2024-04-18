@@ -4,6 +4,9 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use tera::{Context, Tera};
 
+use opml::*;
+use crate::cli::AppSettings;
+
 //use crate::file::acquire_file_data;
 use crate::website::WebringSite;
 
@@ -18,6 +21,7 @@ struct PrecomputedTags {
     table_of_sites: String,
     number_of_sites: usize,
     current_time: String,
+    opml_link: String,
 }
 
 impl HtmlGenerator {
@@ -56,11 +60,44 @@ impl HtmlGenerator {
         Ok(())
     }
 
+    pub async fn generate_opml(
+        &self,
+        webring: &[WebringSite],
+        settings: &AppSettings,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+
+        let path_output = &settings.path_output;
+        // Ensure output directory exists
+        fs::create_dir_all(path_output)?;
+
+        let mut opml = OPML::default();
+        opml.head = Some(Head {
+            title: Some(settings.ring_description.to_owned()),
+            owner_name: Some(settings.ring_owner.to_owned()),
+            owner_id: Some(settings.ring_owner_site.to_owned()),
+            ..Head::default()
+        });
+
+        for (_index, website) in webring.iter().enumerate() {
+            if let Some(owner) = &website.website.owner {
+                if let Some(rss_url) = website.website.rss.as_ref().filter(|url| !url.is_empty()) {
+                    opml.add_feed(owner, rss_url);
+                }
+            }
+        }
+
+        let mut file = std::fs::File::create(path_output.to_owned() + "/" + &settings.ring_name + ".opml").unwrap();
+        let _xml = opml.to_writer(&mut file).unwrap();
+
+        Ok(())
+    }
+
     pub async fn generate_html(
         &self,
         webring: &[WebringSite],
-        path_output: &str,
+        settings: &AppSettings,
     ) -> Result<(), Box<dyn std::error::Error>> {
+        let path_output = &settings.path_output;
         // Ensure output directory exists
         fs::create_dir_all(path_output)?;
 
@@ -73,7 +110,7 @@ impl HtmlGenerator {
         }
 
         // Process all other custom templates
-        self.generate_custom_templates(path_output, &webring).await?;
+        self.generate_custom_templates(&settings, &webring).await?;
 
         Ok(())
     }
@@ -109,14 +146,16 @@ impl HtmlGenerator {
 
     async fn generate_custom_templates(
         &self,
-        path_output: &str,
+        settings: &AppSettings,
         webring: &[WebringSite],
     ) -> Result<(), Box<dyn std::error::Error>> {
         // Pre-generate expensive tag data for reuse
+        let path_output = &settings.path_output;
         let precomputed = PrecomputedTags {
             table_of_sites: self.generate_sites_table(webring)?,
             number_of_sites: webring.len(),
             current_time: chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            opml_link: "./".to_owned() + &settings.ring_name + ".opml",
         };
 
         // Load template files
@@ -146,6 +185,8 @@ impl HtmlGenerator {
         context.insert("number_of_sites", &precomputed.number_of_sites);
         // {{ current_time }}
         context.insert("current_time", &precomputed.current_time);
+        // {{ opml }}
+        context.insert("opml", &precomputed.opml_link);
     
         Ok(context)
     }

@@ -6,6 +6,10 @@ use crate::file;
 // Main/final settings struct
 #[derive(Debug)]
 pub struct AppSettings {
+    pub ring_name: String,
+    pub ring_description: String,
+    pub ring_owner: String,
+    pub ring_owner_site: String,
     pub filepath_config: String,
     pub filepath_list: String,
     pub path_output: String,
@@ -25,6 +29,10 @@ pub struct AppSettings {
 impl Default for AppSettings {
     fn default() -> Self {
         AppSettings {
+            ring_name: "webring".into(),
+            ring_description: "A ring that connects websites to each other with links".into(),
+            ring_owner: "Webring Organization or Person".into(),
+            ring_owner_site: "https://webring.domain.tld/".into(),
             filepath_config: "./config.json".into(),
             filepath_list: "./websites.json".into(),
             path_output: "./webring".into(),
@@ -45,6 +53,10 @@ impl Default for AppSettings {
 // Contains settings loaded from config file, e.g., config.json
 #[derive(Deserialize, Debug)]
 pub struct ConfigSettings {
+    pub ring_name: Option<String>,
+    pub ring_description: Option<String>,
+    pub ring_owner: Option<String>,
+    pub ring_owner_site: Option<String>,
     pub filepath_list: Option<String>,
     pub path_output: Option<String>,
     pub path_assets: Option<String>,
@@ -117,6 +129,38 @@ pub struct ClapSettings {
 	)]
     pub base_url: Option<String>,
 
+	#[clap(
+		short = 'n',
+		long = "name",
+		ignore_case = false,
+		help = "The name of the webring. Something like 'Ghostring'."
+	)]
+    pub ring_name: Option<String>,
+
+	#[clap(
+		short = 'd',
+		long = "description",
+		ignore_case = false,
+		help = "A short description/about the webring."
+	)]
+    pub ring_description: Option<String>,
+
+	#[clap(
+		short = 'm',
+		long = "maintainer",
+		ignore_case = false,
+		help = "The owner/maintainer of the webring, could be a person or an organization."
+	)]
+    pub ring_owner: Option<String>,
+
+	#[clap(
+		short = 'w',
+		long = "website",
+		ignore_case = false,
+		help = "The website link of the website owner, not the base URL of the webring."
+	)]
+    pub ring_owner_site: Option<String>,
+
     #[clap(short = 'A', long = "audit", action = ArgAction::SetTrue, help = "Scrapes URLs to check for the webring links before adding them to the list. If the links can't be found, the site will get skipped. ")]
     pub audit: bool,
 
@@ -168,6 +212,10 @@ fn merge_configs(cli_args: ClapSettings, config: Option<ConfigSettings>) -> AppS
 
     if let Some(conf) = config {
         // Apply settings from config.json where available (unwrap_or keeps original if None)
+        final_settings.ring_name = conf.ring_name.unwrap_or(final_settings.ring_name);
+        final_settings.ring_description = conf.ring_description.unwrap_or(final_settings.ring_description);
+        final_settings.ring_owner = conf.ring_owner.unwrap_or(final_settings.ring_owner);
+        final_settings.ring_owner_site = conf.ring_owner_site.unwrap_or(final_settings.ring_owner_site);
         final_settings.filepath_list = conf.filepath_list.unwrap_or(final_settings.filepath_list);
         final_settings.path_output = conf.path_output.unwrap_or(final_settings.path_output);
         final_settings.path_assets = conf.path_assets.unwrap_or(final_settings.path_assets);
@@ -185,6 +233,18 @@ fn merge_configs(cli_args: ClapSettings, config: Option<ConfigSettings>) -> AppS
     }
 
     // Then, override with CLI arguments if provided
+     if let Some(val) = cli_args.ring_name {
+        final_settings.ring_name = val;
+    }
+     if let Some(val) = cli_args.ring_description {
+        final_settings.ring_description = val;
+    }
+     if let Some(val) = cli_args.ring_owner {
+        final_settings.ring_owner = val;
+    }
+     if let Some(val) = cli_args.ring_owner_site {
+        final_settings.ring_owner_site = val;
+    }
     if let Some(val) = cli_args.filepath_list {
         final_settings.filepath_list = val;
     }
