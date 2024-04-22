@@ -34,7 +34,10 @@ This is a tool for anyone who has some kind of personal website or blog and wish
 
 ## 🔎 Webrings
 
-As far as I know, the only webring using `ringfairy` is [Ghostring](https://ghostring.neocities.org).
+Webrings using `ringfairy` (as far as I know):
+
+- [Ghostring](https://ghostring.neocities.org) - horror themed sites
+- [Craftering](https://craftering.shom.dev/) - for the [System Crafters](https://systemcrafters.net/) community
 
 If you decide to launch your own webring with this tool, let me know and I'll list it here! :) 
 
