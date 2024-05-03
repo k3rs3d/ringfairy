@@ -75,7 +75,7 @@ pub struct ConfigSettings {
 #[derive(Parser, Debug)]
 #[clap(
     name = "ringfairy",
-    version = "0.1.1",
+    version = env!("CARGO_PKG_VERSION"),
     author = "Kern AKA Kersed",
     about = "Creates a webring by generating HTML files for a set of websites, linking them together."
 )]
