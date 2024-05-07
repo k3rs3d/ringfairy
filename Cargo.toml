@@ -2,6 +2,16 @@
 name = "ringfairy"
 version = "0.1.2"
 edition = "2021"
+authors = ["Kern AKA Kersed <human@kernespinoza.com>", "Shom Bandopadhaya <shom@bandopadhaya.com>"]
+license = "GPL-3.0"
+description = "Creates a webring by generating HTML files for a set of websites, linking them together."
+readme = "README.md"
+homepage = "https://github.com/k3rs3d/ringfairy"
+repository = "https://github.com/k3rs3d/ringfairy"
+documentation = "https://github.com/k3rs3d/ringfairy"
+keywords = ["static-site", "webring", "smallweb", "indieweb"]
+categories = ["command-line-utilities", "web-programming"]
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
