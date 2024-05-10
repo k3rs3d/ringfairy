@@ -14,11 +14,11 @@ env:
 jobs:
   release:
     name: Release - ${{ matrix.platform.release_for }}
-    runs-on: ${{ matrix.platform.os }}
     strategy:
       matrix:
         platform:
-          - os_name: Linux-x86_64
+          - release_for: Linux-x86_64
+            os_name: Linux-x86_64
             os: ubuntu-20.04
             target: x86_64-unknown-linux-musl
             bin: precious
@@ -37,7 +37,7 @@ jobs:
             bin: precious
             name: precious-Darwin-x86_64.tar.gz
             command: both
-    
+    runs-on: ${{ matrix.platform.os }}
     steps:  
     - uses: actions/checkout@v4
 
@@ -54,7 +54,7 @@ jobs:
       uses: houseabsolute/actions-rust-cross@v0.0.12
       with:
         # The working directory for each step
-        working-directory: # optional, default is .
+        working-directory: . # optional, default is .
 
         # The commands to run (one of "build", "test", or "both").
         command: "build" # optional, default is build
@@ -69,13 +69,13 @@ jobs:
         args: "--release"
     
         # A GitHub token, available in the secrets.GITHUB_TOKEN working-directory variable.
-        GITHUB_TOKEN: # optional, default is ${{ github.token }}
+        # GITHUB_TOKEN: # optional, default is ${{ github.token }}
         
         # Strip the compiled binary
-        strip: # optional
+        strip: true # optional
         
         # The version of cross to use. If not specified, then the latest version will be used.
-        cross-version: # optional
+        # cross-version: # optional
           
     # - name: Publish GitHub release
     #   uses: softprops/action-gh-release@v2
