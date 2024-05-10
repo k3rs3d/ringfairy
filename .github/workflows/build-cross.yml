@@ -1,0 +1,93 @@
+name: Build Binaries
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+  CRATE_NAME: ringfairy
+  GITHUB_TOKEN: ${{ github.token }}
+  RUST_BACKTRACE: 1
+
+jobs:
+  release:
+    name: Release - ${{ matrix.platform.release_for }}
+    runs-on: ${{ matrix.platform.os }}
+    strategy:
+      matrix:
+        platform:
+          - os_name: Linux-x86_64
+            os: ubuntu-20.04
+            target: x86_64-unknown-linux-musl
+            bin: precious
+            name: precious-Linux-x86_64-musl.tar.gz
+
+          - release_for: FreeBSD-x86_64
+            os: ubuntu-20.04
+            target: x86_64-unknown-freebsd
+            bin: precious
+            name: precious-FreeBSD-x86_64.tar.gz
+            command: build
+
+          - release_for: Windows-x86_64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            bin: precious.exe
+            name: precious-Windows-x86_64.zip
+            command: both
+
+          - release_for: macOS-x86_64
+            os: macOS-latest
+            target: x86_64-apple-darwin
+            bin: precious
+            name: precious-Darwin-x86_64.tar.gz
+            command: both
+    
+    steps:  
+    - uses: actions/checkout@v4
+
+    - name: Configure Git
+      run: |
+        git config --global user.email "jdoe@example.com"
+        git config --global user.name "J. Doe"
+
+    - name: Install musl-tools on Linux
+      run: sudo apt-get update --yes && sudo apt-get install --yes musl-tools
+      if: contains(matrix.platform.name, 'musl')
+
+    - name: Build Rust Proaects with Cross
+      uses: houseabsolute/actions-rust-cross@v0.0.12
+      with:
+        # The working directory for each step
+        working-directory: # optional, default is .
+
+        # The commands to run (one of "build", "test", or "both").
+        command: "build" # optional, default is build
+
+        # The target platform
+        target: ${{ matrix.platform.target }}
+
+        # The target toolchain to use (one of "stable", "beta", or "nightly").
+        toolchain: "stable" # optional, default is stable
+
+        # The arguments to be passed to cross or cargo when building, as a space-separated string.
+        args: "--locked --release"
+    
+        # A GitHub token, available in the secrets.GITHUB_TOKEN working-directory variable.
+        GITHUB_TOKEN: # optional, default is ${{ github.token }}
+        
+        # Strip the compiled binary
+        strip: # optional
+        
+        # The version of cross to use. If not specified, then the latest version will be used.
+        cross-version: # optional
+          
+    # - name: Publish GitHub release
+    #   uses: softprops/action-gh-release@v2
+    #   with:
+    #     draft: true
+    #     files: "ringfairy-*"
+    #     body_path: Changes.md
+    #   if: matrix.toolchain == 'stable' && startsWith( github.ref, 'refs/tags/v' )
