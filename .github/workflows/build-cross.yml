@@ -47,14 +47,18 @@ jobs:
             
     runs-on: ${{ matrix.platform.os }}
     steps:  
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Cache cargo & target directories
+      uses: Swatinem/rust-cache@v2
 
     - name: Configure Git
       run: |
         git config --global user.email "ringfairy@example.com"
         git config --global user.name "Ringfairy Builder"
 
-    - name: Install musl-tools on Linux
+    - name: Install musl-tools on Linux if applicable
       run: sudo apt-get update --yes && sudo apt-get install --yes musl-tools
       if: contains(matrix.platform.name, 'musl')
 
