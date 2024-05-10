@@ -19,7 +19,7 @@ jobs:
         platform:
           - release_for: Linux-x86_64
             os_name: Linux-x86_64
-            os: ubuntu-20.04
+            os: alpine-latest
             target: x86_64-unknown-linux-musl
             bin: precious
             name: precious-Linux-x86_64-musl.tar.gz
@@ -37,6 +37,7 @@ jobs:
             bin: precious
             name: precious-Darwin-x86_64.tar.gz
             command: both
+            
     runs-on: ${{ matrix.platform.os }}
     steps:  
     - uses: actions/checkout@v4
