@@ -24,13 +24,6 @@ jobs:
             bin: precious
             name: precious-Linux-x86_64-musl.tar.gz
 
-          - release_for: FreeBSD-x86_64
-            os: ubuntu-20.04
-            target: x86_64-unknown-freebsd
-            bin: precious
-            name: precious-FreeBSD-x86_64.tar.gz
-            command: build
-
           - release_for: Windows-x86_64
             os: windows-latest
             target: x86_64-pc-windows-msvc
@@ -50,14 +43,14 @@ jobs:
 
     - name: Configure Git
       run: |
-        git config --global user.email "jdoe@example.com"
-        git config --global user.name "J. Doe"
+        git config --global user.email "ringfairy@example.com"
+        git config --global user.name "Ringfairy Builder"
 
     - name: Install musl-tools on Linux
       run: sudo apt-get update --yes && sudo apt-get install --yes musl-tools
       if: contains(matrix.platform.name, 'musl')
 
-    - name: Build Rust Proaects with Cross
+    - name: Build Ringfairy with Cross
       uses: houseabsolute/actions-rust-cross@v0.0.12
       with:
         # The working directory for each step
@@ -73,7 +66,7 @@ jobs:
         toolchain: "stable" # optional, default is stable
 
         # The arguments to be passed to cross or cargo when building, as a space-separated string.
-        args: "--locked --release"
+        args: "--release"
     
         # A GitHub token, available in the secrets.GITHUB_TOKEN working-directory variable.
         GITHUB_TOKEN: # optional, default is ${{ github.token }}
