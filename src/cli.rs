@@ -189,23 +189,6 @@ async fn load_config(config_path: &str) -> Option<ConfigSettings> {
         return None;
     }
 
-    // Function to determine the config format based on file extension
-    fn get_format_from_extension(path: &str) -> Option<&str> {
-        if path.ends_with(".json") {
-            Some("json")
-        } else if path.ends_with(".toml") {
-            Some("toml")
-        } else {
-            None
-        }
-    }
-
-    // Determine the file format
-    let format = match get_format_from_extension(config_path) {
-        Some(fmt) => fmt,
-        None => return None, // Unsupported format
-    };
-
     // Load async (supports either locally or remotely)
     let config_content = match file::acquire_file_data(config_path).await {
         Ok(content) => content,
@@ -218,12 +201,13 @@ async fn load_config(config_path: &str) -> Option<ConfigSettings> {
     }
 
     // Deserialize based on format
-    match format {
-        "json" => match serde_json::from_str(&config_content) {
+    // TODO: Add more config file types? 
+    match file::get_extension_from_path(config_path).as_deref() {
+        Some("json") => match serde_json::from_str(&config_content) {
             Ok(config) => Some(config),
             Err(_) => None, // JSON deserialization failed
         },
-        "toml" => match toml::from_str(&config_content) {
+        Some("toml") => match toml::from_str(&config_content) {
             Ok(config) => Some(config),
             Err(_) => None, // TOML deserialization failed
         },
