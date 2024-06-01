@@ -184,41 +184,32 @@ async fn does_html_contain_links(
     let html = fetch_website_content(&website.url)
         .await
         .map_err(|e| (website.clone(), e.into()))?;
+
     let document = scraper::Html::parse_document(&html);
     let selector = scraper::Selector::parse("a").unwrap();
 
-    let next_link = match normalize_url(base_url, &format!("{}/{}/next", base_url.trim_end_matches('/'), website.slug)) {
-        Ok(url) => url,
-        Err(e) => return Err((website.clone(), e)),
-    };
-    let prev_link = match normalize_url(base_url, &format!("{}/{}/previous", base_url.trim_end_matches('/'), website.slug)) {
-        Ok(url) => url,
-        Err(e) => return Err((website.clone(), e)),
-    };
+    let next_link = format!("{}/{}/next", base_url.trim_end_matches('/'), website.slug);
+    let prev_link = format!("{}/{}/previous", base_url.trim_end_matches('/'), website.slug);
+
+    //log::debug!("Expected next/previous URLs: {}, {}", &next_link, &prev_link);
 
     let mut next_exists = false;
     let mut previous_exists = false;
 
     for element in document.select(&selector) {
         if let Some(href) = element.value().attr("href") {
-            let normalized_href = match normalize_url(base_url, href) {
-                Ok(url) => url,
-                Err(e) => return Err((website.clone(), e)),
-            };
+            log::debug!("Comparing link href: {}", href);
 
-            if normalized_href == next_link || normalized_href == prev_link {
-                log::debug!("Found matching link for {}", website.slug); 
-                if href.contains("/next") {
-                    next_exists = true;
-                } else if href.contains("/previous") {
-                    previous_exists = true;
-                }
+            let href_trimmed = href.trim_end_matches('/');
+            if href_trimmed == next_link {
+                next_exists = true;
+            } else if href_trimmed == prev_link {
+                previous_exists = true;
             }
         }
     }
 
     let result = next_exists && previous_exists;
-    
     let failure_reason = if !result {
         let mut reason = String::new();
         if !next_exists {
@@ -233,28 +224,6 @@ async fn does_html_contain_links(
     };
 
     Ok((website.clone(), result, failure_reason))
-}
-
-fn normalize_url(base_url: &str, url: &str) -> Result<String, Box<dyn std::error::Error>> {
-    // Try to parse the URL (If it's an absolute URL, this will succeed)
-    // otherwise this will fail and we'll attempt to resolve against the base URL
-    let parsed_url_result = reqwest::Url::parse(url);
-    
-    let mut url = match parsed_url_result {
-        Ok(url) => url, // If parsing succeeded, it's absolute
-        Err(url::ParseError::RelativeUrlWithoutBase) => {
-            // parsing failed because of a relative URL - resolve it against the base URL
-            let base = reqwest::Url::parse(base_url)?;
-            base.join(url)?
-        },
-        Err(e) => return Err(e.into()), // For any other error, return it
-    };
-
-    url.set_query(None);
-    url.set_fragment(None);
-    let normalized = url.as_str().trim_end_matches('/').to_string();
-
-    Ok(normalized)
 }
 
 async fn build_webring_sites(websites: Vec<Website>, shuffle: bool) -> Vec<WebringSite> {
