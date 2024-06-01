@@ -1,6 +1,6 @@
-use std::fs;
-use std::error::Error;
 use crate::http::download_file;
+use std::error::Error;
+use std::fs;
 
 pub async fn acquire_file_data(path_or_url: &str) -> Result<String, Box<dyn Error>> {
     // Check if the path_or_url is likely a URL by looking for a scheme
@@ -16,8 +16,10 @@ pub async fn acquire_file_data(path_or_url: &str) -> Result<String, Box<dyn Erro
     }
 }
 
-pub fn copy_asset_files(source_dir: &str, output_dir: &str) -> Result<(), Box<dyn std::error::Error>> {
-
+pub fn copy_asset_files(
+    source_dir: &str,
+    output_dir: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
     // Create the target directory if it doesn't exist
     fs::create_dir_all(output_dir)?;
 
@@ -34,4 +36,12 @@ pub fn copy_asset_files(source_dir: &str, output_dir: &str) -> Result<(), Box<dy
     }
 
     Ok(())
+}
+
+pub fn get_extension_from_path(path: &str) -> Option<String> {
+    // Find the last dot
+    match path.rsplit_once('.') {
+        Some((_, extension)) => Some(extension.to_lowercase()),
+        None => None,
+    }
 }
