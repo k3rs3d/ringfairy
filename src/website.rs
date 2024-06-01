@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::result::Result;
 
-use crate::file;
 use crate::cli::AppSettings;
+use crate::file;
 use crate::html::HtmlGenerator;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -57,16 +57,12 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Box<dyn std:
 
         log::info!("Generating websites HTML...");
 
-        html_generator
-            .generate_html(&webring, &settings)
-            .await?;
+        html_generator.generate_html(&webring, &settings).await?;
 
         log::info!("Finished generating webring HTML.");
 
         log::info!("Generating OPML file...");
-        html_generator
-            .generate_opml(&webring, &settings)
-            .await?;
+        html_generator.generate_opml(&webring, &settings).await?;
     }
 
     Ok(())
@@ -89,7 +85,7 @@ pub async fn parse_website_list(
 pub fn verify_websites(websites: &[Website]) -> Result<(), Box<dyn std::error::Error>> {
     let mut slugs = HashSet::new();
     let mut urls = HashSet::new();
-    // TODO: verify URL pattern 
+    // TODO: verify URL pattern
     // let url_pattern = Regex::new(r"^https://.+\..+$")?;
 
     for website in websites {
@@ -111,7 +107,7 @@ pub fn verify_websites(websites: &[Website]) -> Result<(), Box<dyn std::error::E
             .into());
         }
 
-        // Uncomment to check URL format with regex 
+        // Uncomment to check URL format with regex
         /*
         if !url_pattern.is_match(&website.url) {
             return Err(format!("Invalid URL format detected: {}", website.url).into());
@@ -155,10 +151,7 @@ pub async fn audit_links(
     for website in websites {
         let website_clone = website.clone();
 
-        tasks.push(async move {
-            does_html_contain_links(&website_clone, &base_url)
-                .await
-        });
+        tasks.push(async move { does_html_contain_links(&website_clone, &base_url).await });
     }
 
     let mut compliant_sites = Vec::new();
@@ -168,7 +161,9 @@ pub async fn audit_links(
         match result {
             // Here, we directly get the tuple (website, bool) from Ok
             Ok((website, true, _)) => compliant_sites.push(website),
-            Ok((website, false, Some(reason))) => log::warn!("Site failed audit: {} | REASON: {}", website.url, reason),
+            Ok((website, false, Some(reason))) => {
+                log::warn!("Site failed audit: {} | REASON: {}", website.url, reason)
+            }
             Ok((website, false, None)) => log::warn!("Site failed audit: {}", website.url),
             Err(e) => log::error!("Error during site audit: {:?}", e),
         }
@@ -186,17 +181,26 @@ async fn does_html_contain_links(
         .map_err(|e| (website.clone(), e.into()))?;
 
     let document = scraper::Html::parse_document(&html);
-    let selector = scraper::Selector::parse("a").unwrap();
+
+    // Define selectors for different elements that could be links.
+    let anchor_selector = scraper::Selector::parse("a").unwrap();
+    let button_selector = scraper::Selector::parse("button").unwrap();
+    let img_selector = scraper::Selector::parse("img").unwrap();
 
     let next_link = format!("{}/{}/next", base_url.trim_end_matches('/'), website.slug);
-    let prev_link = format!("{}/{}/previous", base_url.trim_end_matches('/'), website.slug);
+    let prev_link = format!(
+        "{}/{}/previous",
+        base_url.trim_end_matches('/'),
+        website.slug
+    );
 
     //log::debug!("Expected next/previous URLs: {}, {}", &next_link, &prev_link);
 
     let mut next_exists = false;
     let mut previous_exists = false;
 
-    for element in document.select(&selector) {
+    // First, check <a> elements for next/prev links:
+    for element in document.select(&anchor_selector) {
         if let Some(href) = element.value().attr("href") {
             log::debug!("Comparing link href: {}", href);
 
@@ -205,6 +209,34 @@ async fn does_html_contain_links(
                 next_exists = true;
             } else if href_trimmed == prev_link {
                 previous_exists = true;
+            }
+        }
+    }
+
+    // If one/both <a> links are missing, check for buttons
+    if !next_exists || !previous_exists {
+        for element in document.select(&button_selector) {
+            if let Some(onclick) = element.value().attr("onclick") {
+                log::debug!("Checking button onclick: {}", onclick);
+                if onclick.contains(&next_link) {
+                    next_exists = true;
+                } else if onclick.contains(&prev_link) {
+                    previous_exists = true;
+                }
+            }
+        }
+    }
+
+    // Finally, if needed, also check <img> tags with `onclick` attribute
+    if !next_exists || !previous_exists {
+        for element in document.select(&img_selector) {
+            if let Some(onclick) = element.value().attr("onclick") {
+                log::debug!("Checking img onclick: {}", onclick);
+                if onclick.contains(&next_link) {
+                    next_exists = true;
+                } else if onclick.contains(&prev_link) {
+                    previous_exists = true;
+                }
             }
         }
     }
@@ -228,7 +260,7 @@ async fn does_html_contain_links(
 
 async fn build_webring_sites(websites: Vec<Website>, shuffle: bool) -> Vec<WebringSite> {
     // Shuffle first (if set to do so)
-    let mut websites = websites; 
+    let mut websites = websites;
     if shuffle {
         log::info!("Shuffling website sequence...");
         let mut rng = thread_rng(); // shuffle needs an RNG
