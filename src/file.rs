@@ -39,9 +39,8 @@ pub fn copy_asset_files(
 }
 
 pub fn get_extension_from_path(path: &str) -> Option<String> {
-    // Find the last dot
-    match path.rsplit_once('.') {
-        Some((_, extension)) => Some(extension.to_lowercase()),
-        None => None,
-    }
+    std::path::Path::new(path)
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .map(|ext| ext.to_lowercase())
 }
