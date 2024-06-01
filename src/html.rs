@@ -1,11 +1,13 @@
+use lazy_static::lazy_static;
 use minify_html::{minify, Cfg};
+use regex::Regex;
 use std::fs::{self};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use tera::{Context, Tera};
 
-use opml::*;
 use crate::cli::AppSettings;
+use opml::*;
 
 //use crate::file::acquire_file_data;
 use crate::website::WebringSite;
@@ -25,13 +27,21 @@ struct PrecomputedTags {
 }
 
 impl HtmlGenerator {
-    pub fn new(template_path: impl Into<PathBuf>, skip_minify: bool)  -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn new(
+        template_path: impl Into<PathBuf>,
+        skip_minify: bool,
+    ) -> Result<Self, Box<dyn std::error::Error>> {
         let mut cfg = Cfg::new();
         cfg.minify_css = true;
         //cfg.keep_comments = true;
 
-        let template_path_str = template_path.into().join("**/*").to_string_lossy().to_string();
-        let tera = Tera::new(&template_path_str).map_err(|err| Box::new(err) as Box<dyn std::error::Error>)?;
+        let template_path_str = template_path
+            .into()
+            .join("**/*")
+            .to_string_lossy()
+            .to_string();
+        let tera = Tera::new(&template_path_str)
+            .map_err(|err| Box::new(err) as Box<dyn std::error::Error>)?;
 
         Ok(Self {
             tera,
@@ -65,7 +75,6 @@ impl HtmlGenerator {
         webring: &[WebringSite],
         settings: &AppSettings,
     ) -> Result<(), Box<dyn std::error::Error>> {
-
         let path_output = &settings.path_output;
         // Ensure output directory exists
         fs::create_dir_all(path_output)?;
@@ -86,7 +95,9 @@ impl HtmlGenerator {
             }
         }
 
-        let mut file = std::fs::File::create(path_output.to_owned() + "/" + &settings.ring_name + ".opml").unwrap();
+        let mut file =
+            std::fs::File::create(path_output.to_owned() + "/" + &settings.ring_name + ".opml")
+                .unwrap();
         let _xml = opml.to_writer(&mut file).unwrap();
 
         Ok(())
@@ -106,7 +117,7 @@ impl HtmlGenerator {
 
         // Generate site-specific "next"/"previous" pages
         for site in webring.iter() {
-            self.generate_site(site, webring,&context, path_output)?;
+            self.generate_site(site, webring, &context, path_output)?;
         }
 
         // Process all other custom templates
@@ -159,14 +170,19 @@ impl HtmlGenerator {
         };
 
         // Load template files
-        let template_paths = self.tera.get_template_names().filter(|name| *name != "template.html");
+        let template_paths = self
+            .tera
+            .get_template_names()
+            .filter(|name| *name != "template.html");
 
         for template_name in template_paths {
             let context = self.process_tags(&precomputed)?;
 
             let template_file_name = Path::new(template_name)
-                .file_name().unwrap()
-                .to_str().unwrap();
+                .file_name()
+                .unwrap()
+                .to_str()
+                .unwrap();
 
             let content = self.tera.render(template_name, &context)?;
             let file_path = Path::new(path_output).join(template_file_name);
@@ -176,9 +192,12 @@ impl HtmlGenerator {
         Ok(())
     }
 
-    fn process_tags(&self, precomputed: &PrecomputedTags) -> Result<Context, Box<dyn std::error::Error>> {
+    fn process_tags(
+        &self,
+        precomputed: &PrecomputedTags,
+    ) -> Result<Context, Box<dyn std::error::Error>> {
         let mut context = Context::new();
-    
+
         // Process the "{{ table_of_sites }}" tag
         context.insert("table_of_sites", &precomputed.table_of_sites);
         // {{ number_of_sites }}
@@ -187,7 +206,7 @@ impl HtmlGenerator {
         context.insert("current_time", &precomputed.current_time);
         // {{ opml }}
         context.insert("opml", &precomputed.opml_link);
-    
+
         Ok(context)
     }
 
@@ -261,25 +280,24 @@ impl HtmlGenerator {
         owner
             .split_whitespace()
             .map(|part| {
-                if part.starts_with("http://") || part.starts_with("https://") {
-                    // Website URL format
-                    format!("<a href=\"{}\" target=\"_blank\">{}</a>", part, part)
-                } else if part.contains('@') {
-                    if part.matches('@').count() > 1 {
-                        // Assumes Fediverse format: @username@domain
-                        let parts: Vec<&str> = part.split('@').collect();
-                        if parts.len() == 3 {
-                            format!(
-                                "<a href=\"https://{}/@{}\">{}</a>",
-                                parts[2], parts[1], part
-                            )
-                        } else {
-                            part.to_string()
-                        }
+                if HYPERLINK_REGEX.is_match(part) {
+                    part.to_string()
+                } else if let Some(caps) = FEDIVERSE_REGEX.captures(part) {
+                    if caps.len() == 3 {
+                        let username = &caps[1];
+                        let domain = &caps[2];
+                        format!("<a href=\"https://{}/@{}\">{}</a>", domain, username, part)
                     } else {
-                        // Email format
-                        format!("<a href=\"mailto:{}\">{}</a>", part, part)
+                        part.to_string()
                     }
+                } else if PHONE_REGEX.is_match(part) {
+                    format!("<a href=\"tel:{}\">{}</a>", part, part)
+                } else if SMS_REGEX.is_match(part) {
+                    format!("<a href=\"sms:{}\">{}</a>", part, part)
+                } else if URL_REGEX.is_match(part) {
+                    format!("<a href=\"{}\" target=\"_blank\">{}</a>", part, part)
+                } else if EMAIL_REGEX.is_match(part) {
+                    format!("<a href=\"mailto:{}\">{}</a>", part, part)
                 } else {
                     part.to_string()
                 }
@@ -287,4 +305,16 @@ impl HtmlGenerator {
             .collect::<Vec<String>>()
             .join(" ")
     }
+}
+
+// pre-compile regex
+lazy_static! {
+    static ref HYPERLINK_REGEX: Regex =
+        Regex::new(r#"<a\s+[^>]*href="([^"]*)"[^>]*>(.*?)</a>"#).unwrap();
+    static ref URL_REGEX: Regex = Regex::new(r"^[a-z]+://").unwrap();
+    static ref EMAIL_REGEX: Regex =
+        Regex::new(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}").unwrap();
+    static ref FEDIVERSE_REGEX: Regex = Regex::new(r"^@([^\s@]+)@([^\s@]+\.[^\s@]+)$").unwrap();
+    static ref PHONE_REGEX: Regex = Regex::new(r"^\+?\d{10,15}$").unwrap();
+    static ref SMS_REGEX: Regex = Regex::new(r"^sms:\+?\d{10,15}$").unwrap();
 }
