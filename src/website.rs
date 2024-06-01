@@ -75,11 +75,25 @@ pub async fn parse_website_list(
     // Able to get data from local or from remote
     let file_data = file::acquire_file_data(file_path_or_url).await?;
 
-    // Parse JSON contents from the string
-    let websites: Vec<Website> = serde_json::from_str(&file_data)
-        .map_err(|e| Box::<dyn std::error::Error>::from(e.to_string()))?;
-
-    Ok(websites)
+    // Extract file extension to determine the deserialization format
+    match file::get_extension_from_path(file_path_or_url).as_deref() {
+        Some("json") => {
+            // Deserialize JSON
+            let websites: Vec<Website> = serde_json::from_str(&file_data)
+                .map_err(|e| Box::<dyn std::error::Error>::from(e.to_string()))?;
+            Ok(websites)
+        }
+        // TODO: Support TOML for website lists 
+        /*
+        Some("toml") => {
+            // Deserialize TOML
+            let websites: Vec<Website> = toml::from_str(&file_data)
+                .map_err(|e| Box::<dyn std::error::Error>::from(e.to_string()))?;
+            Ok(websites)
+        }
+        */
+        _ => Err(Box::<dyn std::error::Error>::from("Unsupported file format")),
+    }
 }
 
 pub fn verify_websites(websites: &[Website]) -> Result<(), Box<dyn std::error::Error>> {
