@@ -33,6 +33,7 @@ url = "2.5"
 opml = "1.1.6"
 regex = "1.10.4"
 lazy_static = "1.4.0"
+toml = "0.8.13"
 
 [profile.release]
 lto = true
