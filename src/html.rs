@@ -33,6 +33,7 @@ impl HtmlGenerator {
     ) -> Result<Self, Box<dyn std::error::Error>> {
         let mut cfg = Cfg::new();
         cfg.minify_css = true;
+        cfg.minify_js = true;
         //cfg.keep_comments = true;
 
         let template_path_str = template_path
