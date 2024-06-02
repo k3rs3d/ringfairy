@@ -16,6 +16,10 @@ pub struct AppSettings {
     pub path_assets: String,
     pub path_templates: String,
     pub base_url: String,
+    pub client_user_agent: String,
+    pub client_header: String,
+    pub audit_retries_max: u8,
+    pub audit_retries_delay: u8,
     pub audit: bool,
     pub no_slug: bool,
     pub shuffle: bool,
@@ -39,6 +43,10 @@ impl Default for AppSettings {
             path_assets: "./data/assets".into(),
             path_templates: "./data/templates".into(),
             base_url: " ".to_string(),
+            client_user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36".into(),
+            client_header: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8".into(),
+            audit_retries_delay: 100,
+            audit_retries_max: 2,
             audit: false,
             no_slug: false,
             shuffle: false,
@@ -62,6 +70,10 @@ pub struct ConfigSettings {
     pub path_assets: Option<String>,
     pub path_templates: Option<String>,
     pub base_url: Option<String>,
+    pub client_user_agent: Option<String>,
+    pub client_header: Option<String>,
+    pub audit_retries_max: Option<u8>,
+    pub audit_retries_delay: Option<u8>,
     pub audit: Option<bool>,
     pub no_slug: Option<bool>,
     pub shuffle: Option<bool>,
@@ -164,6 +176,18 @@ pub struct ClapSettings {
     #[clap(short = 'A', long = "audit", action = ArgAction::SetTrue, help = "Scrapes URLs to check for the webring links before adding them to the list. If the links can't be found, the site will get skipped. ")]
     pub audit: bool,
 
+    #[clap(short = 'M', long = "retries-max", help = "When auditing sites, how many times to retry connecting to a site before giving up. ")]
+    pub audit_retries_max: Option<u8>,
+
+    #[clap(short = 'D', long = "retries-delay", help = "When auditing sites, how many miliseconds to wait before trying again. ")]
+    pub audit_retries_delay: Option<u8>,
+
+    #[clap(short = 'U', long = "client-user-agent", help = "When auditing sites, user-agent string for the scraper. ")]
+    pub client_user_agent: Option<String>,
+
+    #[clap(short = 'H', long = "client-header", help = "When auditing sites, header string for the scraper. ")]
+    pub client_header: Option<String>,
+
     #[clap(short = 's', long = "shuffle", action = ArgAction::SetTrue, help = "Randomly shuffles the website sequence when generating the webring (does not modify the website list file).")]
     pub shuffle: bool,
 
@@ -254,6 +278,12 @@ fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> AppSet
         .base_url
         .or(config.base_url)
         .unwrap_or(final_settings.base_url);
+
+    final_settings.client_header = cli_args.client_header.or(config.client_header).unwrap_or(final_settings.client_header);
+    final_settings.client_user_agent = cli_args.client_user_agent.or(config.client_user_agent).unwrap_or(final_settings.client_user_agent);
+
+    final_settings.audit_retries_delay = cli_args.audit_retries_delay.or(config.audit_retries_delay).unwrap_or(final_settings.audit_retries_delay);
+    final_settings.audit_retries_max = cli_args.audit_retries_max.or(config.audit_retries_max).unwrap_or(final_settings.audit_retries_max);
 
     final_settings.audit = cli_args.audit || config.audit.unwrap_or(final_settings.audit);
     final_settings.no_slug = cli_args.no_slug || config.no_slug.unwrap_or(final_settings.no_slug);
