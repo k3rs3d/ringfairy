@@ -56,7 +56,7 @@ If you decide to launch your own webring with this tool, let me know and I'll li
 
 Command-line arguments take precedence over any settings in the config file. 
 
-- *`-A`, `--audit`*: Audit mode. Scrapes each website in the list, checking to see if the next/previous links can be found. Otherwise, the site won't be added to the webring for that build. This means you don't have to immediately remove non-compliant websites; sites simply won't show up until the links can be found. If you use this without verbose mode (`-v`), you might not see the results of the audit. Don't use audit mode if you're building the webring offline, or if you want the fastest possible build speed. 
+- *`-h`, `--help`*: Print help
 - *`-c`, `--config`*: Specify the location of the optional config file. It can be remote; for example an HTTP link to an appropriate JSON file on Pastebin, GitHub, etc. 
 - *`-l`, `--list`*: Specify the file containing the list of websites. Default: `./websites.json`
 - *`-o`, `--output`*: Define the output folder, where the generated files will be saved. Default: `./webring`
@@ -73,7 +73,12 @@ Command-line arguments take precedence over any settings in the config file.
 - *`-s`, `--shuffle`*: Randomly shuffles the order of websites during generation. This is totally internal and does not affect the input list of websites; you can shuffle the same webring repeatedly without losing the original sequence. 
 - *`-v`, `--verbose`*: Output information to the console. `-vv` for very verbose mode to see even more info. 
 - *`-V`, `--version`*: Print version
-- *`-h`, `--help`*: Print help
+
+- *`-A`, `--audit`*: Audit mode. Scrapes each website in the list, checking to see if the next/previous links can be found. Otherwise, the site won't be added to the webring for that build. This means you don't have to immediately remove non-compliant websites; sites simply won't show up until the links can be found. If you use this without verbose mode (`-v`), you might not see the results of the audit. Don't use audit mode if you're building the webring offline, or if you want the fastest possible build speed. 
+- *`-M`, `--audit_retries_max`*: In audit mode, maximum number of times to try reconnecting to a site. Default: `2`
+- *`-D`, `--audit_retries_delay`*: In audit mode, milisecond delay before trying to reconnect to an unresponsive site. Default: `100`
+- *`-U`, `--client_user_agent`*: In audit mode, user-agent string to be used by the web scraper. 
+- *`-H`, `--client_header`*: In audit mode, header string to be used by the web scraper. 
 
 ### Note: Logging
 
