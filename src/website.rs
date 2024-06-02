@@ -150,18 +150,30 @@ pub fn verify_websites(websites: &[Website]) -> Result<(), Box<dyn std::error::E
     Ok(())
 }
 
-async fn fetch_website_content(client: &reqwest::Client, url: &str) -> Result<String, reqwest::Error> {
-    let response = client.get(url).send().await?.error_for_status()?; // will return Err if status is not in 200-299
+async fn fetch_website_content(
+    client: &reqwest::Client,
+    url: &str,
+) -> Result<String, Box<dyn std::error::Error>> {
+    let mut attempts = 0;
 
-    if !response.status().is_success() {
-        log::error!(
-            "Failed to fetch site content: HTTP status {} for {}",
-            response.status(),
-            url
-        );
+    loop {
+        attempts += 1;
+        match client.get(url).send().await {
+            Ok(response) => match response.text().await {
+                Ok(text) => return Ok(text),
+                Err(e) => log::warn!("Failed to read response text on attempt {}: {}", attempts, e),
+            },
+            Err(e) => log::warn!("Failed to fetch URL on attempt {}: {}", attempts, e),
+        }
+
+        if attempts >= 3 {
+            break;
+        }
+        
+        tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
     }
 
-    Ok(response.text().await?)
+    Err(format!("Failed to fetch URL {} after {} attempts", url, 3).into())
 }
 
 pub async fn audit_links(
