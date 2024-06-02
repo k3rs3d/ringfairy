@@ -93,6 +93,11 @@ pub struct ConfigSettings {
 )]
 pub struct ClapSettings {
     #[clap(
+        help = "Specify a folder or a config file path. If a folder is provided, the default config file will be searched within it."
+    )]
+    pub input_path: Option<String>,
+
+    #[clap(
         short = 'c',
         long = "cfg",
         ignore_case = false,
@@ -343,8 +348,24 @@ fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> AppSet
 pub async fn parse_args() -> AppSettings {
     let clap_args = ClapSettings::parse();
 
+    // If the user provides a directory, search it for the default config file 
+    let config_path = if let Some(ref input_path) = clap_args.input_path {
+        let path = std::path::Path::new(input_path);
+        if path.is_dir() {
+            // If it's a directory, use default config file path within that directory
+            // TODO: make this a constant or something 
+            path.join("ringfairy.toml").to_str().map(|s| s.to_string())
+        } else {
+            // Use the given path as it is
+            Some(input_path.clone())
+        }
+    } else { 
+        // Fall back to provided -c argument path or default
+        clap_args.filepath_config.clone()
+    };
+
     // Check if a config file path is provided, and it's not empty
-    let config_args = load_config(clap_args.filepath_config.as_deref().unwrap_or(""))
+    let config_args = load_config(config_path.as_deref().unwrap_or(""))
         .await
         .unwrap_or_default();
 
