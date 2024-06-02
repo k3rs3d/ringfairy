@@ -15,7 +15,7 @@ pub struct AppSettings {
     pub path_output: String,
     pub path_assets: String,
     pub path_templates: String,
-	pub base_url: String,
+    pub base_url: String,
     pub audit: bool,
     pub no_slug: bool,
     pub shuffle: bool,
@@ -38,7 +38,7 @@ impl Default for AppSettings {
             path_output: "./webring".into(),
             path_assets: "./data/assets".into(),
             path_templates: "./data/templates".into(),
-			base_url: " ".to_string(),
+            base_url: " ".to_string(),
             audit: false,
             no_slug: false,
             shuffle: false,
@@ -50,8 +50,8 @@ impl Default for AppSettings {
     }
 }
 
-// Contains settings loaded from config file, e.g., config.json
-#[derive(Deserialize, Debug)]
+// Config settings loaded from config file, derive Default
+#[derive(Deserialize, Debug, Default)]
 pub struct ConfigSettings {
     pub ring_name: Option<String>,
     pub ring_description: Option<String>,
@@ -61,7 +61,7 @@ pub struct ConfigSettings {
     pub path_output: Option<String>,
     pub path_assets: Option<String>,
     pub path_templates: Option<String>,
-	pub base_url: Option<String>,
+    pub base_url: Option<String>,
     pub audit: Option<bool>,
     pub no_slug: Option<bool>,
     pub shuffle: Option<bool>,
@@ -120,45 +120,45 @@ pub struct ClapSettings {
         help = "Specify the folder containing HTML templates to use. Should at least contain 'templates.html' for creating the 'next' and 'previous' pages."
     )]
     pub path_templates: Option<String>,
-	
-	#[clap(
-		short = 'u',
-		long = "url",
-		ignore_case = false,
-		help = "The base URL for the webring. Something like 'https://example.com'"
-	)]
+
+    #[clap(
+        short = 'u',
+        long = "url",
+        ignore_case = false,
+        help = "The base URL for the webring. Something like 'https://example.com'"
+    )]
     pub base_url: Option<String>,
 
-	#[clap(
-		short = 'n',
-		long = "name",
-		ignore_case = false,
-		help = "The name of the webring. Something like 'Ghostring'."
-	)]
+    #[clap(
+        short = 'n',
+        long = "name",
+        ignore_case = false,
+        help = "The name of the webring. Something like 'Ghostring'."
+    )]
     pub ring_name: Option<String>,
 
-	#[clap(
-		short = 'd',
-		long = "description",
-		ignore_case = false,
-		help = "A short description/about the webring."
-	)]
+    #[clap(
+        short = 'd',
+        long = "description",
+        ignore_case = false,
+        help = "A short description/about the webring."
+    )]
     pub ring_description: Option<String>,
 
-	#[clap(
-		short = 'm',
-		long = "maintainer",
-		ignore_case = false,
-		help = "The owner/maintainer of the webring, could be a person or an organization."
-	)]
+    #[clap(
+        short = 'm',
+        long = "maintainer",
+        ignore_case = false,
+        help = "The owner/maintainer of the webring, could be a person or an organization."
+    )]
     pub ring_owner: Option<String>,
 
-	#[clap(
-		short = 'w',
-		long = "website",
-		ignore_case = false,
-		help = "The website link of the website owner, not the base URL of the webring."
-	)]
+    #[clap(
+        short = 'w',
+        long = "website",
+        ignore_case = false,
+        help = "The website link of the website owner, not the base URL of the webring."
+    )]
     pub ring_owner_site: Option<String>,
 
     #[clap(short = 'A', long = "audit", action = ArgAction::SetTrue, help = "Scrapes URLs to check for the webring links before adding them to the list. If the links can't be found, the site will get skipped. ")]
@@ -201,7 +201,7 @@ async fn load_config(config_path: &str) -> Option<ConfigSettings> {
     }
 
     // Deserialize based on format
-    // TODO: Add more config file types? 
+    // TODO: Add more config file types?
     match file::get_extension_from_path(config_path).as_deref() {
         Some("json") => match serde_json::from_str(&config_content) {
             Ok(config) => Some(config),
@@ -215,89 +215,33 @@ async fn load_config(config_path: &str) -> Option<ConfigSettings> {
     }
 }
 
-fn merge_configs(cli_args: ClapSettings, config: Option<ConfigSettings>) -> AppSettings {
+fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> AppSettings {
     let mut final_settings = AppSettings::default();
 
-    if let Some(conf) = config {
-        // Apply settings from config.json where available (unwrap_or keeps original if None)
-        final_settings.ring_name = conf.ring_name.unwrap_or(final_settings.ring_name);
-        final_settings.ring_description = conf.ring_description.unwrap_or(final_settings.ring_description);
-        final_settings.ring_owner = conf.ring_owner.unwrap_or(final_settings.ring_owner);
-        final_settings.ring_owner_site = conf.ring_owner_site.unwrap_or(final_settings.ring_owner_site);
-        final_settings.filepath_list = conf.filepath_list.unwrap_or(final_settings.filepath_list);
-        final_settings.path_output = conf.path_output.unwrap_or(final_settings.path_output);
-        final_settings.path_assets = conf.path_assets.unwrap_or(final_settings.path_assets);
-        final_settings.path_templates = conf
-            .path_templates
-            .unwrap_or(final_settings.path_templates);
-		final_settings.base_url = conf.base_url.unwrap_or(final_settings.base_url);
-        final_settings.no_slug = conf.no_slug.unwrap_or(final_settings.no_slug);
-        final_settings.audit = conf.audit.unwrap_or(final_settings.audit);
-        final_settings.verbose = conf.verbose.unwrap_or(final_settings.verbose);
-        final_settings.shuffle = conf.shuffle.unwrap_or(final_settings.shuffle);
-        final_settings.skip_minify = conf.skip_minify.unwrap_or(final_settings.skip_minify);
-        final_settings.skip_verify = conf.skip_verify.unwrap_or(final_settings.skip_verify);
-        final_settings.dry_run = conf.dry_run.unwrap_or(final_settings.dry_run);
-    }
+    final_settings.ring_name = cli_args.ring_name.or(config.ring_name).unwrap_or(final_settings.ring_name);
+    final_settings.ring_description = cli_args.ring_description.or(config.ring_description).unwrap_or(final_settings.ring_description);
+    final_settings.ring_owner = cli_args.ring_owner.or(config.ring_owner).unwrap_or(final_settings.ring_owner);
+    final_settings.ring_owner_site = cli_args.ring_owner_site.or(config.ring_owner_site).unwrap_or(final_settings.ring_owner_site);
+    final_settings.filepath_list = cli_args.filepath_list.or(config.filepath_list).unwrap_or(final_settings.filepath_list);
+    final_settings.path_output = cli_args.path_output.or(config.path_output).unwrap_or(final_settings.path_output);
+    final_settings.path_assets = cli_args.path_assets.or(config.path_assets).unwrap_or(final_settings.path_assets);
+    final_settings.path_templates = cli_args.path_templates.or(config.path_templates).unwrap_or(final_settings.path_templates);
+    final_settings.base_url = cli_args.base_url.or(config.base_url).unwrap_or(final_settings.base_url);
 
-    // Then, override with CLI arguments if provided
-     if let Some(val) = cli_args.ring_name {
-        final_settings.ring_name = val;
-    }
-     if let Some(val) = cli_args.ring_description {
-        final_settings.ring_description = val;
-    }
-     if let Some(val) = cli_args.ring_owner {
-        final_settings.ring_owner = val;
-    }
-     if let Some(val) = cli_args.ring_owner_site {
-        final_settings.ring_owner_site = val;
-    }
-    if let Some(val) = cli_args.filepath_list {
-        final_settings.filepath_list = val;
-    }
-    if let Some(val) = cli_args.path_output {
-        final_settings.path_output = val;
-    }
-    if let Some(val) = cli_args.path_assets {
-        final_settings.path_assets = val;
-    }
-    if let Some(val) = cli_args.path_templates {
-        final_settings.path_templates = val;
-    }
-	if let Some(val) = cli_args.base_url {
-		final_settings.base_url = val;
-	}
-
-    // Boolean flags can simply be overridden as they don't have a `None` state
-    if cli_args.audit {
-        final_settings.audit = cli_args.audit;
-    }
-    if cli_args.no_slug {
-        final_settings.no_slug = cli_args.no_slug;
-    }
-    if cli_args.shuffle {
-        final_settings.shuffle = cli_args.shuffle;
-    }
-    if cli_args.verbose {
-        final_settings.verbose = cli_args.verbose;
-    }
-    if cli_args.skip_minify {
-        final_settings.skip_minify = cli_args.skip_minify;
-    }
-    if cli_args.skip_verify {
-        final_settings.skip_verify = cli_args.skip_verify;
-    }
-    if cli_args.dry_run {
-        final_settings.dry_run = cli_args.dry_run;
-    }
+    final_settings.audit = cli_args.audit || config.audit.unwrap_or(final_settings.audit);
+    final_settings.no_slug = cli_args.no_slug || config.no_slug.unwrap_or(final_settings.no_slug);
+    final_settings.shuffle = cli_args.shuffle || config.shuffle.unwrap_or(final_settings.shuffle);
+    final_settings.verbose = cli_args.verbose || config.verbose.unwrap_or(final_settings.verbose);
+    final_settings.skip_minify = cli_args.skip_minify || config.skip_minify.unwrap_or(final_settings.skip_minify);
+    final_settings.skip_verify = cli_args.skip_verify || config.skip_verify.unwrap_or(final_settings.skip_verify);
+    final_settings.dry_run = cli_args.dry_run || config.dry_run.unwrap_or(final_settings.dry_run);
 
     // HACK ish: apply log level settings here
-        if final_settings.verbose {
-            std::env::set_var("RUST_LOG", "info");
-        } else {
-            std::env::set_var("RUST_LOG", "error"); // Default to only showing errors
-        }
+    if final_settings.verbose {
+        std::env::set_var("RUST_LOG", "info");
+    } else {
+        std::env::set_var("RUST_LOG", "error"); // Default to only showing errors
+    }
 
     final_settings
 }
@@ -306,10 +250,7 @@ pub async fn parse_args() -> AppSettings {
     let clap_args = ClapSettings::parse();
 
     // Check if a config file path is provided, and it's not empty
-    let config_args = match clap_args.filepath_config.as_deref() {
-        Some("") | Some("none") | None => None, // Treat empty as no config specified
-        Some(path) => load_config(path).await,
-    };
+    let config_args = load_config(clap_args.filepath_config.as_deref().unwrap_or("")).await.unwrap_or_default();
 
     merge_configs(clap_args, config_args)
 }
