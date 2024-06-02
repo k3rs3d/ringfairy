@@ -216,6 +216,12 @@ impl HtmlGenerator {
         context.insert("table_of_sites", &precomputed.table_of_sites);
         // {{ number_of_sites }}
         context.insert("number_of_sites", &precomputed.number_of_sites);
+        // {{ featured_site_title }}
+        context.insert("featured_site_title", &precomputed.featured_site_title);
+        // {{ featured_site_description }}
+        context.insert("featured_site_description", &precomputed.featured_site_description);
+        // {{ featured_site_url }}
+        context.insert("featured_site_url", &precomputed.featured_site_url);
         // {{ current_time }}
         context.insert("current_time", &precomputed.current_time);
         // {{ opml }}
