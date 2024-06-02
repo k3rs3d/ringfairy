@@ -82,7 +82,7 @@ Command-line arguments take precedence over any settings in the config file.
 
 ### Note: Logging
 
-By default, the application only logs error messages. By passing `-v`/`--verbose` (on the command line) or setting `"verbose": true` (in the config JSON), you can tell the application to show info level logs. 
+By default, the application only logs error messages. By passing `-v`/`--verbose` (on the command line) or setting `"verbose": true` (in the config JSON), you can tell the application to show warn level logs. To show info level logs, pass `-vv`; for debug, `-vvv`. 
 
 To save these logs to a file, you can redirect standard output and standard error to a file when running your application. For example:
 
