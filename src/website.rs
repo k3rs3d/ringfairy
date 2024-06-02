@@ -150,6 +150,10 @@ pub fn verify_websites(websites: &[Website]) -> Result<(), Box<dyn std::error::E
     Ok(())
 }
 
+// TODO: Turn these constants into settings/parameters
+const MAX_RETRIES: u32 = 3;
+const RETRY_DELAY_MS: u64 = 100; // delay between requests
+
 async fn fetch_website_content(
     client: &reqwest::Client,
     url: &str,
@@ -166,14 +170,14 @@ async fn fetch_website_content(
             Err(e) => log::warn!("Failed to fetch URL on attempt {}: {}", attempts, e),
         }
 
-        if attempts >= 3 {
+        if attempts >= MAX_RETRIES {
             break;
         }
         
-        tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
+        tokio::time::sleep(tokio::time::Duration::from_millis(RETRY_DELAY_MS)).await;
     }
 
-    Err(format!("Failed to fetch URL {} after {} attempts", url, 3).into())
+    Err(format!("Failed to fetch URL {} after {} attempts", url, MAX_RETRIES).into())
 }
 
 pub async fn audit_links(
