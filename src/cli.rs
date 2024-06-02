@@ -167,8 +167,8 @@ pub struct ClapSettings {
     #[clap(short = 's', long = "shuffle", action = ArgAction::SetTrue, help = "Randomly shuffles the website sequence when generating the webring (does not modify the website list file).")]
     pub shuffle: bool,
 
-    #[clap(short = 'v', long = "verbose", action = ArgAction::SetTrue, help = "Enables verbose logging.")]
-    pub verbose: bool,
+    #[clap(short = 'v', long = "verbose", action = ArgAction::Count, help = "Enables verbose logging. Set -vv for very verbose.")]
+    pub verbose: u8,
 
     #[clap(long = "no-slug", action = ArgAction::SetTrue, help = "Makes the webring reference sites by their index, rather than their slug. So the first website would be under /1/, the second /2/, etc. The default behavior is to create directories named for the site slug. ")]
     pub no_slug: bool,
@@ -218,29 +218,64 @@ async fn load_config(config_path: &str) -> Option<ConfigSettings> {
 fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> AppSettings {
     let mut final_settings = AppSettings::default();
 
-    final_settings.ring_name = cli_args.ring_name.or(config.ring_name).unwrap_or(final_settings.ring_name);
-    final_settings.ring_description = cli_args.ring_description.or(config.ring_description).unwrap_or(final_settings.ring_description);
-    final_settings.ring_owner = cli_args.ring_owner.or(config.ring_owner).unwrap_or(final_settings.ring_owner);
-    final_settings.ring_owner_site = cli_args.ring_owner_site.or(config.ring_owner_site).unwrap_or(final_settings.ring_owner_site);
-    final_settings.filepath_list = cli_args.filepath_list.or(config.filepath_list).unwrap_or(final_settings.filepath_list);
-    final_settings.path_output = cli_args.path_output.or(config.path_output).unwrap_or(final_settings.path_output);
-    final_settings.path_assets = cli_args.path_assets.or(config.path_assets).unwrap_or(final_settings.path_assets);
-    final_settings.path_templates = cli_args.path_templates.or(config.path_templates).unwrap_or(final_settings.path_templates);
-    final_settings.base_url = cli_args.base_url.or(config.base_url).unwrap_or(final_settings.base_url);
+    final_settings.ring_name = cli_args
+        .ring_name
+        .or(config.ring_name)
+        .unwrap_or(final_settings.ring_name);
+    final_settings.ring_description = cli_args
+        .ring_description
+        .or(config.ring_description)
+        .unwrap_or(final_settings.ring_description);
+    final_settings.ring_owner = cli_args
+        .ring_owner
+        .or(config.ring_owner)
+        .unwrap_or(final_settings.ring_owner);
+    final_settings.ring_owner_site = cli_args
+        .ring_owner_site
+        .or(config.ring_owner_site)
+        .unwrap_or(final_settings.ring_owner_site);
+    final_settings.filepath_list = cli_args
+        .filepath_list
+        .or(config.filepath_list)
+        .unwrap_or(final_settings.filepath_list);
+    final_settings.path_output = cli_args
+        .path_output
+        .or(config.path_output)
+        .unwrap_or(final_settings.path_output);
+    final_settings.path_assets = cli_args
+        .path_assets
+        .or(config.path_assets)
+        .unwrap_or(final_settings.path_assets);
+    final_settings.path_templates = cli_args
+        .path_templates
+        .or(config.path_templates)
+        .unwrap_or(final_settings.path_templates);
+    final_settings.base_url = cli_args
+        .base_url
+        .or(config.base_url)
+        .unwrap_or(final_settings.base_url);
 
     final_settings.audit = cli_args.audit || config.audit.unwrap_or(final_settings.audit);
     final_settings.no_slug = cli_args.no_slug || config.no_slug.unwrap_or(final_settings.no_slug);
     final_settings.shuffle = cli_args.shuffle || config.shuffle.unwrap_or(final_settings.shuffle);
-    final_settings.verbose = cli_args.verbose || config.verbose.unwrap_or(final_settings.verbose);
-    final_settings.skip_minify = cli_args.skip_minify || config.skip_minify.unwrap_or(final_settings.skip_minify);
-    final_settings.skip_verify = cli_args.skip_verify || config.skip_verify.unwrap_or(final_settings.skip_verify);
+    //final_settings.verbose = cli_args.verbose || config.verbose.unwrap_or(final_settings.verbose);
+    final_settings.skip_minify =
+        cli_args.skip_minify || config.skip_minify.unwrap_or(final_settings.skip_minify);
+    final_settings.skip_verify =
+        cli_args.skip_verify || config.skip_verify.unwrap_or(final_settings.skip_verify);
     final_settings.dry_run = cli_args.dry_run || config.dry_run.unwrap_or(final_settings.dry_run);
 
-    // HACK ish: apply log level settings here
-    if final_settings.verbose {
+    // HACK: just set the config file value, then CLI value, directly
+    if config.verbose.unwrap() {
         std::env::set_var("RUST_LOG", "info");
     } else {
-        std::env::set_var("RUST_LOG", "error"); // Default to only showing errors
+        // HACK ish: apply log level settings here
+        match cli_args.verbose {
+            0 => std::env::set_var("RUST_LOG", "error"), // Default to only showing errors
+            1 => std::env::set_var("RUST_LOG", "warn"),  // Showing info level logs with -v
+            2 => std::env::set_var("RUST_LOG", "info"),  // Showing info level logs with -vv
+            _ => std::env::set_var("RUST_LOG", "debug"), // Showing debug logs with -vvv or more
+        }
     }
 
     final_settings
@@ -250,7 +285,9 @@ pub async fn parse_args() -> AppSettings {
     let clap_args = ClapSettings::parse();
 
     // Check if a config file path is provided, and it's not empty
-    let config_args = load_config(clap_args.filepath_config.as_deref().unwrap_or("")).await.unwrap_or_default();
+    let config_args = load_config(clap_args.filepath_config.as_deref().unwrap_or(""))
+        .await
+        .unwrap_or_default();
 
     merge_configs(clap_args, config_args)
 }

@@ -71,7 +71,7 @@ Command-line arguments take precedence over any settings in the config file.
 - *`--skip-verification`*: Generates files without checking for potential problems...unwise!
 - *`--dry-run`*: Runs the application without outputting any files
 - *`-s`, `--shuffle`*: Randomly shuffles the order of websites during generation. This is totally internal and does not affect the input list of websites; you can shuffle the same webring repeatedly without losing the original sequence. 
-- *`-v`, `--verbose`*: Output information to the console
+- *`-v`, `--verbose`*: Output information to the console. `-vv` for very verbose mode to see even more info. 
 - *`-V`, `--version`*: Print version
 - *`-h`, `--help`*: Print help
 
