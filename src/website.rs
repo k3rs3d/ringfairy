@@ -25,16 +25,16 @@ pub struct WebringSite {
     pub previous: usize,
 }
 
-pub fn setup_client() -> reqwest::Client {
+pub fn setup_client(settings: &AppSettings) -> reqwest::Client {
     // TODO: Create a setting/param for timeout duration, and one for user agent string, and one for header string
     // Also, create {{ tags }} for those, so webring admins can show their users those settings
     reqwest::Client::builder()
     .timeout(std::time::Duration::from_secs(30))
     .pool_max_idle_per_host(10)
-    .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36")
+    .user_agent(settings.client_user_agent.clone())
     .default_headers({
         let mut headers = reqwest::header::HeaderMap::new();
-        headers.insert(reqwest::header::ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8".parse().unwrap());
+        headers.insert(reqwest::header::ACCEPT, settings.client_header.clone().parse().unwrap());
         headers
     })
     .redirect(reqwest::redirect::Policy::limited(5))
@@ -55,7 +55,7 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Box<dyn std:
     // Audit websites to ensure they contain webring links (online)
     let audited_websites = if settings.audit {
         log::debug!("Auditing websites for webring links...");
-        let audited_websites = audit_links(&setup_client(), websites, &settings.base_url).await?;
+        let audited_websites = audit_links(&setup_client(&settings), websites, &settings).await?;
         log::info!(
             "Audit complete. Found links on {} websites.",
             audited_websites.len()
@@ -150,13 +150,10 @@ pub fn verify_websites(websites: &[Website]) -> Result<(), Box<dyn std::error::E
     Ok(())
 }
 
-// TODO: Turn these constants into settings/parameters
-const MAX_RETRIES: u32 = 3;
-const RETRY_DELAY_MS: u64 = 100; // delay between requests
-
 async fn fetch_website_content(
     client: &reqwest::Client,
     url: &str,
+    settings: &AppSettings,
 ) -> Result<String, Box<dyn std::error::Error>> {
     let mut attempts = 0;
 
@@ -170,27 +167,27 @@ async fn fetch_website_content(
             Err(e) => log::warn!("Failed to fetch URL on attempt {}: {}", attempts, e),
         }
 
-        if attempts >= MAX_RETRIES {
+        if attempts >= settings.audit_retries_max {
             break;
         }
         
-        tokio::time::sleep(tokio::time::Duration::from_millis(RETRY_DELAY_MS)).await;
+        tokio::time::sleep(tokio::time::Duration::from_millis(settings.audit_retries_delay)).await;
     }
 
-    Err(format!("Failed to fetch URL {} after {} attempts", url, MAX_RETRIES).into())
+    Err(format!("Failed to fetch URL {} after {} attempts", url, settings.audit_retries_max).into())
 }
 
 pub async fn audit_links(
     client: &reqwest::Client,
     websites: Vec<Website>,
-    base_url: &str,
+    settings: &AppSettings,
 ) -> Result<Vec<Website>, Box<dyn std::error::Error>> {
     let mut tasks = FuturesUnordered::new();
 
     for website in websites {
         let website_clone = website.clone();
         let client = client.clone();
-        tasks.push(async move { does_html_contain_links(&client, &website_clone, &base_url).await });
+        tasks.push(async move { does_html_contain_links(&client, &website_clone, &settings).await });
     }
 
     let mut compliant_sites = Vec::new();
@@ -214,10 +211,10 @@ pub async fn audit_links(
 async fn does_html_contain_links(
     client: &reqwest::Client,
     website: &Website,
-    base_url: &str,
+    settings: &AppSettings,
 ) -> Result<(Website, bool, Option<String>), (Website, Box<dyn std::error::Error>)> {
     // Implement retry mechanism with a delay pattern.
-    let html = fetch_website_content(client, &website.url)
+    let html = fetch_website_content(client, &website.url, settings)
         .await
         .map_err(|e| (website.clone(), e.into()))?;
 
@@ -228,10 +225,10 @@ async fn does_html_contain_links(
     let button_selector = scraper::Selector::parse("button").unwrap();
     let img_selector = scraper::Selector::parse("img").unwrap();
 
-    let next_link = format!("{}/{}/next", base_url.trim_end_matches('/'), website.slug);
+    let next_link = format!("{}/{}/next", settings.base_url.trim_end_matches('/'), website.slug);
     let prev_link = format!(
         "{}/{}/previous",
-        base_url.trim_end_matches('/'),
+        settings.base_url.trim_end_matches('/'),
         website.slug
     );
 
