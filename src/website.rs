@@ -65,6 +65,11 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Box<dyn std:
         websites
     };
 
+    // Ensure the list isn't empty at this point 
+    if audited_websites.is_empty() {
+        return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "No valid websites found.")));
+    }
+
     // Organize site into the webring sequence
     let webring = build_webring_sites(audited_websites, settings.shuffle).await;
 
