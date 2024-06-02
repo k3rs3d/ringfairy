@@ -18,8 +18,8 @@ pub struct AppSettings {
     pub base_url: String,
     pub client_user_agent: String,
     pub client_header: String,
-    pub audit_retries_max: u8,
-    pub audit_retries_delay: u8,
+    pub audit_retries_max: u64,
+    pub audit_retries_delay: u64,
     pub audit: bool,
     pub no_slug: bool,
     pub shuffle: bool,
@@ -72,8 +72,8 @@ pub struct ConfigSettings {
     pub base_url: Option<String>,
     pub client_user_agent: Option<String>,
     pub client_header: Option<String>,
-    pub audit_retries_max: Option<u8>,
-    pub audit_retries_delay: Option<u8>,
+    pub audit_retries_max: Option<u64>,
+    pub audit_retries_delay: Option<u64>,
     pub audit: Option<bool>,
     pub no_slug: Option<bool>,
     pub shuffle: Option<bool>,
@@ -181,14 +181,14 @@ pub struct ClapSettings {
         long = "retries-max",
         help = "When auditing sites, how many times to retry connecting to a site before giving up. "
     )]
-    pub audit_retries_max: Option<u8>,
+    pub audit_retries_max: Option<u64>,
 
     #[clap(
         short = 'D',
         long = "retries-delay",
         help = "When auditing sites, how many miliseconds to wait before trying again. "
     )]
-    pub audit_retries_delay: Option<u8>,
+    pub audit_retries_delay: Option<u64>,
 
     #[clap(
         short = 'U',
