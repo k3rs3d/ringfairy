@@ -1,5 +1,6 @@
 use lazy_static::lazy_static;
 use minify_html::{minify, Cfg};
+use rand::prelude::SliceRandom;
 use regex::Regex;
 use std::fs::{self};
 use std::io::Write;
@@ -24,6 +25,9 @@ struct PrecomputedTags {
     number_of_sites: usize,
     current_time: String,
     opml_link: String,
+    featured_site_title: String,
+    featured_site_description: String,
+    featured_site_url: String,
 }
 
 impl HtmlGenerator {
@@ -163,9 +167,17 @@ impl HtmlGenerator {
     ) -> Result<(), Box<dyn std::error::Error>> {
         // Pre-generate expensive tag data for reuse
         let path_output = &settings.path_output;
+
+        // Picking a random site for the featured site
+        let mut rng = rand::thread_rng();
+        let featured_site = webring.choose(&mut rng).unwrap();
+
         let precomputed = PrecomputedTags {
             table_of_sites: self.generate_sites_table(webring)?,
             number_of_sites: webring.len(),
+            featured_site_url: featured_site.website.url.clone(),
+            featured_site_title: featured_site.website.name.clone().unwrap_or_else(|| featured_site.website.url.clone()),
+            featured_site_description: featured_site.website.about.clone().unwrap_or_else(|| "".to_string()),
             current_time: chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
             opml_link: "./".to_owned() + &settings.ring_name + ".opml",
         };
@@ -175,6 +187,7 @@ impl HtmlGenerator {
             .tera
             .get_template_names()
             .filter(|name| *name != "template.html");
+        // TODO: Make this file path customizable 
 
         for template_name in template_paths {
             let context = self.process_tags(&precomputed)?;
