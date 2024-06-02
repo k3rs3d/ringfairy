@@ -26,8 +26,6 @@ pub struct WebringSite {
 }
 
 pub fn setup_client(settings: &AppSettings) -> reqwest::Client {
-    // TODO: Create a setting/param for timeout duration, and one for user agent string, and one for header string
-    // Also, create {{ tags }} for those, so webring admins can show their users those settings
     reqwest::Client::builder()
     .timeout(std::time::Duration::from_secs(30))
     .pool_max_idle_per_host(10)
@@ -54,11 +52,13 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Box<dyn std:
 
     // Audit websites to ensure they contain webring links (online)
     let audited_websites = if settings.audit {
+        let websites_len = &websites.len(); // capture length of website list 
         log::debug!("Auditing websites for webring links...");
-        let audited_websites = audit_links(&setup_client(&settings), websites, &settings).await?;
+        let audited_websites = audit_links(&setup_client(&settings), websites.clone(), &settings).await?;
         log::info!(
-            "Audit complete. Found links on {} websites.",
-            audited_websites.len()
+            "Audit complete. Found links on {} out of {} websites.",
+            audited_websites.len(),
+            websites_len
         );
         audited_websites
     } else {
@@ -174,7 +174,7 @@ async fn fetch_website_content(
         tokio::time::sleep(tokio::time::Duration::from_millis(settings.audit_retries_delay)).await;
     }
 
-    Err(format!("Failed to fetch URL {} after {} attempts", url, settings.audit_retries_max).into())
+    Err(format!("Failed to fetch {} after {} attempts", url, settings.audit_retries_max).into())
 }
 
 pub async fn audit_links(
