@@ -123,7 +123,9 @@ Right now, `{{ url }}` is a special tag that only works in `template.html` for t
 
 ----------------------------
 
-```
+<details>
+  <summary>🍄</summary>
+<pre><code>
                     __
                   .-'  |
                  /   <\|
@@ -136,7 +138,8 @@ Right now, `{{ url }}` is a special tag that only works in `template.html` for t
                 '.   ____/
                  | -|-|_
                  |____)_)
-```
+</code></pre>
+</details>
 
 ## ✨ Contributing
 
