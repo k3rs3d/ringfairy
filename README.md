@@ -105,6 +105,14 @@ The following tags are currently usable in templates:
 - *`{{ number_of_sites }}`* shows the current size of the webring.
 - *`{{ current_time }}`* displays the time of generating, showing when the page was last updated. 
 - *`{{ opml }}`* inserts the relative path of the ring's OPML file.
+- *`{{ base_url }}`* prints the webring's main URL, as set by the user. 
+- *`{{ ring_name }}`* displays the webring's title. 
+- *`{{ ring_description }}`* shows the webring's description according to settings. 
+- *`{{ ring_owner }}`* shows the name of the webring's owner.
+- *`{{ ring_owner_site }}`* prints the URL of the webring owner's site. 
+- *`{{ featured_site_name }}`* prints the name of the "featured site", which is random. 
+- *`{{ featured_site_description }}`* prints the description of the random featured site. 
+- *`{{ featured_site_url }}`* prints the URL of the random featured site. 
 
 Right now, `{{ url }}` is a special tag that only works in `template.html` for the next/previous links.  
 
