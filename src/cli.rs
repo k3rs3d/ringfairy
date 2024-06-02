@@ -96,7 +96,7 @@ pub struct ClapSettings {
         short = 'c',
         long = "cfg",
         ignore_case = false,
-        default_value = "./config.json",
+        default_value = "./ringfairy.toml",
         help = "Specify the config file path. Useful for settings that stay constant across many runs of your application, like path locations. Remember, any settings specified via command-line arguments will override the corresponding ones from this file"
     )]
     pub filepath_config: Option<String>,
