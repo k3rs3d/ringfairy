@@ -266,16 +266,17 @@ fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> AppSet
     final_settings.dry_run = cli_args.dry_run || config.dry_run.unwrap_or(final_settings.dry_run);
 
     // HACK: just set the config file value, then CLI value, directly
+    std::env::set_var("RUST_LOG", "error"); // Default to only showing errors
+
     if config.verbose.unwrap() {
-        std::env::set_var("RUST_LOG", "info");
-    } else {
-        // HACK ish: apply log level settings here
-        match cli_args.verbose {
-            0 => std::env::set_var("RUST_LOG", "error"), // Default to only showing errors
-            1 => std::env::set_var("RUST_LOG", "warn"),  // Showing info level logs with -v
-            2 => std::env::set_var("RUST_LOG", "info"),  // Showing info level logs with -vv
-            _ => std::env::set_var("RUST_LOG", "debug"), // Showing debug logs with -vvv or more
-        }
+        std::env::set_var("RUST_LOG", "warn");
+    }
+    // HACK ish: apply log level settings here
+    match cli_args.verbose {
+        0 => (),
+        1 => std::env::set_var("RUST_LOG", "warn"), // Showing info level logs with -v
+        2 => std::env::set_var("RUST_LOG", "info"), // Showing info level logs with -vv
+        _ => std::env::set_var("RUST_LOG", "debug"), // Showing debug logs with -vvv or more
     }
 
     final_settings
