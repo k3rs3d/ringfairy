@@ -25,7 +25,7 @@ struct PrecomputedTags {
     number_of_sites: usize,
     current_time: String,
     opml_link: String,
-    featured_site_title: String,
+    featured_site_name: String,
     featured_site_description: String,
     featured_site_url: String,
 }
@@ -176,7 +176,7 @@ impl HtmlGenerator {
             table_of_sites: self.generate_sites_table(webring)?,
             number_of_sites: webring.len(),
             featured_site_url: featured_site.website.url.clone(),
-            featured_site_title: featured_site.website.name.clone().unwrap_or_else(|| featured_site.website.url.clone()),
+            featured_site_name: featured_site.website.name.clone().unwrap_or_else(|| featured_site.website.url.clone()),
             featured_site_description: featured_site.website.about.clone().unwrap_or_else(|| "".to_string()),
             current_time: chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
             opml_link: "./".to_owned() + &settings.ring_name + ".opml",
@@ -227,8 +227,8 @@ impl HtmlGenerator {
         context.insert("ring_owner_site", &settings.ring_owner_site);
         // {{ number_of_sites }}
         context.insert("number_of_sites", &precomputed.number_of_sites);
-        // {{ featured_site_title }}
-        context.insert("featured_site_title", &precomputed.featured_site_title);
+        // {{ featured_site_name }}
+        context.insert("featured_site_name", &precomputed.featured_site_name);
         // {{ featured_site_description }}
         context.insert("featured_site_description", &precomputed.featured_site_description);
         // {{ featured_site_url }}
