@@ -176,16 +176,32 @@ pub struct ClapSettings {
     #[clap(short = 'A', long = "audit", action = ArgAction::SetTrue, help = "Scrapes URLs to check for the webring links before adding them to the list. If the links can't be found, the site will get skipped. ")]
     pub audit: bool,
 
-    #[clap(short = 'M', long = "retries-max", help = "When auditing sites, how many times to retry connecting to a site before giving up. ")]
+    #[clap(
+        short = 'M',
+        long = "retries-max",
+        help = "When auditing sites, how many times to retry connecting to a site before giving up. "
+    )]
     pub audit_retries_max: Option<u8>,
 
-    #[clap(short = 'D', long = "retries-delay", help = "When auditing sites, how many miliseconds to wait before trying again. ")]
+    #[clap(
+        short = 'D',
+        long = "retries-delay",
+        help = "When auditing sites, how many miliseconds to wait before trying again. "
+    )]
     pub audit_retries_delay: Option<u8>,
 
-    #[clap(short = 'U', long = "client-user-agent", help = "When auditing sites, user-agent string for the scraper. ")]
+    #[clap(
+        short = 'U',
+        long = "client-user-agent",
+        help = "When auditing sites, user-agent string for the scraper. "
+    )]
     pub client_user_agent: Option<String>,
 
-    #[clap(short = 'H', long = "client-header", help = "When auditing sites, header string for the scraper. ")]
+    #[clap(
+        short = 'H',
+        long = "client-header",
+        help = "When auditing sites, header string for the scraper. "
+    )]
     pub client_header: Option<String>,
 
     #[clap(short = 's', long = "shuffle", action = ArgAction::SetTrue, help = "Randomly shuffles the website sequence when generating the webring (does not modify the website list file).")]
@@ -279,11 +295,23 @@ fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> AppSet
         .or(config.base_url)
         .unwrap_or(final_settings.base_url);
 
-    final_settings.client_header = cli_args.client_header.or(config.client_header).unwrap_or(final_settings.client_header);
-    final_settings.client_user_agent = cli_args.client_user_agent.or(config.client_user_agent).unwrap_or(final_settings.client_user_agent);
+    final_settings.client_header = cli_args
+        .client_header
+        .or(config.client_header)
+        .unwrap_or(final_settings.client_header);
+    final_settings.client_user_agent = cli_args
+        .client_user_agent
+        .or(config.client_user_agent)
+        .unwrap_or(final_settings.client_user_agent);
 
-    final_settings.audit_retries_delay = cli_args.audit_retries_delay.or(config.audit_retries_delay).unwrap_or(final_settings.audit_retries_delay);
-    final_settings.audit_retries_max = cli_args.audit_retries_max.or(config.audit_retries_max).unwrap_or(final_settings.audit_retries_max);
+    final_settings.audit_retries_delay = cli_args
+        .audit_retries_delay
+        .or(config.audit_retries_delay)
+        .unwrap_or(final_settings.audit_retries_delay);
+    final_settings.audit_retries_max = cli_args
+        .audit_retries_max
+        .or(config.audit_retries_max)
+        .unwrap_or(final_settings.audit_retries_max);
 
     final_settings.audit = cli_args.audit || config.audit.unwrap_or(final_settings.audit);
     final_settings.no_slug = cli_args.no_slug || config.no_slug.unwrap_or(final_settings.no_slug);
