@@ -1,12 +1,18 @@
 body {
-    font-family: Courier New, Courier, Lucida Sans Typewriter, Lucida Typewriter, Consolas, monospace, sans-serif;
+    font-family: sans-serif;
 	line-height: 1.6;
     background-color: #111;
     color: #fff;
+	max-width: 80rem;
+	margin: auto;
 }
 
 h1 {
 	text-align: center;
+}
+
+h1,h2,h3,h4 {
+	font-family: Courier New, Courier, Consolas, monospace;
 }
 
 a {
@@ -43,14 +49,17 @@ tr:hover {
 th, td {
     padding: 10px;
     border: 2px solid #666;
-    border-radius: 8px;
 	text-align: left; 
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 th {
     background-color: #444;
     text-align: center;
 	font-size: 1.1em;
+	font-family: Courier New, Courier, Consolas, monospace;
 }
 
 .container {
@@ -60,7 +69,26 @@ th {
 }
 
 @media screen and (max-width: 600px) {
-    table {
-        width: 100%; /* Allows the table to be 100% width on smaller screens */
+    body {
+        font-size: 90%; 
     }
+
+    table { 
+		width: 100%;
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    th, td {
+        display: block;
+        text-align: left;
+		white-space: normal;
+    }
+	
+    tr {
+        display: flex; 
+        flex-direction: column; 
+    }
+
 }
