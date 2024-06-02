@@ -25,6 +25,23 @@ pub struct WebringSite {
     pub previous: usize,
 }
 
+pub fn setup_client() -> reqwest::Client {
+    // TODO: Create a setting/param for timeout duration, and one for user agent string, and one for header string
+    // Also, create {{ tags }} for those, so webring admins can show their users those settings
+    reqwest::Client::builder()
+    .timeout(std::time::Duration::from_secs(30))
+    .pool_max_idle_per_host(10)
+    .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36")
+    .default_headers({
+        let mut headers = reqwest::header::HeaderMap::new();
+        headers.insert(reqwest::header::ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8".parse().unwrap());
+        headers
+    })
+    .redirect(reqwest::redirect::Policy::limited(5))
+    .build()
+    .unwrap()
+}
+
 pub async fn process_websites(settings: &AppSettings) -> Result<(), Box<dyn std::error::Error>> {
     let websites = parse_website_list(&settings.filepath_list).await?;
 
@@ -38,7 +55,7 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Box<dyn std:
     // Audit websites to ensure they contain webring links (online)
     let audited_websites = if settings.audit {
         log::debug!("Auditing websites for webring links...");
-        let audited_websites = audit_links(websites, &settings.base_url).await?;
+        let audited_websites = audit_links(&setup_client(), websites, &settings.base_url).await?;
         log::info!(
             "Audit complete. Found links on {} websites.",
             audited_websites.len()
@@ -83,7 +100,7 @@ pub async fn parse_website_list(
                 .map_err(|e| Box::<dyn std::error::Error>::from(e.to_string()))?;
             Ok(websites)
         }
-        // TODO: Support TOML for website lists 
+        // TODO: Support TOML for website lists
         /*
         Some("toml") => {
             // Deserialize TOML
@@ -92,7 +109,9 @@ pub async fn parse_website_list(
             Ok(websites)
         }
         */
-        _ => Err(Box::<dyn std::error::Error>::from("Unsupported file format")),
+        _ => Err(Box::<dyn std::error::Error>::from(
+            "Unsupported file format",
+        )),
     }
 }
 
@@ -131,18 +150,7 @@ pub fn verify_websites(websites: &[Website]) -> Result<(), Box<dyn std::error::E
     Ok(())
 }
 
-async fn fetch_website_content(url: &str) -> Result<String, reqwest::Error> {
-    let client = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(10))
-        .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36")
-        .default_headers({
-            let mut headers = reqwest::header::HeaderMap::new();
-            headers.insert(reqwest::header::ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8".parse().unwrap());
-            headers
-        })
-        .redirect(reqwest::redirect::Policy::limited(5))
-        .build()?;
-
+async fn fetch_website_content(client: &reqwest::Client, url: &str) -> Result<String, reqwest::Error> {
     let response = client.get(url).send().await?.error_for_status()?; // will return Err if status is not in 200-299
 
     if !response.status().is_success() {
@@ -157,6 +165,7 @@ async fn fetch_website_content(url: &str) -> Result<String, reqwest::Error> {
 }
 
 pub async fn audit_links(
+    client: &reqwest::Client,
     websites: Vec<Website>,
     base_url: &str,
 ) -> Result<Vec<Website>, Box<dyn std::error::Error>> {
@@ -164,8 +173,8 @@ pub async fn audit_links(
 
     for website in websites {
         let website_clone = website.clone();
-
-        tasks.push(async move { does_html_contain_links(&website_clone, &base_url).await });
+        let client = client.clone();
+        tasks.push(async move { does_html_contain_links(&client, &website_clone, &base_url).await });
     }
 
     let mut compliant_sites = Vec::new();
@@ -187,10 +196,12 @@ pub async fn audit_links(
 }
 
 async fn does_html_contain_links(
+    client: &reqwest::Client,
     website: &Website,
     base_url: &str,
 ) -> Result<(Website, bool, Option<String>), (Website, Box<dyn std::error::Error>)> {
-    let html = fetch_website_content(&website.url)
+    // Implement retry mechanism with a delay pattern.
+    let html = fetch_website_content(client, &website.url)
         .await
         .map_err(|e| (website.clone(), e.into()))?;
 
