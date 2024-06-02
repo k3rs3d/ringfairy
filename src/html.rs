@@ -190,7 +190,7 @@ impl HtmlGenerator {
         // TODO: Make this file path customizable 
 
         for template_name in template_paths {
-            let context = self.process_tags(&precomputed)?;
+            let context = self.process_tags(&precomputed, &settings)?;
 
             let template_file_name = Path::new(template_name)
                 .file_name()
@@ -209,11 +209,22 @@ impl HtmlGenerator {
     fn process_tags(
         &self,
         precomputed: &PrecomputedTags,
+        settings: &AppSettings,
     ) -> Result<Context, Box<dyn std::error::Error>> {
         let mut context = Context::new();
 
         // Process the "{{ table_of_sites }}" tag
         context.insert("table_of_sites", &precomputed.table_of_sites);
+        // {{ base_url }}
+        context.insert("base_url", &settings.base_url);
+        // {{ ring_name }}
+        context.insert("ring_name", &settings.ring_name);
+        // {{ ring_description }}
+        context.insert("ring_description", &settings.ring_description);
+        // {{ ring_owner }}
+        context.insert("ring_owner", &settings.ring_owner);
+        // {{ ring_owner_site }}
+        context.insert("ring_owner_site", &settings.ring_owner_site);
         // {{ number_of_sites }}
         context.insert("number_of_sites", &precomputed.number_of_sites);
         // {{ featured_site_title }}
