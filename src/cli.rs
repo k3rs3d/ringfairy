@@ -37,7 +37,7 @@ impl Default for AppSettings {
             ring_description: "A ring that connects websites to each other with links".into(),
             ring_owner: "Webring Organization or Person".into(),
             ring_owner_site: "https://webring.domain.tld/".into(),
-            filepath_config: "./config.json".into(),
+            filepath_config: "./ringfairy.toml".into(),
             filepath_list: "./websites.json".into(),
             path_output: "./webring".into(),
             path_assets: "./data/assets".into(),
