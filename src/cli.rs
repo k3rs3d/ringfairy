@@ -16,6 +16,8 @@ pub struct AppSettings {
     pub path_assets: String,
     pub path_templates: String,
     pub base_url: String,
+    pub next_url_text: String,
+    pub prev_url_text: String,
     pub client_user_agent: String,
     pub client_header: String,
     pub audit_retries_max: u64,
@@ -43,6 +45,8 @@ impl Default for AppSettings {
             path_assets: "./data/assets".into(),
             path_templates: "./data/templates".into(),
             base_url: " ".to_string(),
+            next_url_text: "next".to_string(),
+            prev_url_text: "previous".to_string(),
             client_user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36".into(),
             client_header: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8".into(),
             audit_retries_delay: 100,
@@ -70,6 +74,8 @@ pub struct ConfigSettings {
     pub path_assets: Option<String>,
     pub path_templates: Option<String>,
     pub base_url: Option<String>,
+    pub next_url_text: Option<String>,
+    pub prev_url_text: Option<String>,
     pub client_user_agent: Option<String>,
     pub client_header: Option<String>,
     pub audit_retries_max: Option<u64>,
@@ -145,6 +151,20 @@ pub struct ClapSettings {
         help = "The base URL for the webring. Something like 'https://example.com'"
     )]
     pub base_url: Option<String>,
+
+    #[clap(
+        long = "next-text",
+        ignore_case = false,
+        help = "The string for 'next' in the redirect URL, e.g. `https://example.com/next/site`"
+    )]
+    pub next_url_text: Option<String>,
+
+    #[clap(
+        long = "previous-text",
+        ignore_case = false,
+        help = "The string for 'previous' in the redirect URL, e.g. `https://example.com/previous/site`"
+    )]
+    pub prev_url_text: Option<String>,
 
     #[clap(
         short = 'n',
@@ -299,6 +319,16 @@ fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> AppSet
         .base_url
         .or(config.base_url)
         .unwrap_or(final_settings.base_url);
+
+    final_settings.next_url_text = cli_args
+    .next_url_text
+    .or(config.next_url_text)
+    .unwrap_or(final_settings.next_url_text);
+
+    final_settings.prev_url_text = cli_args
+    .prev_url_text
+    .or(config.prev_url_text)
+    .unwrap_or(final_settings.prev_url_text);
 
     final_settings.client_header = cli_args
         .client_header
