@@ -2,6 +2,7 @@ mod cli;
 mod file;
 mod html;
 mod http;
+mod webring;
 mod website;
 
 #[tokio::main]

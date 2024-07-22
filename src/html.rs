@@ -11,7 +11,7 @@ use crate::cli::AppSettings;
 use opml::*;
 
 //use crate::file::acquire_file_data;
-use crate::website::WebringSite;
+use crate::webring::WebringSite;
 
 pub struct HtmlGenerator {
     tera: Tera,
