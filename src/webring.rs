@@ -78,3 +78,77 @@ pub async fn build_webring_sites(websites: Vec<Website>, shuffle: bool) -> Vec<W
 
     webring_sites
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn create_sample_website(slug: &str) -> Website {
+        Website {
+            slug: slug.to_string(),
+            name: Some(format!("Site {}", slug)),
+            about: Some(format!("About {}", slug)),
+            url: format!("http://{}.com", slug),
+            rss: Some(format!("http://{}.com/rss", slug)),
+            owner: Some(format!("Owner {}", slug)),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_build_webring() {
+        // sample data
+        let websites = vec![
+            create_sample_website("site1"),
+            create_sample_website("site2"),
+            create_sample_website("site3"),
+        ];
+
+        let webring_sites = build_webring_sites(websites.clone(), false).await;
+
+        assert_eq!(webring_sites.len(), 3);
+
+        assert_eq!(webring_sites[0].website.slug, "site1");
+        assert_eq!(webring_sites[0].next, 1);
+        assert_eq!(webring_sites[0].previous, 2);
+
+        assert_eq!(webring_sites[1].website.slug, "site2");
+        assert_eq!(webring_sites[1].next, 2);
+        assert_eq!(webring_sites[1].previous, 0);
+
+        assert_eq!(webring_sites[2].website.slug, "site3");
+        assert_eq!(webring_sites[2].next, 0);
+        assert_eq!(webring_sites[2].previous, 1);
+    }
+
+    #[tokio::test]
+    async fn test_build_webring_shuffle() {
+        // sample data
+        let websites = vec![
+            create_sample_website("site1"),
+            create_sample_website("site2"),
+            create_sample_website("site3"),
+        ];
+
+        // shuffle enabled
+        let webring_sites = build_webring_sites(websites.clone(), true).await;
+
+        assert_eq!(webring_sites.len(), 3);
+
+        let mut slugs: Vec<&str> = webring_sites.iter().map(|site| site.website.slug.as_str()).collect();
+        slugs.sort();
+        let expected_slugs: Vec<&str> = websites.iter().map(|site| site.slug.as_str()).collect();
+        assert_eq!(slugs, expected_slugs);
+
+        for i in 0..webring_sites.len() {
+            let next_index = (i + 1) % webring_sites.len();
+            assert_eq!(webring_sites[i].next, next_index);
+
+            let prev_index = if i == 0 {
+                webring_sites.len() - 1
+            } else {
+                i - 1
+            };
+            assert_eq!(webring_sites[i].previous, prev_index);
+        }
+    }
+}
