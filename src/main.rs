@@ -1,4 +1,5 @@
 mod cli;
+mod error;
 mod file;
 mod html;
 mod http;
