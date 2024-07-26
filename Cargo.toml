@@ -34,6 +34,7 @@ opml = "1.1.6"
 regex = "1.10.4"
 lazy_static = "1.4.0"
 toml = "0.8.13"
+thiserror = "1.0.63"
 
 [profile.release]
 lto = true
