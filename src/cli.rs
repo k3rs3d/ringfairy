@@ -267,16 +267,15 @@ async fn load_config(config_path: &str) -> Option<ConfigSettings> {
 
     // Deserialize based on format
     // TODO: Add more config file types?
-    match file::get_extension_from_path(config_path).as_deref() {
-        Some("json") => match serde_json::from_str(&config_content) {
-            Ok(config) => Some(config),
-            Err(_) => None, // JSON deserialization failed
+    match file::acquire_file_data(config_path).await {
+        Ok(config_content) if !config_content.trim().is_empty() => {
+            match file::get_extension_from_path(config_path).as_deref() {
+                Some("json") => serde_json::from_str(&config_content).ok(),
+                Some("toml") => toml::from_str(&config_content).ok(),
+                _ => None,
+            }
         },
-        Some("toml") => match toml::from_str(&config_content) {
-            Ok(config) => Some(config),
-            Err(_) => None, // TOML deserialization failed
-        },
-        _ => None, // Should not reach here
+        _ => None,
     }
 }
 
@@ -367,9 +366,10 @@ fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> AppSet
     // HACK ish: apply log level settings here
     match cli_args.verbose {
         0 => (),
-        1 => std::env::set_var("RUST_LOG", "warn"), // Showing info level logs with -v
+        1 => std::env::set_var("RUST_LOG", "warn"), // Showing warn level logs with -v
         2 => std::env::set_var("RUST_LOG", "info"), // Showing info level logs with -vv
-        _ => std::env::set_var("RUST_LOG", "debug"), // Showing debug logs with -vvv or more
+        3 => std::env::set_var("RUST_LOG", "debug"), // Showing debug logs with -vvv or more
+        _ => std::env::set_var("RUST_LOG", "trace"), // Showing trace logs beyond -vvv
     }
 
     final_settings
