@@ -7,17 +7,17 @@ mod website;
 
 #[tokio::main]
 async fn main() {
-    // Init logging
-    env_logger::init();
-
     // Parse arguments & get settings struct
     let settings = cli::parse_args().await;
+
+    // Init logging
+    env_logger::init();
     log::info!("Starting generator with settings: {:?}", settings);
 
-    // Start a timer 
+    // Start a timer
     let start = std::time::Instant::now();
 
-    // Generate webring 
+    // Generate webring
     if let Err(e) = website::process_websites(&settings).await {
         log::error!("Process error: {}", e);
         return;
