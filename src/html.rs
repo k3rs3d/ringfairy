@@ -1,5 +1,6 @@
 use lazy_static::lazy_static;
 use minify_html::{minify, Cfg};
+use opml::{Head, OPML};
 use rand::prelude::SliceRandom;
 use regex::Regex;
 use std::fs::{self};
@@ -7,11 +8,8 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use tera::{Context, Tera};
 
-use crate::error::Error;
 use crate::cli::AppSettings;
-use opml::*;
-
-//use crate::file::acquire_file_data;
+use crate::error::Error;
 use crate::webring::WebringSite;
 
 pub struct HtmlGenerator {
@@ -32,10 +30,7 @@ struct PrecomputedTags {
 }
 
 impl HtmlGenerator {
-    pub fn new(
-        template_path: impl Into<PathBuf>,
-        skip_minify: bool,
-    ) -> Result<Self, Error> {
+    pub fn new(template_path: impl Into<PathBuf>, skip_minify: bool) -> Result<Self, Error> {
         let mut cfg = Cfg::new();
         cfg.minify_css = true;
         cfg.minify_js = true;
@@ -55,11 +50,7 @@ impl HtmlGenerator {
         })
     }
 
-    fn write_content(
-        &self,
-        file_path: &Path,
-        content: &str,
-    ) -> Result<(), Error> {
+    fn write_content(&self, file_path: &Path, content: &str) -> Result<(), Error> {
         let mut file = fs::File::create(file_path)?;
         let final_content = if self.skip_minify {
             content.to_string()
@@ -69,9 +60,7 @@ impl HtmlGenerator {
         };
 
         file.write_all(final_content.as_bytes())?;
-
         log::info!("Generated HTML file {}", file_path.display());
-
         Ok(())
     }
 
@@ -81,9 +70,7 @@ impl HtmlGenerator {
         settings: &AppSettings,
     ) -> Result<(), Error> {
         let path_output = &settings.path_output;
-        // Ensure output directory exists
         fs::create_dir_all(path_output)?;
-
         let mut opml = OPML::default();
         opml.head = Some(Head {
             title: Some(settings.ring_description.to_owned()),
@@ -92,7 +79,7 @@ impl HtmlGenerator {
             ..Head::default()
         });
 
-        for (_index, website) in webring.iter().enumerate() {
+        for website in webring {
             if let Some(owner) = &website.website.owner {
                 if let Some(rss_url) = website.website.rss.as_ref().filter(|url| !url.is_empty()) {
                     opml.add_feed(owner, rss_url);
@@ -114,14 +101,13 @@ impl HtmlGenerator {
         settings: &AppSettings,
     ) -> Result<(), Error> {
         let path_output = &settings.path_output;
-        // Ensure output directory exists
         fs::create_dir_all(path_output)?;
 
         let mut context = Context::new();
         context.insert("websites", webring);
 
         // Generate site-specific "next"/"previous" pages
-        for site in webring.iter() {
+        for site in webring {
             self.generate_site(site, webring, &context, path_output, settings)?;
         }
 
@@ -141,7 +127,6 @@ impl HtmlGenerator {
     ) -> Result<(), Error> {
         // Create directory for the site
         let site_path = Path::new(path_output).join(&site.website.slug);
-        
         fs::create_dir_all(&site_path.join(&settings.next_url_text))?;
         fs::create_dir_all(&site_path.join(&settings.prev_url_text))?;
 
@@ -149,15 +134,27 @@ impl HtmlGenerator {
         let previous_site = &webring[site.previous].website.url;
         let next_site = &webring[site.next].website.url;
 
-        let mut next_context = context.clone();
-        next_context.insert("url", next_site);
-        let content_next = self.tera.render("template.html", &next_context)?;
-        self.write_content(&site_path.join(format!("{}/index.html", &settings.next_url_text)), &content_next)?;
+        self.render_and_write(&site_path, &settings.next_url_text, next_site, &context)?;
+        self.render_and_write(&site_path, &settings.prev_url_text, previous_site, &context)?;
 
-        let mut previous_context = context.clone();
-        previous_context.insert("url", previous_site);
-        let content_previous = self.tera.render("template.html", &previous_context)?;
-        self.write_content(&site_path.join(format!("{}/index.html", &settings.prev_url_text)), &content_previous)?;
+        Ok(())
+    }
+
+    fn render_and_write(
+        &self,
+        site_path: &Path,
+        url_text: &str,
+        site_url: &str,
+        context: &Context,
+    ) -> Result<(), Error> {
+        let mut url_context = context.clone();
+        url_context.insert("url", site_url);
+
+        let content = self.tera.render("template.html", &url_context)?;
+        self.write_content(
+            &site_path.join(format!("{}/index.html", url_text)),
+            &content,
+        )?;
 
         Ok(())
     }
@@ -167,86 +164,70 @@ impl HtmlGenerator {
         settings: &AppSettings,
         webring: &[WebringSite],
     ) -> Result<(), Error> {
-        // Pre-generate expensive tag data for reuse
         let path_output = &settings.path_output;
 
-        // Picking a random site for the featured site
-        let mut rng = rand::thread_rng();
-        let featured_site = webring.choose(&mut rng).unwrap();
+        // Precompute tags for reuse
+        let precomputed = self.precompute_tags(webring, settings);
 
-        let precomputed = PrecomputedTags {
-            table_of_sites: self.generate_sites_table(webring)?,
-            number_of_sites: webring.len(),
-            featured_site_url: featured_site.website.url.clone(),
-            featured_site_name: featured_site.website.name.clone().unwrap_or_else(|| featured_site.website.url.clone()),
-            featured_site_description: featured_site.website.about.clone().unwrap_or_else(|| "".to_string()),
-            current_time: chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
-            opml_link: "./".to_owned() + &settings.ring_name + ".opml",
-        };
-
-        // Load template files
-        let template_paths = self
+        // Process custom templates
+        for template_name in self
             .tera
             .get_template_names()
-            .filter(|name| *name != "template.html");
-        // TODO: Make this file path customizable 
-
-        for template_name in template_paths {
-            let context = self.process_tags(&precomputed, &settings)?;
-
-            let template_file_name = Path::new(template_name)
-                .file_name()
-                .unwrap()
-                .to_str()
-                .unwrap();
-
+            .filter(|name| *name != "template.html")
+        {
+            let context = self.generate_context(&precomputed, &settings)?;
             let content = self.tera.render(template_name, &context)?;
-            let file_path = Path::new(path_output).join(template_file_name);
+            let file_path = Path::new(path_output).join(template_name);
             self.write_content(&file_path, &content)?;
         }
 
         Ok(())
     }
 
-    fn process_tags(
+    fn precompute_tags(&self, webring: &[WebringSite], settings: &AppSettings) -> PrecomputedTags {
+        let featured_site = webring.choose(&mut rand::thread_rng()).unwrap();
+
+        PrecomputedTags {
+            table_of_sites: self.generate_sites_table(webring).unwrap_or_default(),
+            number_of_sites: webring.len(),
+            current_time: chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            featured_site_name: featured_site
+                .website
+                .name
+                .clone()
+                .unwrap_or_else(|| featured_site.website.url.clone()),
+            featured_site_description: featured_site.website.about.clone().unwrap_or_default(),
+            featured_site_url: featured_site.website.url.clone(),
+            opml_link: format!("./{}.opml", &settings.ring_name),
+        }
+    }
+
+    fn generate_context(
         &self,
         precomputed: &PrecomputedTags,
         settings: &AppSettings,
     ) -> Result<Context, Error> {
         let mut context = Context::new();
-
-        // Process the "{{ table_of_sites }}" tag
         context.insert("table_of_sites", &precomputed.table_of_sites);
-        // {{ base_url }}
         context.insert("base_url", &settings.base_url);
-        // {{ ring_name }}
         context.insert("ring_name", &settings.ring_name);
-        // {{ ring_description }}
         context.insert("ring_description", &settings.ring_description);
-        // {{ ring_owner }}
         context.insert("ring_owner", &settings.ring_owner);
-        // {{ ring_owner_site }}
         context.insert("ring_owner_site", &settings.ring_owner_site);
-        // {{ number_of_sites }}
         context.insert("number_of_sites", &precomputed.number_of_sites);
-        // {{ featured_site_name }}
         context.insert("featured_site_name", &precomputed.featured_site_name);
-        // {{ featured_site_description }}
-        context.insert("featured_site_description", &precomputed.featured_site_description);
-        // {{ featured_site_url }}
+        context.insert(
+            "featured_site_description",
+            &precomputed.featured_site_description,
+        );
         context.insert("featured_site_url", &precomputed.featured_site_url);
-        // {{ current_time }}
         context.insert("current_time", &precomputed.current_time);
-        // {{ opml }}
         context.insert("opml", &precomputed.opml_link);
 
         Ok(context)
     }
 
-    fn generate_sites_table(
-        &self,
-        websites: &[WebringSite],
-    ) -> Result<String, Error> {
+    fn generate_sites_table(&self, websites: &[WebringSite]) -> Result<String, Error> {
         log::debug!("Generating webring list table...");
 
         let mut table_html = String::new();
