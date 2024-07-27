@@ -5,8 +5,7 @@ use std::result::Result;
 use crate::cli::AppSettings;
 use crate::error::Error;
 use crate::file;
-use crate::html::HtmlGenerator;
-use crate::webring::build_webring_sites;
+use crate::gen::{Generator, html::HtmlGenerator, webring};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Website {
@@ -39,7 +38,7 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Error> {
     // Verify websites entries if required (offline)
     if !settings.skip_verify {
         log::debug!("Verifying websites...");
-        crate::webring::verify_websites(&websites)?;
+        webring::verify_websites(&websites)?;
         log::info!("All website entries verified.");
     }
 
@@ -63,21 +62,16 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Error> {
         return Err(Error::StringError("No valid websites found.".to_string()));
     }
 
-    // Organize site into the webring sequence
-    let webring = build_webring_sites(audited_websites, settings.shuffle).await;
+    // Organize sites into the webring sequence
+    let webring = webring::build_webring_sites(audited_websites, settings.shuffle).await;
 
     // Proceed with HTML generation (if not a dry run)
     if !settings.dry_run {
-        let html_generator = HtmlGenerator::new(&settings.path_templates, settings.skip_minify)?;
-
-        log::info!("Generating websites HTML...");
-
-        html_generator.generate_html(&webring, &settings).await?;
-
+        log::info!("Generating webring HTML...");
+        let html_generator = HtmlGenerator::new(settings.path_templates.clone().into(), settings.skip_minify).await?;
+        html_generator.generate_content(&webring, &settings).await?;
         log::info!("Finished generating webring HTML.");
-
-        log::info!("Generating OPML file...");
-        html_generator.generate_opml(&webring, &settings).await?;
+        //html_generator.generate_opml(&webring, &settings).await?;
     }
 
     Ok(())
