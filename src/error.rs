@@ -1,7 +1,4 @@
-use std::fmt;
-use thiserror::Error;
-
-#[derive(Error, Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("Template error: {0}")]
     TemplateError(#[from] tera::Error),
@@ -10,8 +7,11 @@ pub enum Error {
     HttpError(#[from] reqwest::Error),
     
     #[error("Config error: {0}")]
-    ConfigError(String),
+    ConfigError(#[from] clap::Error),
 
     #[error("I/O error: {0}")]
     IOError(#[from] std::io::Error),
+
+    #[error("Error: {0}")]
+    StringError(String),
 }
