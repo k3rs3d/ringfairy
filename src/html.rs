@@ -7,6 +7,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use tera::{Context, Tera};
 
+use crate::error::Error;
 use crate::cli::AppSettings;
 use opml::*;
 
@@ -34,7 +35,7 @@ impl HtmlGenerator {
     pub fn new(
         template_path: impl Into<PathBuf>,
         skip_minify: bool,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    ) -> Result<Self, Error> {
         let mut cfg = Cfg::new();
         cfg.minify_css = true;
         cfg.minify_js = true;
@@ -45,8 +46,7 @@ impl HtmlGenerator {
             .join("**/*")
             .to_string_lossy()
             .to_string();
-        let tera = Tera::new(&template_path_str)
-            .map_err(|err| Box::new(err) as Box<dyn std::error::Error>)?;
+        let tera = Tera::new(&template_path_str)?;
 
         Ok(Self {
             tera,
@@ -59,7 +59,7 @@ impl HtmlGenerator {
         &self,
         file_path: &Path,
         content: &str,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Error> {
         let mut file = fs::File::create(file_path)?;
         let final_content = if self.skip_minify {
             content.to_string()
@@ -79,7 +79,7 @@ impl HtmlGenerator {
         &self,
         webring: &[WebringSite],
         settings: &AppSettings,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Error> {
         let path_output = &settings.path_output;
         // Ensure output directory exists
         fs::create_dir_all(path_output)?;
@@ -112,7 +112,7 @@ impl HtmlGenerator {
         &self,
         webring: &[WebringSite],
         settings: &AppSettings,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Error> {
         let path_output = &settings.path_output;
         // Ensure output directory exists
         fs::create_dir_all(path_output)?;
@@ -138,7 +138,7 @@ impl HtmlGenerator {
         context: &Context,
         path_output: &str,
         settings: &AppSettings,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Error> {
         // Create directory for the site
         let site_path = Path::new(path_output).join(&site.website.slug);
         
@@ -166,7 +166,7 @@ impl HtmlGenerator {
         &self,
         settings: &AppSettings,
         webring: &[WebringSite],
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<(), Error> {
         // Pre-generate expensive tag data for reuse
         let path_output = &settings.path_output;
 
@@ -212,7 +212,7 @@ impl HtmlGenerator {
         &self,
         precomputed: &PrecomputedTags,
         settings: &AppSettings,
-    ) -> Result<Context, Box<dyn std::error::Error>> {
+    ) -> Result<Context, Error> {
         let mut context = Context::new();
 
         // Process the "{{ table_of_sites }}" tag
@@ -246,7 +246,7 @@ impl HtmlGenerator {
     fn generate_sites_table(
         &self,
         websites: &[WebringSite],
-    ) -> Result<String, Box<dyn std::error::Error>> {
+    ) -> Result<String, Error> {
         log::debug!("Generating webring list table...");
 
         let mut table_html = String::new();

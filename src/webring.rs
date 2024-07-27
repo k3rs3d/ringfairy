@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use rand::{seq::SliceRandom, thread_rng};
 
+use crate::error::Error;
 use crate::website::Website;
 
 #[derive(Debug, serde::Serialize)]
@@ -10,7 +11,7 @@ pub struct WebringSite {
     pub previous: usize,
 }
 
-pub fn verify_websites(websites: &[Website]) -> Result<(), Box<dyn std::error::Error>> {
+pub fn verify_websites(websites: &[Website]) -> Result<(), Error> {
     let mut slugs = HashSet::new();
     let mut urls = HashSet::new();
     // TODO: verify URL pattern
@@ -19,20 +20,18 @@ pub fn verify_websites(websites: &[Website]) -> Result<(), Box<dyn std::error::E
     for website in websites {
         // Check for duplicate names and URLs
         if !slugs.insert(&website.slug) {
-            return Err(format!(
+            return Err(Error::StringError(format!(
                 "Duplicate website slug found: {} - {}",
                 website.slug,
                 website.owner.as_deref().unwrap_or("")
-            )
-            .into());
+            )));
         }
         if !urls.insert(&website.url) {
-            return Err(format!(
+            return Err(Error::StringError(format!(
                 "Duplicate website URL found: {} - {}",
                 website.url,
                 website.owner.as_deref().unwrap_or("")
-            )
-            .into());
+            )));
         }
 
         // Uncomment to check URL format with regex

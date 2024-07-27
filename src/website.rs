@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::result::Result;
 
 use crate::cli::AppSettings;
+use crate::error::Error;
 use crate::file;
 use crate::html::HtmlGenerator;
 use crate::webring::build_webring_sites;
@@ -32,7 +33,7 @@ pub fn setup_client(settings: &AppSettings) -> reqwest::Client {
     .unwrap()
 }
 
-pub async fn process_websites(settings: &AppSettings) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn process_websites(settings: &AppSettings) -> Result<(), Error> {
     let websites = parse_website_list(&settings.filepath_list).await?;
 
     // Verify websites entries if required (offline)
@@ -59,7 +60,7 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Box<dyn std:
 
     // Ensure the list isn't empty at this point 
     if audited_websites.is_empty() {
-        return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "No valid websites found.")));
+        return Err(Error::StringError("No valid websites found.".to_string()));
     }
 
     // Organize site into the webring sequence
@@ -85,7 +86,7 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Box<dyn std:
 // Load the websites from JSON
 pub async fn parse_website_list(
     file_path_or_url: &str,
-) -> Result<Vec<Website>, Box<dyn std::error::Error>> {
+) -> Result<Vec<Website>, Error> {
     // Able to get data from local or from remote
     let file_data = file::acquire_file_data(file_path_or_url).await?;
 
@@ -93,8 +94,7 @@ pub async fn parse_website_list(
     match file::get_extension_from_path(file_path_or_url).as_deref() {
         Some("json") => {
             // Deserialize JSON
-            let websites: Vec<Website> = serde_json::from_str(&file_data)
-                .map_err(|e| Box::<dyn std::error::Error>::from(e.to_string()))?;
+            let websites: Vec<Website> = serde_json::from_str(&file_data)?;
             Ok(websites)
         }
         // TODO: Support TOML for website lists
@@ -106,8 +106,8 @@ pub async fn parse_website_list(
             Ok(websites)
         }
         */
-        _ => Err(Box::<dyn std::error::Error>::from(
-            "Unsupported file format",
+        _ => Err(Error::StringError(
+            "Unsupported file format".to_string(),
         )),
     }
 }
@@ -116,7 +116,7 @@ async fn fetch_website_content(
     client: &reqwest::Client,
     url: &str,
     settings: &AppSettings,
-) -> Result<String, Box<dyn std::error::Error>> {
+) -> Result<String, Error> {
     let mut attempts = 0;
 
     loop {
@@ -136,14 +136,14 @@ async fn fetch_website_content(
         tokio::time::sleep(tokio::time::Duration::from_millis(settings.audit_retries_delay)).await;
     }
 
-    Err(format!("Failed to fetch {} after {} attempts", url, settings.audit_retries_max).into())
+    Err(Error::StringError(format!("Failed to fetch {} after {} attempts", url, settings.audit_retries_max)))
 }
 
 pub async fn audit_links(
     client: &reqwest::Client,
     websites: Vec<Website>,
     settings: &AppSettings,
-) -> Result<Vec<Website>, Box<dyn std::error::Error>> {
+) -> Result<Vec<Website>, Error> {
     let mut tasks = FuturesUnordered::new();
 
     for website in websites {
