@@ -40,3 +40,80 @@ pub fn get_extension_from_path(path: &str) -> Option<String> {
         .and_then(|ext| ext.to_str())
         .map(|ext| ext.to_lowercase())
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // acquire_file_data() 
+    /*
+    #[tokio::test]
+    async fn test_acquire_local_file() {
+        // Create a temporary file for testing
+        let temp_file_path = "ringfairy_cargo_test_file.txt";
+        fs::write(temp_file_path, "cargo test content").unwrap();
+        
+        let result = acquire_file_data(temp_file_path).await;
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), "test content");
+
+        // Clean up
+        fs::remove_file(temp_file_path).unwrap();
+    }
+*/
+
+    #[tokio::test]
+    async fn test_acquire_file_from_invalid_url() {
+        let result = acquire_file_data("http://").await;
+        assert!(result.is_err(), "Expected error (invalid URL)");
+    }
+    
+    #[tokio::test]
+    async fn test_acquire_nonexistent_file() {
+        let result = acquire_file_data("/path/to/a/nonexistent/file.txt").await;
+        assert!(result.is_err(), "Expected error (nonexistent file)");
+    }
+    
+    #[tokio::test]
+    async fn test_acquire_file_with_empty_string() {
+        let result = acquire_file_data("").await;
+        assert!(result.is_err(), "Expected error (empty filepath string)");
+    }
+
+    // get_extension_from_path()
+    #[test]
+    fn test_get_extension_from_valid_path() {
+        let path = "file.txt";
+        let result = get_extension_from_path(path);
+        assert_eq!(result, Some("txt".to_string()));
+    }
+
+    #[test]
+    fn test_get_extension_from_path_without_extension() {
+        let path = "file";
+        let result = get_extension_from_path(path);
+        assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_get_extension_from_path_with_hidden_file() {
+        let path = ".hidden";
+        let result = get_extension_from_path(path);
+        assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_get_extension_from_path_with_multiple_dots() {
+        let path = "archive.tar.gz";
+        let result = get_extension_from_path(path);
+        assert_eq!(result, Some("gz".to_string()));
+    }
+
+    #[test]
+    fn test_get_extension_from_empty_string() {
+        let path = "";
+        let result = get_extension_from_path(path);
+        assert_eq!(result, None);
+    }
+}
