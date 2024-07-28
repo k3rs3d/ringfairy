@@ -41,7 +41,7 @@ async fn test_build_webring() {
         create_sample_website("site3", "https://site3.tld"),
     ];
 
-    let webring_sites = build_webring_sites(websites.clone(), &build_settings()).await;
+    let webring_sites = build_webring_sequence(websites.clone(), &build_settings()).await;
 
     assert_eq!(webring_sites.len(), 3);
 
@@ -69,7 +69,7 @@ async fn test_build_webring_shuffle() {
 
     // shuffle enabled
     let webring_sites =
-        build_webring_sites(websites.clone(), &build_settings_no_shuffle()).await;
+        build_webring_sequence(websites.clone(), &build_settings_no_shuffle()).await;
 
     assert_eq!(webring_sites.len(), 3);
 

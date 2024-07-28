@@ -16,6 +16,7 @@ pub struct WebringSite {
     pub previous: usize,
 }
 
+/// Checks each Website to ensure it has a valid URL, and tries to detect duplicate entries. 
 pub fn verify_websites(websites: &[Website]) -> Result<(), Error> {
     let mut slugs = HashSet::new();
     let mut urls = HashSet::new();
@@ -51,7 +52,7 @@ pub fn verify_websites(websites: &[Website]) -> Result<(), Error> {
 }
 
 /// Takes the vec of Websites, and outputs an ordered vec of WebringSites  
-pub async fn build_webring_sites(
+pub async fn build_webring_sequence(
     websites: Vec<Website>,
     settings: &AppSettings,
 ) -> Vec<WebringSite> {
@@ -98,7 +99,8 @@ pub async fn build_webring_sites(
     webring_sites
 }
 
-pub async fn process_websites(settings: &AppSettings) -> Result<(), Error> {
+/// Based on the provided settings, tries to load a list of websites, then generate & save files to create the webring. 
+pub async fn generate_webring_files(settings: &AppSettings) -> Result<(), Error> {
     let websites = parse_website_list(&settings.filepath_list).await?;
 
     // Verify websites entries if required (offline)
@@ -132,7 +134,7 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Error> {
     }
 
     // Organize sites into the webring sequence
-    let webring = build_webring_sites(audited_websites, settings).await;
+    let webring = build_webring_sequence(audited_websites, settings).await;
 
     // Proceed with HTML generation (if not a dry run)
     if !settings.dry_run {
