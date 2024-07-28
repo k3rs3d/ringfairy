@@ -1,6 +1,5 @@
 use crate::cli::AppSettings;
 use crate::error::Error;
-use reqwest;
 
 /// Returns a reqwest client, configured according to the user's configuration settings
 pub async fn setup_client(settings: &AppSettings) -> Result<reqwest::Client, Error> {

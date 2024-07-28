@@ -50,7 +50,7 @@ pub async fn audit_links(
         let website_clone = website.clone();
         let client = client.clone();
         tasks
-            .push(async move { does_html_contain_links(&client, &website_clone, &settings).await });
+            .push(async move { does_html_contain_links(&client, &website_clone, settings).await });
     }
 
     let mut compliant_sites = Vec::new();
