@@ -130,10 +130,22 @@ impl HtmlGenerator {
         let previous_site = &webring[site.previous].website.url;
         let next_site = &webring[site.next].website.url;
 
-        self.render_and_write(&site_path, &settings.next_url_text, next_site, &context)
-            .await?;
-        self.render_and_write(&site_path, &settings.prev_url_text, previous_site, &context)
-            .await?;
+        self.render_and_write(
+            &site_path,
+            &settings.next_url_text,
+            next_site,
+            &settings.filename_template_redirect,
+            &context,
+        )
+        .await?;
+        self.render_and_write(
+            &site_path,
+            &settings.prev_url_text,
+            previous_site,
+            &settings.filename_template_redirect,
+            &context,
+        )
+        .await?;
 
         Ok(())
     }
@@ -143,12 +155,13 @@ impl HtmlGenerator {
         site_path: &Path,
         url_text: &str,
         site_url: &str,
+        template_name: &str,
         context: &Context,
     ) -> Result<(), Error> {
         let mut url_context = context.clone();
         url_context.insert("url", site_url);
 
-        let content = self.tera.render("template.html", &url_context)?;
+        let content = self.tera.render(template_name, &url_context)?;
         self.write_content(
             &site_path.join(format!("{}/index.html", url_text)),
             &content,
@@ -170,7 +183,7 @@ impl HtmlGenerator {
         for template_name in self
             .tera
             .get_template_names()
-            .filter(|name| *name != "template.html")
+            .filter(|name| *name != settings.filename_template_redirect)
         {
             let context = self
                 .generate_context(&webring, &precomputed, &settings)
@@ -210,7 +223,7 @@ impl HtmlGenerator {
 }
 
 pub async fn build_sites_table_html(websites: &[WebringSite]) -> String {
-    // HTML-specific table generation 
+    // HTML-specific table generation
     let mut table_html = String::new();
     table_html.push_str("<table>\n<thead>\n<tr>\n");
     table_html.push_str("<th scope=\"col\">#</th>\n<th scope=\"col\">Name</th>\n<th scope=\"col\">URL</th>\n<th scope=\"col\">About</th>\n<th scope=\"col\">Owner</th>\n");
@@ -275,10 +288,6 @@ pub fn format_owner(owner: &str) -> String {
         .join(" ")
 }
 
-
-
-
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -288,7 +297,7 @@ mod tests {
     use crate::website::Website;
     use std::path::PathBuf;
 
-    // Mock data 
+    // Mock data
     fn mock_webring_site() -> Vec<WebringSite> {
         vec![
             WebringSite {
@@ -355,7 +364,9 @@ mod tests {
     async fn test_ensure_output_directory() {
         let path = "output_dir";
 
-        let generator = HtmlGenerator::new(PathBuf::from("templates"), false).await.unwrap();
+        let generator = HtmlGenerator::new(PathBuf::from("templates"), false)
+            .await
+            .unwrap();
         let result = generator.ensure_output_directory(path).await;
 
         assert!(result.is_ok());

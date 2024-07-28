@@ -12,6 +12,7 @@ pub struct AppSettings {
     pub ring_owner_site: String,
     pub filepath_config: String,
     pub filepath_list: String,
+    pub filename_template_redirect: String,
     pub path_output: String,
     pub path_assets: String,
     pub path_templates: String,
@@ -41,6 +42,7 @@ impl Default for AppSettings {
             ring_owner_site: "https://webring.domain.tld/".into(),
             filepath_config: "./ringfairy.toml".into(),
             filepath_list: "./websites.json".into(),
+            filename_template_redirect: "template.html".into(),
             path_output: "./webring".into(),
             path_assets: "./data/assets".into(),
             path_templates: "./data/templates".into(),
@@ -70,6 +72,7 @@ pub struct ConfigSettings {
     pub ring_owner: Option<String>,
     pub ring_owner_site: Option<String>,
     pub filepath_list: Option<String>,
+    pub filename_template_redirect: Option<String>,
     pub path_output: Option<String>,
     pub path_assets: Option<String>,
     pub path_templates: Option<String>,
@@ -119,6 +122,14 @@ pub struct ClapSettings {
         help = "Specify the file containing the list of websites to use. It should be a JSON file with 'name', 'url', etc fields."
     )]
     pub filepath_list: Option<String>,
+
+    #[clap(
+        short = 'r',
+        long = "redirect-template",
+        ignore_case = false,
+        help = "Specify the file containing the template for building the redirect pages for each site's next/previous link. This file won't be included when building the rest of the custom templates. It's relative to the templates directory, so it should probably just be the filename. Default is 'template.html'."
+    )]
+    pub filename_template_redirect: Option<String>,
 
     #[clap(
         short = 'o',
@@ -274,7 +285,7 @@ async fn load_config(config_path: &str) -> Option<ConfigSettings> {
                 Some("toml") => toml::from_str(&config_content).ok(),
                 _ => None,
             }
-        },
+        }
         _ => None,
     }
 }
@@ -302,6 +313,10 @@ fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> AppSet
         .filepath_list
         .or(config.filepath_list)
         .unwrap_or(final_settings.filepath_list);
+    final_settings.filename_template_redirect = cli_args
+        .filename_template_redirect
+        .or(config.filename_template_redirect)
+        .unwrap_or(final_settings.filename_template_redirect);
     final_settings.path_output = cli_args
         .path_output
         .or(config.path_output)
@@ -320,14 +335,14 @@ fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> AppSet
         .unwrap_or(final_settings.base_url);
 
     final_settings.next_url_text = cli_args
-    .next_url_text
-    .or(config.next_url_text)
-    .unwrap_or(final_settings.next_url_text);
+        .next_url_text
+        .or(config.next_url_text)
+        .unwrap_or(final_settings.next_url_text);
 
     final_settings.prev_url_text = cli_args
-    .prev_url_text
-    .or(config.prev_url_text)
-    .unwrap_or(final_settings.prev_url_text);
+        .prev_url_text
+        .or(config.prev_url_text)
+        .unwrap_or(final_settings.prev_url_text);
 
     final_settings.client_header = cli_args
         .client_header
@@ -378,18 +393,18 @@ fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> AppSet
 pub async fn parse_args() -> AppSettings {
     let clap_args = ClapSettings::parse();
 
-    // If the user provides a directory, search it for the default config file 
+    // If the user provides a directory, search it for the default config file
     let config_path = if let Some(ref input_path) = clap_args.input_path {
         let path = std::path::Path::new(input_path);
         if path.is_dir() {
             // If it's a directory, use default config file path within that directory
-            // TODO: make this a constant or something 
+            // TODO: make this a constant or something
             path.join("ringfairy.toml").to_str().map(|s| s.to_string())
         } else {
             // Use the given path as it is
             Some(input_path.clone())
         }
-    } else { 
+    } else {
         // Fall back to provided -c argument path or default
         clap_args.filepath_config.clone()
     };
