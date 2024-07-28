@@ -142,7 +142,7 @@ pub async fn generate_webring_files(settings: &AppSettings) -> Result<(), Error>
         let html_generator =
             HtmlGenerator::new(settings.path_templates.clone().into(), settings.skip_minify)
                 .await?;
-        html_generator.generate_content(&webring, &settings).await?;
+        html_generator.generate_content(&webring, settings).await?;
         log::info!("Finished generating webring HTML.");
         //html_generator.generate_opml(&webring, &settings).await?;
     }

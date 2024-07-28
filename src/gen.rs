@@ -17,7 +17,7 @@ use crate::gen::webring::WebringSite;
 ///Entry point (for now)
 pub async fn make_ringfairy_go_now(settings: &AppSettings) -> Result<(), Error> {
     // Do webring
-    webring::process_websites(settings).await?;
+    webring::generate_webring_files(settings).await?;
 
     // Copy static files (from ./assets by default) into output folder
     copy_asset_files(&settings.path_assets, &settings.path_output).await?;
