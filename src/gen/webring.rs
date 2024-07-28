@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use rand::{seq::SliceRandom, thread_rng};
 
+use crate::cli::AppSettings;
 use crate::error::Error;
 use crate::website::Website;
 
@@ -44,13 +45,23 @@ pub fn verify_websites(websites: &[Website]) -> Result<(), Error> {
     Ok(())
 }
 
-pub async fn build_webring_sites(websites: Vec<Website>, shuffle: bool) -> Vec<WebringSite> {
+pub async fn build_webring_sites(websites: Vec<Website>, settings: &AppSettings) -> Vec<WebringSite> {
     // Shuffle first (if set to do so)
     let mut websites = websites;
-    if shuffle {
+    if settings.shuffle {
         log::info!("Shuffling website sequence...");
         let mut rng = thread_rng(); // shuffle needs an RNG
         websites.as_mut_slice().shuffle(&mut rng);
+    }
+
+    for (index, website) in websites.iter_mut().enumerate() {
+        if settings.no_slug {
+            // determine sequential slugs if no_slug is true
+            website.slug = (index + 1).to_string();
+        } else if website.slug.is_empty() {
+            // if slug is missing, derive it from url (minus punctuation)
+            website.slug = website.url.replace(|c: char| !c.is_alphanumeric(), "");
+        }
     }
 
     let websites_len = websites.len(); // Capture length before consuming vector
@@ -93,6 +104,22 @@ mod tests {
         }
     }
 
+    fn build_settings() -> AppSettings
+    {
+        AppSettings {
+            shuffle: false,
+            ..Default::default()
+        }
+    }
+
+    fn build_settings_no_shuffle() -> AppSettings
+    {
+        AppSettings {
+            shuffle: true,
+            ..Default::default()
+        }
+    }
+
     #[tokio::test]
     async fn test_build_webring() {
         // sample data
@@ -102,7 +129,7 @@ mod tests {
             create_sample_website("site3"),
         ];
 
-        let webring_sites = build_webring_sites(websites.clone(), false).await;
+        let webring_sites = build_webring_sites(websites.clone(), &build_settings()).await;
 
         assert_eq!(webring_sites.len(), 3);
 
@@ -129,7 +156,7 @@ mod tests {
         ];
 
         // shuffle enabled
-        let webring_sites = build_webring_sites(websites.clone(), true).await;
+        let webring_sites = build_webring_sites(websites.clone(), &build_settings_no_shuffle()).await;
 
         assert_eq!(webring_sites.len(), 3);
 

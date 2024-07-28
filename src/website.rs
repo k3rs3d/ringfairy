@@ -67,7 +67,7 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Error> {
     }
 
     // Organize sites into the webring sequence
-    let webring = webring::build_webring_sites(audited_websites, settings.shuffle).await;
+    let webring = webring::build_webring_sites(audited_websites, settings).await;
 
     // Proceed with HTML generation (if not a dry run)
     if !settings.dry_run {
