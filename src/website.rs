@@ -40,19 +40,19 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Error> {
 
     // Verify websites entries if required (offline)
     if !settings.skip_verify {
-        log::debug!("Verifying websites...");
+        log::debug!("Verifying sites...");
         webring::verify_websites(&websites)?;
-        log::info!("All website entries verified.");
+        log::info!("All site entries verified.");
     }
 
     // Audit websites to ensure they contain webring links (online)
     let audited_websites = if settings.audit {
         let websites_len = &websites.len(); // capture length of website list
-        log::debug!("Auditing websites for webring links...");
+        log::debug!("Auditing sites for webring links...");
         let audited_websites =
             audit_links(&setup_client(&settings), websites.clone(), &settings).await?;
         log::info!(
-            "Audit complete. Found links on {} out of {} websites.",
+            "Audit complete. Found links on {} out of {} sites.",
             audited_websites.len(),
             websites_len
         );
@@ -63,7 +63,7 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Error> {
 
     // Ensure the list isn't empty at this point
     if audited_websites.is_empty() {
-        return Err(Error::StringError("No valid websites found.".to_string()));
+        return Err(Error::StringError("No valid sites passed the audit.".to_string()));
     }
 
     // Organize sites into the webring sequence
@@ -215,7 +215,7 @@ async fn does_html_contain_links(
     // First, check <a> elements for next/prev links:
     for element in document.select(&anchor_selector) {
         if let Some(href) = element.value().attr("href") {
-            log::debug!("Comparing link href: {}", href);
+            log::trace!("Comparing link href: {}", href);
 
             let href_trimmed = href.trim_end_matches('/');
             if href_trimmed == next_link {
@@ -230,7 +230,7 @@ async fn does_html_contain_links(
     if !next_exists || !previous_exists {
         for element in document.select(&button_selector) {
             if let Some(onclick) = element.value().attr("onclick") {
-                log::debug!("Checking button onclick: {}", onclick);
+                log::trace!("Checking button onclick: {}", onclick);
                 if onclick.contains(&next_link) {
                     next_exists = true;
                 } else if onclick.contains(&prev_link) {
@@ -244,7 +244,7 @@ async fn does_html_contain_links(
     if !next_exists || !previous_exists {
         for element in document.select(&img_selector) {
             if let Some(onclick) = element.value().attr("onclick") {
-                log::debug!("Checking img onclick: {}", onclick);
+                log::trace!("Checking img onclick: {}", onclick);
                 if onclick.contains(&next_link) {
                     next_exists = true;
                 } else if onclick.contains(&prev_link) {
