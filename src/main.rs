@@ -12,20 +12,20 @@ async fn main() {
 
     // Init logging
     env_logger::init();
-    log::info!("Starting generator with settings: {:?}", settings);
+    log::info!("Starting with settings: {:?}", settings);
 
     // Start a timer
     let start = std::time::Instant::now();
 
     // Generate webring
     if let Err(e) = website::process_websites(&settings).await {
-        log::error!("Process error: {}", e);
+        log::error!("{}", e);
         return;
     }
 
     // Finally, copy static files (from ./assets by default) into output folder
     if let Err(e) = file::copy_asset_files(&settings.path_assets, &settings.path_output) {
-        log::error!("Error copying asset file(s): {}", e);
+        log::error!("Error copying file(s): {}", e);
     }
 
     // Calculate elapsed time
