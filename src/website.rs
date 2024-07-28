@@ -4,9 +4,6 @@ use std::result::Result;
 
 use crate::cli::AppSettings;
 use crate::error::Error;
-use crate::file::parse_website_list;
-use crate::gen::{html::HtmlGenerator, webring, Generator};
-use crate::http::setup_client;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Website {
