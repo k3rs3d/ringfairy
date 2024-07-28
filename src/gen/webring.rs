@@ -1,5 +1,6 @@
-use std::collections::HashSet;
 use rand::{seq::SliceRandom, thread_rng};
+use regex::Regex;
+use std::collections::HashSet;
 
 use crate::cli::AppSettings;
 use crate::error::Error;
@@ -15,10 +16,18 @@ pub struct WebringSite {
 pub fn verify_websites(websites: &[Website]) -> Result<(), Error> {
     let mut slugs = HashSet::new();
     let mut urls = HashSet::new();
-    // TODO: verify URL pattern
-    // let url_pattern = Regex::new(r"^https://.+\..+$")?;
+
+    let url_pattern = Regex::new(r"^(http|https)://[^\s/$.?#].[^\s]*$")
+        .map_err(|e| Error::StringError(e.to_string()))?;
 
     for website in websites {
+        // Check for invalid URL format
+        if !url_pattern.is_match(&website.url) {
+            return Err(Error::StringError(format!(
+                "Unrecognized URL format: {} - {}",
+                website.url, website.slug
+            )));
+        }
         // Check for duplicate names and URLs
         if !slugs.insert(&website.slug) {
             return Err(Error::StringError(format!(
@@ -34,18 +43,14 @@ pub fn verify_websites(websites: &[Website]) -> Result<(), Error> {
                 website.owner.as_deref().unwrap_or("")
             )));
         }
-
-        // Uncomment to check URL format with regex
-        /*
-        if !url_pattern.is_match(&website.url) {
-            return Err(format!("Invalid URL format detected: {}", website.url).into());
-        }
-        */
     }
     Ok(())
 }
 
-pub async fn build_webring_sites(websites: Vec<Website>, settings: &AppSettings) -> Vec<WebringSite> {
+pub async fn build_webring_sites(
+    websites: Vec<Website>,
+    settings: &AppSettings,
+) -> Vec<WebringSite> {
     // Shuffle first (if set to do so)
     let mut websites = websites;
     if settings.shuffle {
@@ -104,16 +109,14 @@ mod tests {
         }
     }
 
-    fn build_settings() -> AppSettings
-    {
+    fn build_settings() -> AppSettings {
         AppSettings {
             shuffle: false,
             ..Default::default()
         }
     }
 
-    fn build_settings_no_shuffle() -> AppSettings
-    {
+    fn build_settings_no_shuffle() -> AppSettings {
         AppSettings {
             shuffle: true,
             ..Default::default()
@@ -156,11 +159,15 @@ mod tests {
         ];
 
         // shuffle enabled
-        let webring_sites = build_webring_sites(websites.clone(), &build_settings_no_shuffle()).await;
+        let webring_sites =
+            build_webring_sites(websites.clone(), &build_settings_no_shuffle()).await;
 
         assert_eq!(webring_sites.len(), 3);
 
-        let mut slugs: Vec<&str> = webring_sites.iter().map(|site| site.website.slug.as_str()).collect();
+        let mut slugs: Vec<&str> = webring_sites
+            .iter()
+            .map(|site| site.website.slug.as_str())
+            .collect();
         slugs.sort();
         let expected_slugs: Vec<&str> = websites.iter().map(|site| site.slug.as_str()).collect();
         assert_eq!(slugs, expected_slugs);
