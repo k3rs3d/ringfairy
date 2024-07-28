@@ -98,13 +98,13 @@ pub async fn build_webring_sites(
 mod tests {
     use super::*;
 
-    fn create_sample_website(slug: &str) -> Website {
+    fn create_sample_website(slug: &str, url: &str) -> Website {
         Website {
             slug: slug.to_string(),
             name: Some(format!("Site {}", slug)),
             about: Some(format!("About {}", slug)),
-            url: format!("http://{}.com", slug),
-            rss: Some(format!("http://{}.com/rss", slug)),
+            url: url.to_string(),
+            rss: Some(format!("http://{}.tld/rss", slug)),
             owner: Some(format!("Owner {}", slug)),
         }
     }
@@ -127,9 +127,9 @@ mod tests {
     async fn test_build_webring() {
         // sample data
         let websites = vec![
-            create_sample_website("site1"),
-            create_sample_website("site2"),
-            create_sample_website("site3"),
+            create_sample_website("site1", "https://site1.tld"),
+            create_sample_website("site2", "https://site2.tld"),
+            create_sample_website("site3", "https://site3.tld"),
         ];
 
         let webring_sites = build_webring_sites(websites.clone(), &build_settings()).await;
@@ -153,9 +153,9 @@ mod tests {
     async fn test_build_webring_shuffle() {
         // sample data
         let websites = vec![
-            create_sample_website("site1"),
-            create_sample_website("site2"),
-            create_sample_website("site3"),
+            create_sample_website("site1", "https://site1.tld"),
+            create_sample_website("site2", "https://site2.tld"),
+            create_sample_website("site3", "https://site3.tld"),
         ];
 
         // shuffle enabled
@@ -183,5 +183,59 @@ mod tests {
             };
             assert_eq!(webring_sites[i].previous, prev_index);
         }
+    }
+
+    #[tokio::test]
+    async fn test_verify_websites_valid() {
+        let websites = vec![
+            create_sample_website("site1", "https://site1.tld"),
+            create_sample_website("site2", "https://site2.tld"),
+            create_sample_website("site3", "https://site3.tld"),
+        ];
+
+        let result = verify_websites(&websites);
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_verify_duplicate_slugs() {
+        let websites = vec![
+            create_sample_website("site1", "https://site1.tld"),
+            create_sample_website("site1", "https://site2.tld"),
+        ];
+
+        let result = verify_websites(&websites);
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_verify_duplicate_urls() {
+        let websites = vec![
+            create_sample_website("site1", "https://site1.tld"),
+            create_sample_website("site2", "https://site1.tld"),
+        ];
+
+        let result = verify_websites(&websites);
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_verify_empty_url() {
+        let websites = vec![
+            create_sample_website("site1", ""),
+        ];
+
+        let result = verify_websites(&websites);
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_verify_invalid_url() {
+        let websites = vec![
+            create_sample_website("site1", "htp/invalid-url"),
+        ];
+
+        let result = verify_websites(&websites);
+        assert!(result.is_err());
     }
 }
