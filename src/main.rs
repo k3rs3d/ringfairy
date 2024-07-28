@@ -6,7 +6,7 @@ mod http;
 mod website;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), error::Error> {
     // Parse arguments & get settings struct
     let settings = cli::parse_args().await;
 
@@ -18,17 +18,11 @@ async fn main() {
     let start = std::time::Instant::now();
 
     // Generate webring
-    if let Err(e) = website::process_websites(&settings).await {
-        log::error!("{}", e);
-        return;
-    }
-
-    // Finally, copy static files (from ./assets by default) into output folder
-    if let Err(e) = file::copy_asset_files(&settings.path_assets, &settings.path_output) {
-        log::error!("Error copying file(s): {}", e);
-    }
+    gen::make_ringfairy_go_now(&settings).await?;
 
     // Calculate elapsed time
     let elapsed = start.elapsed();
     log::info!("Done in {} ms!", elapsed.as_millis());
+
+    Ok(())
 }

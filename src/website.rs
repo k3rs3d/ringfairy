@@ -4,8 +4,9 @@ use std::result::Result;
 
 use crate::cli::AppSettings;
 use crate::error::Error;
-use crate::file;
+use crate::file::parse_website_list;
 use crate::gen::{html::HtmlGenerator, webring, Generator};
+use crate::http::setup_client;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Website {
@@ -15,99 +16,6 @@ pub struct Website {
     pub url: String,
     pub rss: Option<String>,
     pub owner: Option<String>,
-}
-
-pub fn setup_client(settings: &AppSettings) -> Result<reqwest::Client, Error> {
-    log::trace!("Building reqwest client...");
-    Ok(reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(30))
-        .pool_max_idle_per_host(10)
-        .user_agent(settings.client_user_agent.clone())
-        .default_headers({
-            let mut headers = reqwest::header::HeaderMap::new();
-            headers.insert(
-                reqwest::header::ACCEPT,
-                settings.client_header.clone().parse().unwrap(),
-            );
-            headers
-        })
-        .redirect(reqwest::redirect::Policy::limited(5))
-        .build()?)
-}
-
-pub async fn process_websites(settings: &AppSettings) -> Result<(), Error> {
-    let websites = parse_website_list(&settings.filepath_list).await?;
-
-    // Verify websites entries if required (offline)
-    if !settings.skip_verify {
-        log::info!("Verifying sites...");
-        webring::verify_websites(&websites)?;
-        log::info!("All site entries verified.");
-    }
-
-    // Audit websites to ensure they contain webring links (online)
-    let client = setup_client(settings)?;
-    let audited_websites = if settings.audit {
-        let websites_len = websites.len(); // capture length of website list
-        log::info!("Auditing sites for webring links...");
-        let audited_websites = audit_links(&client, websites.clone(), settings).await?;
-        log::info!(
-            "Audit complete. Detected links on {} out of {} sites.",
-            audited_websites.len(),
-            websites_len
-        );
-        audited_websites
-    } else {
-        websites
-    };
-
-    // Ensure the list isn't empty at this point
-    if audited_websites.is_empty() {
-        return Err(Error::StringError(
-            "No valid sites passed the audit.".to_string(),
-        ));
-    }
-
-    // Organize sites into the webring sequence
-    let webring = webring::build_webring_sites(audited_websites, settings).await;
-
-    // Proceed with HTML generation (if not a dry run)
-    if !settings.dry_run {
-        log::info!("Generating webring HTML...");
-        let html_generator =
-            HtmlGenerator::new(settings.path_templates.clone().into(), settings.skip_minify)
-                .await?;
-        html_generator.generate_content(&webring, &settings).await?;
-        log::info!("Finished generating webring HTML.");
-        //html_generator.generate_opml(&webring, &settings).await?;
-    }
-
-    Ok(())
-}
-
-// Load the websites from JSON
-pub async fn parse_website_list(file_path_or_url: &str) -> Result<Vec<Website>, Error> {
-    // Able to get data from local or from remote
-    let file_data = file::acquire_file_data(file_path_or_url).await?;
-
-    // Extract file extension to determine the deserialization format
-    match file::get_extension_from_path(file_path_or_url).as_deref() {
-        Some("json") => {
-            // Deserialize JSON
-            let websites: Vec<Website> = serde_json::from_str(&file_data)?;
-            Ok(websites)
-        }
-        // TODO: Support TOML for website lists
-        /*
-        Some("toml") => {
-            // Deserialize TOML
-            let websites: Vec<Website> = toml::from_str(&file_data)
-                .map_err(|e| Box::<dyn std::error::Error>::from(e.to_string()))?;
-            Ok(websites)
-        }
-        */
-        _ => Err(Error::StringError("Unsupported file format".to_string())),
-    }
 }
 
 async fn fetch_website_content(

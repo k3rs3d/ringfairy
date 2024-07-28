@@ -11,7 +11,19 @@ pub mod webring;
 
 use crate::cli::AppSettings;
 use crate::error::Error;
+use crate::file::copy_asset_files;
 use crate::gen::webring::WebringSite;
+
+///Entry point (for now)
+pub async fn make_ringfairy_go_now(settings: &AppSettings) -> Result<(), Error> {
+    // Do webring
+    webring::process_websites(settings).await?;
+
+    // Copy static files (from ./assets by default) into output folder
+    copy_asset_files(&settings.path_assets, &settings.path_output).await?;
+
+    Ok(())
+}
 
 /// Generic page generator
 pub trait Generator: Send + Sync {

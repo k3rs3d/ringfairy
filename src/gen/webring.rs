@@ -4,7 +4,10 @@ use std::collections::HashSet;
 
 use crate::cli::AppSettings;
 use crate::error::Error;
-use crate::website::Website;
+use crate::file::parse_website_list;
+use crate::gen::{html::HtmlGenerator, Generator};
+use crate::http::setup_client;
+use crate::website::{audit_links, Website};
 
 #[derive(Debug, serde::Serialize)]
 pub struct WebringSite {
@@ -47,6 +50,7 @@ pub fn verify_websites(websites: &[Website]) -> Result<(), Error> {
     Ok(())
 }
 
+/// Takes the vec of Websites, and outputs an ordered vec of WebringSites  
 pub async fn build_webring_sites(
     websites: Vec<Website>,
     settings: &AppSettings,
@@ -92,4 +96,54 @@ pub async fn build_webring_sites(
     }
 
     webring_sites
+}
+
+pub async fn process_websites(settings: &AppSettings) -> Result<(), Error> {
+    let websites = parse_website_list(&settings.filepath_list).await?;
+
+    // Verify websites entries if required (offline)
+    if !settings.skip_verify {
+        log::info!("Verifying sites...");
+        verify_websites(&websites)?;
+        log::info!("All site entries verified.");
+    }
+
+    // Audit websites to ensure they contain webring links (online)
+    let client = setup_client(settings).await?;
+    let audited_websites = if settings.audit {
+        let websites_len = websites.len(); // capture length of website list
+        log::info!("Auditing sites for webring links...");
+        let audited_websites = audit_links(&client, websites.clone(), settings).await?;
+        log::info!(
+            "Audit complete. Detected links on {} out of {} sites.",
+            audited_websites.len(),
+            websites_len
+        );
+        audited_websites
+    } else {
+        websites
+    };
+
+    // Ensure the list isn't empty at this point
+    if audited_websites.is_empty() {
+        return Err(Error::StringError(
+            "No valid sites passed the audit.".to_string(),
+        ));
+    }
+
+    // Organize sites into the webring sequence
+    let webring = build_webring_sites(audited_websites, settings).await;
+
+    // Proceed with HTML generation (if not a dry run)
+    if !settings.dry_run {
+        log::info!("Generating webring HTML...");
+        let html_generator =
+            HtmlGenerator::new(settings.path_templates.clone().into(), settings.skip_minify)
+                .await?;
+        html_generator.generate_content(&webring, &settings).await?;
+        log::info!("Finished generating webring HTML.");
+        //html_generator.generate_opml(&webring, &settings).await?;
+    }
+
+    Ok(())
 }

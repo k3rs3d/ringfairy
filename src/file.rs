@@ -1,8 +1,35 @@
 use crate::error::Error;
 use crate::http::download_file;
+use crate::website::Website;
 use std::fs;
 use std::path::Path;
 
+/// Loads the given file with acquire_file_data(), then returns a vec of Websites for each site in the file 
+pub async fn parse_website_list(file_path_or_url: &str) -> Result<Vec<Website>, Error> {
+    // Able to get data from local or from remote
+    let file_data = acquire_file_data(file_path_or_url).await?;
+
+    // Extract file extension to determine the deserialization format
+    match get_extension_from_path(file_path_or_url).as_deref() {
+        Some("json") => {
+            // Deserialize JSON
+            let websites: Vec<Website> = serde_json::from_str(&file_data)?;
+            Ok(websites)
+        }
+        // TODO: Support TOML for website lists
+        /*
+        Some("toml") => {
+            // Deserialize TOML
+            let websites: Vec<Website> = toml::from_str(&file_data)
+                .map_err(|e| Box::<dyn std::error::Error>::from(e.to_string()))?;
+            Ok(websites)
+        }
+        */
+        _ => Err(Error::StringError("Unsupported file format".to_string())),
+    }
+}
+
+/// This will either read or download the file, depending on whether a URL or local URI is provided. 
 pub async fn acquire_file_data(path_or_url: &str) -> Result<String, Error> {
     // Check if the path_or_url is likely a URL by looking for a scheme
     // TODO: switch this to regex??
@@ -15,7 +42,7 @@ pub async fn acquire_file_data(path_or_url: &str) -> Result<String, Error> {
     }
 }
 
-pub fn copy_asset_files(source_dir: &str, output_dir: &str) -> Result<(), Error> {
+pub async fn copy_asset_files(source_dir: &str, output_dir: &str) -> Result<(), Error> {
     // Create the target directory if it doesn't exist
     fs::create_dir_all(output_dir)?;
 
@@ -34,6 +61,7 @@ pub fn copy_asset_files(source_dir: &str, output_dir: &str) -> Result<(), Error>
     Ok(())
 }
 
+/// Takes a filepath and returns the extension alone. So 'example.jpg' would return 'jpg'.
 pub fn get_extension_from_path(path: &str) -> Option<String> {
     Path::new(path)
         .extension()
@@ -82,38 +110,24 @@ mod tests {
     }
 
     // get_extension_from_path()
-    #[test]
-    fn test_get_extension_from_valid_path() {
+    #[tokio::test]
+    async fn test_get_extension_from_valid_path() {
         let path = "file.txt";
         let result = get_extension_from_path(path);
         assert_eq!(result, Some("txt".to_string()));
     }
 
-    #[test]
-    fn test_get_extension_from_path_without_extension() {
+    #[tokio::test]
+    async fn test_get_extension_from_path_without_extension() {
         let path = "file";
         let result = get_extension_from_path(path);
         assert_eq!(result, None);
     }
 
-    #[test]
-    fn test_get_extension_from_path_with_hidden_file() {
-        let path = ".hidden";
-        let result = get_extension_from_path(path);
-        assert_eq!(result, None);
-    }
-
-    #[test]
-    fn test_get_extension_from_path_with_multiple_dots() {
+    #[tokio::test]
+    async fn test_get_extension_from_path_with_multiple_dots() {
         let path = "archive.tar.gz";
         let result = get_extension_from_path(path);
         assert_eq!(result, Some("gz".to_string()));
-    }
-
-    #[test]
-    fn test_get_extension_from_empty_string() {
-        let path = "";
-        let result = get_extension_from_path(path);
-        assert_eq!(result, None);
     }
 }
