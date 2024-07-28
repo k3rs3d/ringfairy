@@ -290,7 +290,7 @@ async fn load_config(config_path: &str) -> Option<ConfigSettings> {
     }
 }
 
-fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> AppSettings {
+async fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> AppSettings {
     let mut final_settings = AppSettings::default();
 
     final_settings.ring_name = cli_args
@@ -414,5 +414,5 @@ pub async fn parse_args() -> AppSettings {
         .await
         .unwrap_or_default();
 
-    merge_configs(clap_args, config_args)
+    merge_configs(clap_args, config_args).await
 }
