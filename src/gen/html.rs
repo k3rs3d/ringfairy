@@ -52,7 +52,7 @@ impl Generator for HtmlGenerator {
         self.ensure_output_directory(&settings.path_output).await?;
         let precomputed = <HtmlGenerator as Generator>::precompute_tags(webring, settings).await;
         let context = self
-            .generate_context(&webring, &precomputed, settings)
+            .generate_context(webring, &precomputed, settings)
             .await?;
 
         self.generate_html(webring, settings, &context).await?;
@@ -71,12 +71,12 @@ impl HtmlGenerator {
     ) -> Result<(), Error> {
         // Generate site-specific pages
         for site in webring {
-            self.generate_site(site, webring, &context, &settings.path_output, settings)
+            self.generate_site(site, webring, context, &settings.path_output, settings)
                 .await?;
         }
 
         // Process all other custom templates
-        self.generate_custom_templates(&settings, &webring).await?;
+        self.generate_custom_templates(settings, webring).await?;
         Ok(())
     }
 
@@ -90,15 +90,17 @@ impl HtmlGenerator {
         let path_output = &settings.path_output;
         fs::create_dir_all(path_output)?;
 
-        let mut opml = OPML::default();
-        opml.head = Some(Head {
-            title: Some(settings.ring_description.to_owned()),
-            owner_name: Some(settings.ring_owner.to_owned()),
-            owner_id: Some(settings.ring_owner_site.to_owned()),
-            ..Head::default()
-        });
+        let mut opml = OPML {
+            head: Some(Head {
+                title: Some(settings.ring_description.to_owned()),
+                owner_name: Some(settings.ring_owner.to_owned()),
+                owner_id: Some(settings.ring_owner_site.to_owned()),
+                ..Head::default()
+            }),
+            ..OPML::default()
+        };
 
-        for (_index, website) in webring.iter().enumerate() {
+        for website in webring.iter() {
             if let Some(owner) = &website.website.owner {
                 if let Some(rss_url) = website.website.rss.as_ref().filter(|url| !url.is_empty()) {
                     opml.add_feed(owner, rss_url);
@@ -109,7 +111,8 @@ impl HtmlGenerator {
         let mut file =
             std::fs::File::create(path_output.to_owned() + "/" + &settings.ring_name + ".opml")
                 .unwrap();
-        let _xml = opml.to_writer(&mut file).unwrap();
+        
+        opml.to_writer(&mut file).unwrap();
 
         log::info!("OPML file generated.");
         Ok(())
@@ -124,8 +127,8 @@ impl HtmlGenerator {
         settings: &AppSettings,
     ) -> Result<(), Error> {
         let site_path = Path::new(path_output).join(&site.website.slug);
-        fs::create_dir_all(&site_path.join(&settings.next_url_text))?;
-        fs::create_dir_all(&site_path.join(&settings.prev_url_text))?;
+        fs::create_dir_all(site_path.join(&settings.next_url_text))?;
+        fs::create_dir_all(site_path.join(&settings.prev_url_text))?;
 
         let previous_site = &webring[site.previous].website.url;
         let next_site = &webring[site.next].website.url;
@@ -135,7 +138,7 @@ impl HtmlGenerator {
             &settings.next_url_text,
             next_site,
             &settings.filename_template_redirect,
-            &context,
+            context,
         )
         .await?;
         self.render_and_write(
@@ -143,7 +146,7 @@ impl HtmlGenerator {
             &settings.prev_url_text,
             previous_site,
             &settings.filename_template_redirect,
-            &context,
+            context,
         )
         .await?;
 
@@ -186,7 +189,7 @@ impl HtmlGenerator {
             .filter(|name| *name != settings.filename_template_redirect)
         {
             let context = self
-                .generate_context(&webring, &precomputed, &settings)
+                .generate_context(webring, &precomputed, settings)
                 .await?;
             let content = self.tera.render(template_name, &context)?;
             let file_path = Path::new(path_output).join(template_name);

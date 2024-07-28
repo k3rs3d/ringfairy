@@ -77,7 +77,7 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Error> {
         let html_generator =
             HtmlGenerator::new(settings.path_templates.clone().into(), settings.skip_minify)
                 .await?;
-        html_generator.generate_content(&webring, &settings).await?;
+        html_generator.generate_content(&webring, settings).await?;
         log::info!("Finished generating webring HTML.");
         //html_generator.generate_opml(&webring, &settings).await?;
     }
@@ -145,7 +145,7 @@ pub async fn audit_links(
         let website_clone = website.clone();
         let client = client.clone();
         tasks
-            .push(async move { does_html_contain_links(&client, &website_clone, &settings).await });
+            .push(async move { does_html_contain_links(&client, &website_clone, settings).await });
     }
 
     let mut compliant_sites = Vec::new();

@@ -1,5 +1,4 @@
 use crate::error::Error;
-use reqwest;
 
 pub async fn download_file(url: &str) -> Result<String, Error> {
     let response = reqwest::get(url).await?;
