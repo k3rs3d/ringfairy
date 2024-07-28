@@ -17,8 +17,9 @@ pub struct Website {
     pub owner: Option<String>,
 }
 
-pub fn setup_client(settings: &AppSettings) -> reqwest::Client {
-    reqwest::Client::builder()
+pub fn setup_client(settings: &AppSettings) -> Result<reqwest::Client, Error> {
+    log::trace!("Building reqwest client...");
+    Ok(reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(30))
         .pool_max_idle_per_host(10)
         .user_agent(settings.client_user_agent.clone())
@@ -31,8 +32,7 @@ pub fn setup_client(settings: &AppSettings) -> reqwest::Client {
             headers
         })
         .redirect(reqwest::redirect::Policy::limited(5))
-        .build()
-        .unwrap()
+        .build()?)
 }
 
 pub async fn process_websites(settings: &AppSettings) -> Result<(), Error> {
@@ -40,19 +40,19 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Error> {
 
     // Verify websites entries if required (offline)
     if !settings.skip_verify {
-        log::debug!("Verifying sites...");
+        log::info!("Verifying sites...");
         webring::verify_websites(&websites)?;
         log::info!("All site entries verified.");
     }
 
     // Audit websites to ensure they contain webring links (online)
+    let client = setup_client(settings)?;
     let audited_websites = if settings.audit {
-        let websites_len = &websites.len(); // capture length of website list
-        log::debug!("Auditing sites for webring links...");
-        let audited_websites =
-            audit_links(&setup_client(&settings), websites.clone(), &settings).await?;
+        let websites_len = websites.len(); // capture length of website list
+        log::info!("Auditing sites for webring links...");
+        let audited_websites = audit_links(&client, websites.clone(), settings).await?;
         log::info!(
-            "Audit complete. Found links on {} out of {} sites.",
+            "Audit complete. Detected links on {} out of {} sites.",
             audited_websites.len(),
             websites_len
         );
@@ -63,7 +63,9 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Error> {
 
     // Ensure the list isn't empty at this point
     if audited_websites.is_empty() {
-        return Err(Error::StringError("No valid sites passed the audit.".to_string()));
+        return Err(Error::StringError(
+            "No valid sites passed the audit.".to_string(),
+        ));
     }
 
     // Organize sites into the webring sequence
@@ -113,32 +115,19 @@ async fn fetch_website_content(
     url: &str,
     settings: &AppSettings,
 ) -> Result<String, Error> {
-    let mut attempts = 0;
-
-    loop {
-        attempts += 1;
+    for attempt in 1..=settings.audit_retries_max {
         match client.get(url).send().await {
             Ok(response) => match response.text().await {
                 Ok(text) => return Ok(text),
-                Err(e) => log::warn!(
-                    "Failed to read response text on attempt {}: {}",
-                    attempts,
-                    e
-                ),
+                Err(e) => log::debug!("Attempt {}: Failed to read response text: {}", attempt, e),
             },
-            Err(e) => log::warn!("Failed to fetch URL on attempt {}: {}", attempts, e),
+            Err(e) => log::debug!("Attempt {}: Failed to fetch URL: {}", attempt, e),
         }
-
-        if attempts >= settings.audit_retries_max {
-            break;
-        }
-
         tokio::time::sleep(tokio::time::Duration::from_millis(
             settings.audit_retries_delay,
         ))
         .await;
     }
-
     Err(Error::StringError(format!(
         "Failed to fetch {} after {} attempts",
         url, settings.audit_retries_max
@@ -190,9 +179,9 @@ async fn does_html_contain_links(
     let document = scraper::Html::parse_document(&html);
 
     // Define selectors for different elements that could be links.
-    let anchor_selector = scraper::Selector::parse("a").unwrap();
-    let button_selector = scraper::Selector::parse("button").unwrap();
-    let img_selector = scraper::Selector::parse("img").unwrap();
+    let anchor_selector = scraper::Selector::parse("a").map_err(|e| (website.clone(), e.into()))?;
+    let button_selector = scraper::Selector::parse("button").map_err(|e| (website.clone(), e.into()))?;
+    let img_selector = scraper::Selector::parse("img").map_err(|e| (website.clone(), e.into()))?;
 
     let next_link = format!(
         "{}/{}/{}",
