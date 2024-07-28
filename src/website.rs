@@ -5,7 +5,7 @@ use std::result::Result;
 use crate::cli::AppSettings;
 use crate::error::Error;
 use crate::file;
-use crate::gen::{Generator, html::HtmlGenerator, webring};
+use crate::gen::{html::HtmlGenerator, webring, Generator};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Website {
@@ -19,17 +19,20 @@ pub struct Website {
 
 pub fn setup_client(settings: &AppSettings) -> reqwest::Client {
     reqwest::Client::builder()
-    .timeout(std::time::Duration::from_secs(30))
-    .pool_max_idle_per_host(10)
-    .user_agent(settings.client_user_agent.clone())
-    .default_headers({
-        let mut headers = reqwest::header::HeaderMap::new();
-        headers.insert(reqwest::header::ACCEPT, settings.client_header.clone().parse().unwrap());
-        headers
-    })
-    .redirect(reqwest::redirect::Policy::limited(5))
-    .build()
-    .unwrap()
+        .timeout(std::time::Duration::from_secs(30))
+        .pool_max_idle_per_host(10)
+        .user_agent(settings.client_user_agent.clone())
+        .default_headers({
+            let mut headers = reqwest::header::HeaderMap::new();
+            headers.insert(
+                reqwest::header::ACCEPT,
+                settings.client_header.clone().parse().unwrap(),
+            );
+            headers
+        })
+        .redirect(reqwest::redirect::Policy::limited(5))
+        .build()
+        .unwrap()
 }
 
 pub async fn process_websites(settings: &AppSettings) -> Result<(), Error> {
@@ -44,9 +47,10 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Error> {
 
     // Audit websites to ensure they contain webring links (online)
     let audited_websites = if settings.audit {
-        let websites_len = &websites.len(); // capture length of website list 
+        let websites_len = &websites.len(); // capture length of website list
         log::debug!("Auditing websites for webring links...");
-        let audited_websites = audit_links(&setup_client(&settings), websites.clone(), &settings).await?;
+        let audited_websites =
+            audit_links(&setup_client(&settings), websites.clone(), &settings).await?;
         log::info!(
             "Audit complete. Found links on {} out of {} websites.",
             audited_websites.len(),
@@ -57,7 +61,7 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Error> {
         websites
     };
 
-    // Ensure the list isn't empty at this point 
+    // Ensure the list isn't empty at this point
     if audited_websites.is_empty() {
         return Err(Error::StringError("No valid websites found.".to_string()));
     }
@@ -68,7 +72,9 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Error> {
     // Proceed with HTML generation (if not a dry run)
     if !settings.dry_run {
         log::info!("Generating webring HTML...");
-        let html_generator = HtmlGenerator::new(settings.path_templates.clone().into(), settings.skip_minify).await?;
+        let html_generator =
+            HtmlGenerator::new(settings.path_templates.clone().into(), settings.skip_minify)
+                .await?;
         html_generator.generate_content(&webring, &settings).await?;
         log::info!("Finished generating webring HTML.");
         //html_generator.generate_opml(&webring, &settings).await?;
@@ -78,9 +84,7 @@ pub async fn process_websites(settings: &AppSettings) -> Result<(), Error> {
 }
 
 // Load the websites from JSON
-pub async fn parse_website_list(
-    file_path_or_url: &str,
-) -> Result<Vec<Website>, Error> {
+pub async fn parse_website_list(file_path_or_url: &str) -> Result<Vec<Website>, Error> {
     // Able to get data from local or from remote
     let file_data = file::acquire_file_data(file_path_or_url).await?;
 
@@ -100,9 +104,7 @@ pub async fn parse_website_list(
             Ok(websites)
         }
         */
-        _ => Err(Error::StringError(
-            "Unsupported file format".to_string(),
-        )),
+        _ => Err(Error::StringError("Unsupported file format".to_string())),
     }
 }
 
@@ -118,7 +120,11 @@ async fn fetch_website_content(
         match client.get(url).send().await {
             Ok(response) => match response.text().await {
                 Ok(text) => return Ok(text),
-                Err(e) => log::warn!("Failed to read response text on attempt {}: {}", attempts, e),
+                Err(e) => log::warn!(
+                    "Failed to read response text on attempt {}: {}",
+                    attempts,
+                    e
+                ),
             },
             Err(e) => log::warn!("Failed to fetch URL on attempt {}: {}", attempts, e),
         }
@@ -126,11 +132,17 @@ async fn fetch_website_content(
         if attempts >= settings.audit_retries_max {
             break;
         }
-        
-        tokio::time::sleep(tokio::time::Duration::from_millis(settings.audit_retries_delay)).await;
+
+        tokio::time::sleep(tokio::time::Duration::from_millis(
+            settings.audit_retries_delay,
+        ))
+        .await;
     }
 
-    Err(Error::StringError(format!("Failed to fetch {} after {} attempts", url, settings.audit_retries_max)))
+    Err(Error::StringError(format!(
+        "Failed to fetch {} after {} attempts",
+        url, settings.audit_retries_max
+    )))
 }
 
 pub async fn audit_links(
@@ -143,7 +155,8 @@ pub async fn audit_links(
     for website in websites {
         let website_clone = website.clone();
         let client = client.clone();
-        tasks.push(async move { does_html_contain_links(&client, &website_clone, &settings).await });
+        tasks
+            .push(async move { does_html_contain_links(&client, &website_clone, &settings).await });
     }
 
     let mut compliant_sites = Vec::new();
@@ -181,11 +194,17 @@ async fn does_html_contain_links(
     let button_selector = scraper::Selector::parse("button").unwrap();
     let img_selector = scraper::Selector::parse("img").unwrap();
 
-    let next_link = format!("{}/{}/next", settings.base_url.trim_end_matches('/'), website.slug);
-    let prev_link = format!(
-        "{}/{}/previous",
+    let next_link = format!(
+        "{}/{}/{}",
         settings.base_url.trim_end_matches('/'),
-        website.slug
+        website.slug,
+        settings.next_url_text
+    );
+    let prev_link: String = format!(
+        "{}/{}/{}",
+        settings.base_url.trim_end_matches('/'),
+        website.slug,
+        settings.prev_url_text
     );
 
     //log::debug!("Expected next/previous URLs: {}, {}", &next_link, &prev_link);
@@ -251,4 +270,3 @@ async fn does_html_contain_links(
 
     Ok((website.clone(), result, failure_reason))
 }
-
