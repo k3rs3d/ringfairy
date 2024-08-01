@@ -42,3 +42,6 @@ opt-level = 3
 strip = true
 debug = false
 panic = "abort"
+
+[dev-dependencies]
+mockito = "1.4.0"
