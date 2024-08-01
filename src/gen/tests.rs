@@ -230,14 +230,7 @@ async fn test_ensure_output_directory() {
 async fn test_audit_websites() {
     // Mock settings and website
     let settings = mock_app_settings();
-    let mut mock_site = website::Website {
-        slug: "test".to_string(),
-        name: Some("Mock Website".to_string()),
-        about: Some("A test site for the webring".to_string()),
-        url: String::from(""),
-        rss: None,
-        owner: Some("Ralph H. Goo".to_string()),
-    };
+    let mut mock_site = create_sample_website("test", "");
 
     // Mock HTTP server and client
     let mut mock_server = mockito::Server::new_async().await; // mockito server
