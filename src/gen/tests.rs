@@ -1,11 +1,13 @@
 use super::*;
 use crate::cli::AppSettings;
-use crate::gen::webring::*;
 use crate::gen::html::*;
-use crate::website::Website;
+use crate::gen::webring::*;
+use crate::http;
+use crate::website;
+use crate::website::*;
 use std::path::PathBuf;
 
-// Webring 
+// Webring
 
 fn create_sample_website(slug: &str, url: &str) -> Website {
     Website {
@@ -130,9 +132,7 @@ async fn test_verify_duplicate_urls() {
 
 #[tokio::test]
 async fn test_verify_empty_url() {
-    let websites = vec![
-        create_sample_website("site1", ""),
-    ];
+    let websites = vec![create_sample_website("site1", "")];
 
     let result = verify_websites(&websites);
     assert!(result.is_err());
@@ -140,9 +140,7 @@ async fn test_verify_empty_url() {
 
 #[tokio::test]
 async fn test_verify_invalid_url() {
-    let websites = vec![
-        create_sample_website("site1", "htp/invalid-url"),
-    ];
+    let websites = vec![create_sample_website("site1", "htp/invalid-url")];
 
     let result = verify_websites(&websites);
     assert!(result.is_err());
@@ -226,4 +224,39 @@ async fn test_ensure_output_directory() {
     assert!(Path::new(path).exists());
 
     fs::remove_dir_all(path).unwrap();
+}
+
+#[tokio::test]
+async fn test_audit_websites() {
+    // Mock settings and website
+    let settings = mock_app_settings();
+    let mut mock_site = website::Website {
+        slug: "test".to_string(),
+        name: Some("Mock Website".to_string()),
+        about: Some("A test site for the webring".to_string()),
+        url: String::from(""),
+        rss: None,
+        owner: Some("Ralph H. Goo".to_string()),
+    };
+
+    // Mock HTTP server and client
+    let mut mock_server = mockito::Server::new_async().await; // mockito server
+    mock_site.url = mock_server.url();
+    let mock = mock_server
+        .mock("GET", "/")
+        .with_status(200)
+        .with_header("content-type", "text/html")
+        .with_body(r#"<a href="https://example.com/test/prev/">←</a>
+    <a href="https://example.com/">Test Ring</a>
+    <a href="https://example.com/test/next/">→</a>"#)
+        .create();
+    let audit_client = http::setup_client(&settings).await.unwrap(); // reqwest client
+
+    let audit_result = website::does_html_contain_links(&audit_client, &mock_site, &settings).await;
+
+    mock.assert_async().await; // Verify that mock was called
+    assert!(audit_result.is_ok()); // Mock response should return Ok
+
+    // TODO call audit function website::audit_links
+    //        -> verify function returns correctly audited sites
 }

@@ -71,7 +71,7 @@ pub async fn audit_links(
     Ok(compliant_sites)
 }
 
-async fn does_html_contain_links(
+pub async fn does_html_contain_links(
     client: &reqwest::Client,
     website: &Website,
     settings: &AppSettings,
