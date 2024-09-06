@@ -205,6 +205,8 @@ impl HtmlGenerator {
         settings: &AppSettings,
     ) -> Result<Context, Error> {
         let mut context = Context::new();
+        // Many of these are redundant 
+        // Keeping them for compatibility (for now)
         context.insert("table_of_sites", &build_sites_table_html(websites).await);
         context.insert("base_url", &settings.base_url);
         context.insert("ring_name", &settings.ring_name);
@@ -220,6 +222,7 @@ impl HtmlGenerator {
         context.insert("featured_site_url", &precomputed.featured_site_url);
         context.insert("current_time", &precomputed.current_time);
         context.insert("opml", &precomputed.opml_link);
+        context.insert("sites", websites); // Insert the whole list
 
         Ok(context)
     }
