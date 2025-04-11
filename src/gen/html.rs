@@ -254,7 +254,7 @@ pub async fn build_sites_table_html(websites: &[WebringSite]) -> String {
         ));
         table_html.push_str(&format!(
             "<td>{}</td>\n",
-            website.website.owner.as_deref().map(format_owner).unwrap()
+            website.website.owner.as_deref().map(format_owner).unwrap_or(String::new())
         ));
         table_html.push_str("</tr>\n");
     }
