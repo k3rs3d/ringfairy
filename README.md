@@ -1,14 +1,12 @@
 # `ringfairy` 🧚
 
-This is a webring generator written in Rust. It's similar to a static site generator, but specialized for webrings.  
+This is a webring generator written in Rust. It's similar to a static site generator, but specialized for webrings. 
 
-Unlike most webrings which rely on some kind of server-side code (e.g. PHP, JS) to redirect visitors, this approach uses HTML redirects. 
+Unlike most webrings which rely on some kind of server-side code (e.g. PHP, JS) to redirect visitors, this approach uses HTML redirects. The static approach allows for simpler hosting requirements (it can be hosted on Neocities, GitHub Pages, etc) since it eliminates the need for server-side processing. 
 
-The static approach allows for simpler hosting requirements (it can be hosted on Neocities, GitHub Pages, etc) since it eliminates the need for server-side processing. 
+Updating the webring will require you to regenerate the whole thing. This is quick & simple, and shouldn't need to be done frequently. But it is an extra step which conventional server-side systems might not have, unless you automate it yourself. 
 
-Updating the webring will require you to regenerate the whole thing. This is quick & simple, and shouldn't need to be done frequently. But it is an extra step which conventional server-side systems might not have, unless you automate it, such as through GitHub Actions. 
-
-## 🔮 What's a Webring?
+## 🔮 What is a Webring?
 
 A webring is a collection of websites linked together in a loop. Each website contains links to the previous and next websites in the ring. If you navigate far enough, eventually you end up back where you started! 
 
@@ -40,11 +38,11 @@ Webrings using `ringfairy` (as far as I know):
 - [Craftering](https://craftering.systemcrafters.net) - for the [System Crafters](https://systemcrafters.net) community
 - [Roboring](https://stel.is-probably.gay/roboring/) - for robotic beings
 
-If you decide to launch your own webring with this tool, let me know and I'll list it here! :) 
+If you decide to launch your own webring with this tool, let me know and I'll list it here! 
 
 ## 🪄 Usage
 
-- Download a release binary OR clone the repo and build from source. 
+- Download a release binary OR clone and build from source. 
 - Modify the `websites.json` (by default) file to include the details of the websites you want to include in the webring. Each website must be added to the list.
 - Modify the `config.json` (by default) file according to your needs. 
 - (Optional) Customize pages by modifying the templates, located in the `data/templates` folder (by default). You can also use remote files as templates. See the "Templates" section below. 
