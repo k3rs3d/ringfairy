@@ -36,7 +36,7 @@ Webrings using `ringfairy` (as far as I know):
 
 - [Ghostring](https://ghostring.neocities.org) - horror themed sites
 - [Craftering](https://craftering.systemcrafters.net) - for the [System Crafters](https://systemcrafters.net) community
-- [Roboring](https://stel.is-probably.gay/roboring/) - for robotic beings
+- [Roboring](https://stellophiliac.github.io/roboring/) - for robotic beings
 
 If you decide to launch your own webring with this tool, let me know and I'll list it here! 
 
