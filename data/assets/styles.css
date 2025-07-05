@@ -3,7 +3,7 @@ body {
 	line-height: 1.6;
     background-color: #111;
     color: #fff;
-	max-width: 80rem;
+	max-width: 80%;
 	margin: auto;
 }
 
@@ -92,3 +92,45 @@ th {
     }
 
 }
+:root {
+  --card-border: #446868;
+  --card-link-color: #88bebe;
+}
+.cards-container {
+		width: 90%;
+		margin-left: auto;
+		margin-right: auto;
+}
+.cards-container a {
+		color: var(--card-link-color);
+}
+.cards {
+		display: grid;
+		grid-gap: 0.5rem;
+		grid-template-columns: repeat(auto-fit, minmax(25rem, 1fr));
+}
+.card {
+		border: 2px solid var(--card-border);
+		border-radius: 0.5rem;
+}
+.card-name {
+		background-color: var(--card-border);
+		font-size: 1.25rem;
+		padding: 0.25rem; 
+		border-radius: 0.25rem 0.25rem 0 0;
+		text-transform: lowercase;
+}
+.card-content {
+		padding: 0.5rem;
+}
+.card-link {
+		font-size: .95rem;
+		text-transform: lowercase;
+}
+.card-text {
+		font-size: 0.75rem;
+}
+.card-slug {
+		font-size: 0.75rem;
+}
+

@@ -208,6 +208,7 @@ impl HtmlGenerator {
         // Many of these are redundant 
         // Keeping them for compatibility (for now)
         context.insert("table_of_sites", &build_sites_table_html(websites).await);
+        context.insert("grid_of_sites", &build_sites_grid_html(websites).await);
         context.insert("base_url", &settings.base_url);
         context.insert("ring_name", &settings.ring_name);
         context.insert("ring_description", &settings.ring_description);
@@ -263,6 +264,33 @@ pub async fn build_sites_table_html(websites: &[WebringSite]) -> String {
     table_html
 }
 
+pub async fn build_sites_grid_html(websites: &[WebringSite]) -> String {
+		// Layout using CSS grid
+		let mut grid_html = String::new();
+		grid_html.push_str("<section class=\"cards\">\n");
+		for (index, website) in websites.iter().enumerate() {
+				grid_html.push_str("<article class=\"card\">\n");
+				grid_html.push_str(&format!("<div class=\"card-name\">{} <span class=\"card-slug\">({})</span></div>\n",
+																		website.website.owner.as_deref().map(format_owner).unwrap_or(String::new()),
+																		website.website.slug));
+				grid_html.push_str("<div class=\"card-content\">\n");
+				grid_html.push_str(&format!("<div class=\"card-link\"><a href=\"{}\" target=\"_blank\">{}</a>&nbsp;{}</div>\n",
+																		website.website.url,
+																		website.website.url,
+																		if let Some(rss_url) = &website.website.rss {
+																				format!(" <a href=\"{}\" target=\"_blank\">[rss]</a>", rss_url)
+																		} else {
+																				String::new()
+																		}
+				));
+				grid_html.push_str(&format!("<div class=\"card-text\">{}</div>\n",
+																		website.website.about.as_deref().unwrap_or("")));
+				grid_html.push_str("</div>\n"); //div card-content
+				grid_html.push_str("</article>\n");
+		}
+		grid_html.push_str("</section>");
+		grid_html
+}
 // TODO: make async?
 pub fn format_owner(owner: &str) -> String {
     owner
