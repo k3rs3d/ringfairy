@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Redirecting...</title>
+	
+	<style>
+		body {
+		  background-color: #000;
+		  color: #fff;
+		}
+	</style>
+</head>
+
+<script>
+    var links = []
+
+	{% for url in url_list %}
+		links.push("{{ url | safe }}")
+	{% endfor %}
+
+	console.log(links)
+
+	var index = Math.floor(Math.random() * links.length)
+    window.location.replace(links[index])
+</script>
+
+<body>
+    <p>A fairy is guiding you to a most suitable destination...</p>
+</body>
+
+</html>

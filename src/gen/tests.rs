@@ -239,9 +239,11 @@ async fn test_audit_websites() {
         .mock("GET", "/")
         .with_status(200)
         .with_header("content-type", "text/html")
-        .with_body(r#"<a href="https://example.com/test/prev/">←</a>
+        .with_body(
+            r#"<a href="https://example.com/test/prev/">←</a>
     <a href="https://example.com/">Test Ring</a>
-    <a href="https://example.com/test/next/">→</a>"#)
+    <a href="https://example.com/test/next/">→</a>"#,
+        )
         .create();
     let audit_client = http::setup_client(&settings).await.unwrap(); // reqwest client
 
