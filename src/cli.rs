@@ -13,6 +13,7 @@ pub struct AppSettings {
     pub filepath_config: String,
     pub filepath_list: String,
     pub filename_template_redirect: String,
+    pub filename_template_random: String,
     pub path_output: String,
     pub path_assets: String,
     pub path_templates: String,
@@ -42,6 +43,7 @@ impl Default for AppSettings {
             ring_owner_site: "https://webring.domain.tld/".into(),
             filepath_config: "./ringfairy.toml".into(),
             filepath_list: "./websites.json".into(),
+            filename_template_random: "random.html".into(),
             filename_template_redirect: "redirect.html".into(),
             path_output: "./webring".into(),
             path_assets: "./data/assets".into(),
@@ -73,6 +75,7 @@ pub struct ConfigSettings {
     pub ring_owner_site: Option<String>,
     pub filepath_list: Option<String>,
     pub filename_template_redirect: Option<String>,
+    pub filename_template_random: Option<String>,
     pub path_output: Option<String>,
     pub path_assets: Option<String>,
     pub path_templates: Option<String>,
@@ -130,6 +133,13 @@ pub struct ClapSettings {
         help = "Specify the file containing the template for building the redirect pages for each site's next/previous link. This file won't be included when building the rest of the custom templates. It's relative to the templates directory, so it should probably just be the filename. Default is 'redirect.html'."
     )]
     pub filename_template_redirect: Option<String>,
+
+    #[clap(
+        long = "random-template",
+        ignore_case = false,
+        help = "Specify the file used for the random redirect feature. Default is 'random.html'."
+    )]
+    pub filename_template_random: Option<String>,
 
     #[clap(
         short = 'o',
@@ -317,6 +327,10 @@ async fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> 
         .filename_template_redirect
         .or(config.filename_template_redirect)
         .unwrap_or(final_settings.filename_template_redirect);
+    final_settings.filename_template_random = cli_args
+        .filename_template_random
+        .or(config.filename_template_random)
+        .unwrap_or(final_settings.filename_template_random);
     final_settings.path_output = cli_args
         .path_output
         .or(config.path_output)

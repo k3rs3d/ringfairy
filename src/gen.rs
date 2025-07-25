@@ -6,8 +6,9 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 
 pub mod html;
+#[cfg(test)]
+mod tests;
 pub mod webring;
-#[cfg(test)]mod tests;
 
 use crate::cli::AppSettings;
 use crate::error::Error;

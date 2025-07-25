@@ -49,8 +49,7 @@ pub async fn audit_links(
     for website in websites {
         let website_clone = website.clone();
         let client = client.clone();
-        tasks
-            .push(async move { does_html_contain_links(&client, &website_clone, settings).await });
+        tasks.push(async move { does_html_contain_links(&client, &website_clone, settings).await });
     }
 
     let mut compliant_sites = Vec::new();
@@ -85,7 +84,8 @@ pub async fn does_html_contain_links(
 
     // Define selectors for different elements that could be links.
     let anchor_selector = scraper::Selector::parse("a").map_err(|e| (website.clone(), e.into()))?;
-    let button_selector = scraper::Selector::parse("button").map_err(|e| (website.clone(), e.into()))?;
+    let button_selector =
+        scraper::Selector::parse("button").map_err(|e| (website.clone(), e.into()))?;
     let img_selector = scraper::Selector::parse("img").map_err(|e| (website.clone(), e.into()))?;
 
     let next_link = format!(
