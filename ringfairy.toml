@@ -9,6 +9,7 @@ path_output = "./webring"           # Generated files will be saved in this fold
 path_assets = "./data/assets"       # All contents of the asset folder will be copied directly into the output directory
 path_templates = "./data/templates" # The folder containing HTML templates to use, ie, anything with {{ tags }}
 filename_template_redirect = "template.html" # This template gets reused to build the redirect pages for each site, and is ignored when building the other custom templates 
+filename_template_random = "random.html" # This template is used for random redirect feature.
 
 client_user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36"
 client_header = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
