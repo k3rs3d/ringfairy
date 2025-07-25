@@ -42,7 +42,7 @@ impl Default for AppSettings {
             ring_owner_site: "https://webring.domain.tld/".into(),
             filepath_config: "./ringfairy.toml".into(),
             filepath_list: "./websites.json".into(),
-            filename_template_redirect: "template.html".into(),
+            filename_template_redirect: "redirect.html".into(),
             path_output: "./webring".into(),
             path_assets: "./data/assets".into(),
             path_templates: "./data/templates".into(),
@@ -127,7 +127,7 @@ pub struct ClapSettings {
         short = 'r',
         long = "redirect-template",
         ignore_case = false,
-        help = "Specify the file containing the template for building the redirect pages for each site's next/previous link. This file won't be included when building the rest of the custom templates. It's relative to the templates directory, so it should probably just be the filename. Default is 'template.html'."
+        help = "Specify the file containing the template for building the redirect pages for each site's next/previous link. This file won't be included when building the rest of the custom templates. It's relative to the templates directory, so it should probably just be the filename. Default is 'redirect.html'."
     )]
     pub filename_template_redirect: Option<String>,
 

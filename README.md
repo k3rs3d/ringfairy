@@ -61,7 +61,7 @@ Command-line arguments take precedence over any settings in the config file.
 - *`-l`, `--list`*: Specify the file containing the list of websites. Default: `./websites.json`
 - *`-o`, `--output`*: Define the output folder, where the generated files will be saved. Default: `./webring`
 - *`-a`, `--assets`*: Specify the assets folder. Any files in here will be copied to the output folder. This lets you include any extra files you want, such as images or extra web pages, etc. Default: `./data/assets`
-- *`-t`, `--templates`*: Specify path to the template folder. Use `template.html` for redirect pages (i.e. the HTML which composes the webring). Any extra pages can be added here if you want them to be populated with generated content. Default: `./data/templates`
+- *`-t`, `--templates`*: Specify path to the template folder. Use `redirect.html` for redirect pages (i.e. the HTML which composes the webring). Any extra pages can be added here if you want them to be populated with generated content. Default: `./data/templates`
 - *`-u`, `--url`*: The base URL for the webring. Something like 'https://example.com'. 
 - *`-n`, `--name`*: The name of the webring. Something like 'Ghostring'.
 - *`-d`, `--description`*: A short description/about the webring.
@@ -96,9 +96,9 @@ Templates are located in the `./data/templates` folder by default; this path can
 
 Templates contain tags which will be replaced with generated content. You can customize generated files by adding content before/after the tags. The repo includes basic template examples to get you started. 
 
-In the templates folder, `template.html` is used to generate each of the `next.html`/`previous.html` pages, containing the redirects for each website. The tag `{{ url }}` is inserted by the generator in each page, and that powers the webring. 
+In the templates folder, `redirect.html` is used to generate each of the `next.html`/`previous.html` pages, containing the redirects for each website. The tag `{{ url }}` is inserted by the generator in each page, and that powers the webring.
 
-Besides `template.html`, the templates folder can contain any other templates you want. 
+Besides `redirect.html`, the templates folder can contain any other templates you want.
 
 For instance, it's a good idea for a webring to have a central hub page listing all of the sites. You can put this on `index.html`, or create a dedicated page such as `list.html`, `table.html`, etc. Simply use the tag `{{ table_of_sites }}` in the template, and `ringfairy` will generate a formatted list of the sites in the webring. 
 
@@ -119,7 +119,7 @@ The following tags are currently usable in templates:
 - *`{{ featured_site_description }}`* prints the description of the random featured site. 
 - *`{{ featured_site_url }}`* prints the URL of the random featured site. 
 
-Right now, `{{ url }}` is a special tag that only works in `template.html` for the next/previous links.  
+Right now, `{{ url }}` is a special tag that only works in `redirect.html` for the next/previous links.
 
 ----------------------------
 
