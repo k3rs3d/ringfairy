@@ -1,5 +1,14 @@
 # `ringfairy` 🧚
 
+[![Build status](https://github.com/k3rs3d/ringfairy/actions/workflows/ci.yml/badge.svg)](https://github.com/k3rs3d/ringfairy/actions)
+![GitHub Release](https://img.shields.io/github/v/release/k3rs3d/ringfairy)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/k3rs3d/ringfairy/latest)
+![GitHub last commit](https://img.shields.io/github/last-commit/k3rs3d/ringfairy)
+
+![Crates.io Total Downloads](https://img.shields.io/crates/d/ringfairy)
+![Crates.io Size](https://img.shields.io/crates/size/ringfairy)
+[![License](https://img.shields.io/badge/license-GPL_v3.0-blue.svg)](https://github.com/k3rs3d/ringfairy/LICENSE)
+
 This is a webring generator written in Rust. It's similar to a static site generator, but specialized for webrings. 
 
 Unlike most webrings which rely on some kind of server-side code (e.g. PHP, JS) to redirect visitors, this approach uses HTML redirects. The static approach allows for simpler hosting requirements (it can be hosted on Neocities, GitHub Pages, etc) since it eliminates the need for server-side processing. 
