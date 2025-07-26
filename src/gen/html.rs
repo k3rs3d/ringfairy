@@ -301,7 +301,7 @@ pub async fn build_sites_grid_html(websites: &[WebringSite]) -> String {
     // Layout using CSS grid
     let mut grid_html = String::new();
     grid_html.push_str("<section class=\"cards\">\n");
-    for (index, website) in websites.iter().enumerate() {
+    for (_index, website) in websites.iter().enumerate() {
         grid_html.push_str("<article class=\"card\">\n");
         grid_html.push_str(&format!(
             "<div class=\"card-name\">{} <span class=\"card-slug\">({})</span></div>\n",
