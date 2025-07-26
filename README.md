@@ -58,7 +58,7 @@ Command-line arguments take precedence over any settings in the config file.
 
 - *`-h`, `--help`*: Print help
 - *`-c`, `--config`*: Specify the location of the optional config file. It can be remote; for example an HTTP link to an appropriate JSON file on Pastebin, GitHub, etc. 
-- *`-l`, `--list`*: Specify the file containing the list of websites. Default: `./websites.json`
+- *`-l`, `--list`*: Specify the JSON or TOML file containing the list of websites. Default: `./websites.json`
 - *`-o`, `--output`*: Define the output folder, where the generated files will be saved. Default: `./webring`
 - *`-a`, `--assets`*: Specify the assets folder. Any files in here will be copied to the output folder. This lets you include any extra files you want, such as images or extra web pages, etc. Default: `./data/assets`
 - *`-t`, `--templates`*: Specify path to the template folder. Use `redirect.html` for redirect pages (i.e. the HTML which composes the webring). Any extra pages can be added here if you want them to be populated with generated content. Default: `./data/templates`
