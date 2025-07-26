@@ -15,6 +15,11 @@ pub struct Website {
     pub owner: Option<String>,
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct WebsitesTomlFormat {
+    pub websites: Vec<Website>,
+}
+
 async fn fetch_website_content(
     client: &reqwest::Client,
     url: &str,
