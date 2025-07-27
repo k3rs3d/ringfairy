@@ -47,7 +47,7 @@ Webrings using `ringfairy` (as far as I know):
 - [Craftering](https://craftering.systemcrafters.net) - for the [System Crafters](https://systemcrafters.net) community
 - [Roboring](https://stellophiliac.github.io/roboring/) - for robot-aligned beings
 - [Spellcircle](https://spellcircle.neocities.org/) - for witches, wizards, and other magical beings
-- [shring](https://shring.ficd.sh/) - for unix-y personal sites
+- [shring](https://shring.sh) - for unix-y personal sites
 
 If you decide to launch your own webring with this tool, let me know and I'll list it here! 
 
