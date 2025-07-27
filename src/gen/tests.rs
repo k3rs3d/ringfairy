@@ -17,6 +17,7 @@ fn create_sample_website(slug: &str, url: &str) -> Website {
         url: url.to_string(),
         rss: Some(format!("http://{}.tld/rss", slug)),
         owner: Some(format!("Owner {}", slug)),
+        misc: None,
     }
 }
 
@@ -159,6 +160,7 @@ fn mock_webring_site() -> Vec<WebringSite> {
                 about: Some("About Site 1".to_string()),
                 owner: Some("owner1".to_string()),
                 rss: Some("https://site1.com/rss".to_string()),
+                misc: None,
             },
             previous: 1,
             next: 1,
@@ -171,6 +173,7 @@ fn mock_webring_site() -> Vec<WebringSite> {
                 about: Some("About Site 2".to_string()),
                 owner: Some("owner2".to_string()),
                 rss: Some("https://site2.com/rss".to_string()),
+                misc: None,
             },
             previous: 0,
             next: 0,
