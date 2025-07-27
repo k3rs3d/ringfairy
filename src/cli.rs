@@ -11,7 +11,9 @@ pub struct AppSettings {
     pub ring_owner: String,
     pub ring_owner_site: String,
     pub _filepath_config: String,
-    pub filepath_list: String,
+    pub json_lists: Vec<String>,
+    pub toml_lists: Vec<String>,
+    pub filepath_list: Vec<String>,
     pub filename_template_redirect: String,
     pub filename_template_random: String,
     pub path_output: String,
@@ -42,7 +44,9 @@ impl Default for AppSettings {
             ring_owner: "Webring Organization or Person".into(),
             ring_owner_site: "https://webring.domain.tld/".into(),
             _filepath_config: "./ringfairy.toml".into(),
-            filepath_list: "./websites.json".into(),
+            json_lists: Vec::new(),
+            toml_lists: Vec::new(),
+            filepath_list: vec!["./websites.json".to_string()],
             filename_template_random: "random.html".into(),
             filename_template_redirect: "redirect.html".into(),
             path_output: "./webring".into(),
@@ -73,7 +77,9 @@ pub struct ConfigSettings {
     pub ring_description: Option<String>,
     pub ring_owner: Option<String>,
     pub ring_owner_site: Option<String>,
-    pub filepath_list: Option<String>,
+    pub json_list: Option<Vec<String>>,
+    pub toml_list: Option<Vec<String>>,
+    pub filepath_list: Option<Vec<String>>,
     pub filename_template_redirect: Option<String>,
     pub filename_template_random: Option<String>,
     pub path_output: Option<String>,
@@ -95,7 +101,7 @@ pub struct ConfigSettings {
     pub dry_run: Option<bool>,
 }
 
-// Clap-specific settings struct - able to contain Options
+// Clap settings struct
 #[derive(Parser, Debug)]
 #[clap(
     name = "ringfairy",
@@ -114,17 +120,31 @@ pub struct ClapSettings {
         long = "cfg",
         ignore_case = false,
         default_value = "./ringfairy.toml",
-        help = "Specify the config file path. Useful for settings that stay constant across many runs of your application, like path locations. Remember, any settings specified via command-line arguments will override the corresponding ones from this file"
+        help = "Specify the config file path. Remember, any settings specified via command-line arguments will override the corresponding ones from this file"
     )]
     pub filepath_config: Option<String>,
+
+    #[clap(
+        short = 'J',
+        long = "json-string", 
+        help = "Website list as a JSON string"
+    )]
+    pub json_list: Vec<String>,
+
+    #[clap(
+        short = 'T',
+        long = "toml-string", 
+        help = "Website list as a TOML string"
+    )]
+    pub toml_list: Vec<String>,  
 
     #[clap(
         short = 'l',
         long = "list",
         ignore_case = false,
-        help = "Specify the file containing the list of websites to use. It should be a JSON file with 'name', 'url', etc fields."
+        help = "Specify the file containing the list of websites to use. It should be a JSON or TOML file with 'name', 'url', etc fields."
     )]
-    pub filepath_list: Option<String>,
+    pub filepath_list: Vec<String>,
 
     #[clap(
         short = 'r',
@@ -303,6 +323,32 @@ async fn load_config(config_path: &str) -> Option<ConfigSettings> {
 async fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> AppSettings {
     let mut final_settings = AppSettings::default();
 
+    // filepath_list from CLI or config, coalescing all values
+    let mut filepaths = cli_args.filepath_list.clone();
+    if let Some(ref cfg_paths) = config.filepath_list {
+        filepaths.extend(cfg_paths.clone());
+    }
+    final_settings.filepath_list.extend(filepaths);
+
+    final_settings.json_lists = {
+        let mut v = Vec::new();
+        v.extend(cli_args.json_list);
+        if let Some(c) = config.json_list {
+            v.extend(c);
+        }
+        v
+    };
+
+    final_settings.toml_lists = {
+        let mut v = Vec::new();
+        v.extend(cli_args.toml_list);
+        if let Some(c) = config.toml_list {
+            v.extend(c);
+        }
+        v
+    };
+
+
     final_settings.ring_name = cli_args
         .ring_name
         .or(config.ring_name)
@@ -319,10 +365,6 @@ async fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> 
         .ring_owner_site
         .or(config.ring_owner_site)
         .unwrap_or(final_settings.ring_owner_site);
-    final_settings.filepath_list = cli_args
-        .filepath_list
-        .or(config.filepath_list)
-        .unwrap_or(final_settings.filepath_list);
     final_settings.filename_template_redirect = cli_args
         .filename_template_redirect
         .or(config.filename_template_redirect)
@@ -389,7 +431,7 @@ async fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> 
     // HACK: just set the config file value, then CLI value, directly
     std::env::set_var("RUST_LOG", "error"); // Default to only showing errors
 
-    if config.verbose.unwrap() {
+    if config.verbose.unwrap_or(false) {
         std::env::set_var("RUST_LOG", "warn");
     }
     // HACK ish: apply log level settings here

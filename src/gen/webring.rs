@@ -101,7 +101,7 @@ pub async fn build_webring_sequence(
 
 /// Based on the provided settings, tries to load a list of websites, then generate & save files to create the webring.
 pub async fn generate_webring_files(settings: &AppSettings) -> Result<(), Error> {
-    let websites = parse_website_list(&settings.filepath_list).await?;
+    let websites = parse_website_list(&settings).await?;
 
     // Verify websites entries if required (offline)
     if !settings.skip_verify {
