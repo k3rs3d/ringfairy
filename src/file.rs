@@ -1,6 +1,6 @@
 use crate::error::Error;
 use crate::http::download_file;
-use crate::website::{Website, WebsitesTomlFormat};
+use crate::website::Website;
 use std::fs;
 use std::path::Path;
 
@@ -18,9 +18,9 @@ pub async fn parse_website_list(file_path_or_url: &str) -> Result<Vec<Website>, 
         }
         Some("toml") => {
             // Deserialize TOML
-            let websites: WebsitesTomlFormat =
+            let websites: Vec<Website> =
                 toml::from_str(&file_data).map_err(Error::TOMLError)?;
-            Ok(websites.websites)
+            Ok(websites)
         }
         _ => Err(Error::StringError("Unsupported file format".to_string())),
     }
