@@ -10,8 +10,32 @@
     <h1>{{ ring_name }} List</h1>
 	<p>{{ ring_description }}</p>
     <p>Add all sites with declared RSS feeds to your feed reader with this <a href ="{{ opml }}">OPML</a> link.</p>
-    {{ table_of_sites | safe}}
-
+    
+    <table>
+      <thead>
+          <tr>
+              <th scope="col">Name</th>
+              <th scope="col">URL</th>
+              <th scope="col">About</th>
+              <th scope="col">Owner</th>
+          </tr>
+      </thead>
+      <tbody>
+      {% for site in sites %}
+          <tr>
+              <td>{{ site.website.slug }}</td>
+              <td>
+                  <a href="{{ site.website.url }}" target="_blank">{{ site.website.url }}</a>
+                  {% if site.website.rss %}
+                      <a href="{{ site.website.rss }}" target="_blank">[rss]</a>
+                  {% endif %}
+              </td>
+              <td>{{ site.website.about | default(value="") }}</td>
+              <td>{{ site.website.owner | default(value="") }}</td>
+          </tr>
+      {% endfor %}
+      </tbody>
+  </table>
 
 	<br>
 	<footer>
