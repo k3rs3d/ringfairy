@@ -1,25 +1,25 @@
 # `ringfairy` 🧚
 
 [![Build status](https://github.com/k3rs3d/ringfairy/actions/workflows/ci.yml/badge.svg)](https://github.com/k3rs3d/ringfairy/actions)
-![GitHub Release](https://img.shields.io/github/v/release/k3rs3d/ringfairy)
-![GitHub commits since latest release](https://img.shields.io/github/commits-since/k3rs3d/ringfairy/latest)
-![GitHub last commit](https://img.shields.io/github/last-commit/k3rs3d/ringfairy)
+[![GitHub Release](https://img.shields.io/github/v/release/k3rs3d/ringfairy)](https://github.com/k3rs3d/ringfairy/releases)
+[![GitHub commits since latest release](https://img.shields.io/github/commits-since/k3rs3d/ringfairy/latest)](https://github.com/k3rs3d/ringfairy/commits/main/)
+[![GitHub last commit](https://img.shields.io/github/last-commit/k3rs3d/ringfairy)](https://github.com/k3rs3d/ringfairy/commits/main/)
 
-![Crates.io Total Downloads](https://img.shields.io/crates/d/ringfairy)
-![Crates.io Size](https://img.shields.io/crates/size/ringfairy)
+[![Crates.io Total Downloads](https://img.shields.io/crates/d/ringfairy)](https://crates.io/crates/ringfairy)
+[![Crates.io Size](https://img.shields.io/crates/size/ringfairy)](https://crates.io/crates/ringfairy)
 [![License](https://img.shields.io/badge/license-GPL_v3.0-blue.svg)](https://github.com/k3rs3d/ringfairy/LICENSE)
 
 This is a webring generator written in Rust. It's similar to a static site generator, but specialized for webrings. 
 
-Unlike most webrings which rely on some kind of server-side code (e.g. PHP, JS) to redirect visitors, this approach uses HTML redirects. The static approach allows for simpler hosting requirements (it can be hosted on Neocities, GitHub Pages, etc) since it eliminates the need for server-side processing. 
+Unlike most webrings which rely on some kind of server-side code to redirect visitors, this uses HTML redirects. The static approach allows for simpler hosting requirements (it can be hosted on Neocities, GitHub Pages, etc) since it eliminates the need for server-side processing. 
 
-Updating the webring will require you to regenerate the whole thing. This is quick & simple, and shouldn't need to be done frequently. But it is an extra step which conventional server-side systems might not have, unless you automate it yourself. 
+However, updating the webring will require you to regenerate the whole thing. This is quick & simple, and shouldn't need to be done frequently. But it is an extra step which conventional server-side systems might not have, unless you automate it yourself. 
 
 ## 🔮 What is a Webring?
 
 A webring is a collection of websites linked together in a loop. Each website contains links to the previous and next websites in the ring. If you navigate far enough, eventually you end up back where you started! 
 
-<img src="https://upload.wikimedia.org/wikipedia/commons/9/97/Webringwork.png" width="512" alt="Webring example graphic"/>
+<a href="https://upload.wikimedia.org/wikipedia/commons/9/97/Webringwork.png"><img src="https://upload.wikimedia.org/wikipedia/commons/9/97/Webringwork.png" width="512" alt="Webring example graphic"/></a>
 
 Webrings were popular in the early days of the internet as a way for website owners to promote each other's content and encourage community engagement. 
 
@@ -27,16 +27,16 @@ This is a tool for anyone who has some kind of personal website or blog and wish
 
 ## 🔬 Features 
 
-- Highly optimized
-- Auto-detect webring links on sites 
+- Fast
+- Ensures each site contains the webring links
 - Fully customizable via templates
 - Generates a [OPML](https://opml.org/) file with all sites that have a RSS feed
 - Choice of command-line interface or config file
-- Remote config file support too
-- Shuffle option
+- Remote config file support as well
+- Shuffle website sequence optionally
 - HTML minification
 - Auto-link website owner contact info
-- Catches duplicate entries
+- Catches errors and duplicate entries
 - Detailed logging
 
 ## 🔎 Webrings
@@ -45,9 +45,9 @@ Webrings using `ringfairy` (as far as I know):
 
 - [Ghostring](https://ghostring.neocities.org) - horror themed sites
 - [Craftering](https://craftering.systemcrafters.net) - for the [System Crafters](https://systemcrafters.net) community
-- [Roboring](https://stellophiliac.github.io/roboring/) - for robotic beings
+- [Roboring](https://stellophiliac.github.io/roboring/) - for robot-aligned beings
 - [Spellcircle](https://spellcircle.neocities.org/) - for witches, wizards, and other magical beings
-- [shring](https://shring.ficd.sh/) - for unix-y personal sites
+- [shring](https://shring.sh) - for unix-y personal sites
 
 If you decide to launch your own webring with this tool, let me know and I'll list it here! 
 
@@ -91,7 +91,9 @@ Command-line arguments take precedence over any settings in the config file.
 
 ### Note: Logging
 
-By default, the application only logs error messages. By passing `-v`/`--verbose` (on the command line) or setting `"verbose": true` (in the config JSON), you can tell the application to show warn level logs. To show info level logs, pass `-vv`; for debug, `-vvv`. 
+By default, the application only logs error messages. 
+
+By passing `-v`/`--verbose` (on the command line) or setting `"verbose": true` (in the config JSON), you can tell the application to show warn level logs. To show info level logs, pass `-vv`; for debug, `-vvv`. 
 
 To save these logs to a file, you can redirect standard output and standard error to a file when running your application. For example:
 
@@ -128,7 +130,7 @@ The following tags are currently usable in templates:
 - *`{{ featured_site_description }}`* prints the description of the random featured site. 
 - *`{{ featured_site_url }}`* prints the URL of the random featured site. 
 
-Right now, `{{ url }}` is a special tag that only works in `redirect.html` for the next/previous links.
+Right now, `{{ url }}` is a unique tag that only works in `redirect.html` for the next/previous links.
 
 ----------------------------
 

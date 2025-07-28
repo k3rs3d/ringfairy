@@ -150,35 +150,38 @@ async fn test_verify_invalid_url() {
 // HTML
 
 // Mock data
-fn mock_webring_site() -> Vec<WebringSite> {
-    vec![
-        WebringSite {
-            website: Website {
-                slug: "site1".to_string(),
-                name: Some("Site 1".to_string()),
-                url: "https://site1.com".to_string(),
-                about: Some("About Site 1".to_string()),
-                owner: Some("owner1".to_string()),
-                rss: Some("https://site1.com/rss".to_string()),
-                misc: None,
+fn mock_webring_site() -> WebringSiteList {
+    WebringSiteList {
+        sites: vec![
+            WebringSite {
+                website: Website {
+                    slug: "site1".to_string(),
+                    name: Some("Site 1".to_string()),
+                    url: "https://site1.com".to_string(),
+                    about: Some("About Site 1".to_string()),
+                    owner: Some("owner1".to_string()),
+                    rss: Some("https://site1.com/rss".to_string()),
+                    misc: None,
+                },
+                previous: 1,
+                next: 1,
             },
-            previous: 1,
-            next: 1,
-        },
-        WebringSite {
-            website: Website {
-                slug: "site2".to_string(),
-                name: Some("Site 2".to_string()),
-                url: "https://site2.com".to_string(),
-                about: Some("About Site 2".to_string()),
-                owner: Some("owner2".to_string()),
-                rss: Some("https://site2.com/rss".to_string()),
-                misc: None,
+            WebringSite {
+                website: Website {
+                    slug: "site2".to_string(),
+                    name: Some("Site 2".to_string()),
+                    url: "https://site2.com".to_string(),
+                    about: Some("About Site 2".to_string()),
+                    owner: Some("owner2".to_string()),
+                    rss: Some("https://site2.com/rss".to_string()),
+                    Misc: None,
+                },
+                previous: 0,
+                next: 0,
             },
-            previous: 0,
-            next: 0,
-        },
-    ]
+        ],
+        failed_sites: vec![], 
+    }
 }
 
 fn mock_app_settings() -> AppSettings {

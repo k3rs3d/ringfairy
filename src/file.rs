@@ -1,29 +1,43 @@
+use crate::cli::AppSettings;
 use crate::error::Error;
 use crate::http::download_file;
-use crate::website::{Website, WebsitesTomlFormat};
+use crate::website::Website;
 use std::fs;
 use std::path::Path;
 
-/// Loads the given file with acquire_file_data(), then returns a vec of Websites for each site in the file
-pub async fn parse_website_list(file_path_or_url: &str) -> Result<Vec<Website>, Error> {
-    // Able to get data from local or from remote
-    let file_data = acquire_file_data(file_path_or_url).await?;
+/// Loads the given file(s) with acquire_file_data(), returns a vec of Websites for each site in the file
+pub async fn parse_website_list(settings: &AppSettings) -> Result<Vec<Website>, Error> {
+    let mut all_websites = Vec::new();
 
-    // Extract file extension to determine the deserialization format
-    match get_extension_from_path(file_path_or_url).as_deref() {
-        Some("json") => {
-            // Deserialize JSON
-            let websites: Vec<Website> = serde_json::from_str(&file_data)?;
-            Ok(websites)
-        }
-        Some("toml") => {
-            // Deserialize TOML
-            let websites: WebsitesTomlFormat =
-                toml::from_str(&file_data).map_err(Error::TOMLError)?;
-            Ok(websites.websites)
-        }
-        _ => Err(Error::StringError("Unsupported file format".to_string())),
+    // JSON literals
+    for json in &settings.json_lists {
+        let mut list: Vec<Website> = serde_json::from_str(json)
+            .map_err(|e| Error::StringError(format!("Failed to parse JSON literal: {e}")))?;
+        all_websites.append(&mut list);
     }
+
+    // TOML literals
+    for toml in &settings.toml_lists {
+        let mut list: Vec<Website> = toml::from_str(toml)
+            .map_err(|e| Error::StringError(format!("Failed to parse TOML literal: {e}")))?;
+        all_websites.append(&mut list);
+    }
+
+    // Load file(s)
+    for path in &settings.filepath_list {
+        let file_data = acquire_file_data(path).await?;
+        let ext = get_extension_from_path(path).unwrap_or_else(|| "json".into());
+        let mut list = match ext.as_str() {
+            "json" => serde_json::from_str::<Vec<Website>>(&file_data)
+                .map_err(|e| Error::StringError(format!("Failed to parse JSON file '{}': {}", path, e)))?,
+            "toml" => toml::from_str::<Vec<Website>>(&file_data)
+                .map_err(|e| Error::StringError(format!("Failed to parse TOML file '{}': {}", path, e)))?,
+            _ => return Err(Error::StringError(format!("Unsupported file format '{}'", ext)))
+        };
+        all_websites.append(&mut list);
+    }
+
+    Ok(all_websites)
 }
 
 /// This will either read or download the file, depending on whether a URL or local URI is provided.
@@ -69,23 +83,6 @@ pub fn get_extension_from_path(path: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    // acquire_file_data()
-    /*
-        #[tokio::test]
-        async fn test_acquire_local_file() {
-            // Create a temporary file for testing
-            let temp_file_path = "ringfairy_cargo_test_file.txt";
-            fs::write(temp_file_path, "cargo test content").unwrap();
-
-            let result = acquire_file_data(temp_file_path).await;
-            assert!(result.is_ok());
-            assert_eq!(result.unwrap(), "test content");
-
-            // Clean up
-            fs::remove_file(temp_file_path).unwrap();
-        }
-    */
 
     #[tokio::test]
     async fn test_acquire_file_from_invalid_url() {
