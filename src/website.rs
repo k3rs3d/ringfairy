@@ -1,5 +1,6 @@
 use futures::stream::{FuturesUnordered, StreamExt};
 use serde::{Deserialize, Serialize};
+use tera::Value;
 use std::result::Result;
 
 use crate::cli::AppSettings;
@@ -13,6 +14,7 @@ pub struct Website {
     pub url: String,
     pub rss: Option<String>,
     pub owner: Option<String>,
+    pub misc: Option<Value>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
