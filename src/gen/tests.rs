@@ -174,7 +174,7 @@ fn mock_webring_site() -> WebringSiteList {
                     about: Some("About Site 2".to_string()),
                     owner: Some("owner2".to_string()),
                     rss: Some("https://site2.com/rss".to_string()),
-                    Misc: None,
+                    misc: None,
                 },
                 previous: 0,
                 next: 0,

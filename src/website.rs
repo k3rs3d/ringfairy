@@ -6,7 +6,7 @@ use std::result::Result;
 use crate::cli::AppSettings;
 use crate::error::Error;
 
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Website {
     pub slug: String,
     pub name: Option<String>,
@@ -15,6 +15,29 @@ pub struct Website {
     pub rss: Option<String>,
     pub owner: Option<String>,
     pub misc: Option<Value>,
+}
+
+impl PartialEq for Website {
+    fn eq(&self, other: &Self) -> bool {
+        self.slug == other.slug &&
+        self.name == other.name &&
+        self.about == other.about &&
+        self.url == other.url &&
+        self.rss == other.rss &&
+        self.owner == other.owner
+    }
+}
+
+impl Eq for Website {}
+impl std::hash::Hash for Website {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.slug.hash(state);
+        self.name.hash(state);
+        self.about.hash(state);
+        self.url.hash(state);
+        self.rss.hash(state);
+        self.owner.hash(state);
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
