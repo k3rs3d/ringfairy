@@ -1,3 +1,4 @@
+use crate::error::Error;
 use clap::{ArgAction, Parser};
 use serde::Deserialize;
 
@@ -289,35 +290,46 @@ pub struct ClapSettings {
     pub dry_run: bool,
 }
 
-async fn load_config(config_path: &str) -> Option<ConfigSettings> {
+pub async fn load_config(config_path: &str) -> Result<Option<ConfigSettings>, Error> {
     // Early return for an empty path
     if config_path.trim().is_empty() {
-        return None;
+        log::warn!("No config path provided; using defaults.");
+        return Ok(None);
     }
 
-    // Load async (supports either locally or remotely)
+    // Async load the file (or remote)
     let config_content = match file::acquire_file_data(config_path).await {
         Ok(content) => content,
-        Err(_) => return None,
+        Err(e) => {
+            log::error!("Could not load config file '{}': {}", config_path, e);
+            return Err(e); 
+        }
     };
-
-    // Ensure the file is not empty
+    // Ensure config file is not empty...
     if config_content.trim().is_empty() {
-        return None;
+        log::warn!("Config file '{}' is empty.", config_path);
+        return Ok(None);
     }
 
     // Deserialize based on format
     // TODO: Add more config file types?
-    match file::acquire_file_data(config_path).await {
-        Ok(config_content) if !config_content.trim().is_empty() => {
-            match file::get_extension_from_path(config_path).as_deref() {
-                Some("json") => serde_json::from_str(&config_content).ok(),
-                Some("toml") => toml::from_str(&config_content).ok(),
-                _ => None,
-            }
+    let ext = file::get_extension_from_path(config_path).unwrap_or_default();
+    let config: ConfigSettings = match ext.as_str() {
+        "json" => serde_json::from_str(&config_content).map_err(|e| {
+            log::error!("Failed to parse JSON config '{}': {}", config_path, e);
+            Error::StringError(format!("Failed to parse JSON config '{}': {}", config_path, e))
+        })?,
+        "toml" => toml::from_str(&config_content).map_err(|e| {
+            log::error!("Failed to parse TOML config '{}': {}", config_path, e);
+            Error::StringError(format!("Failed to parse TOML config '{}': {}", config_path, e))
+        })?,
+        other => {
+            log::error!("Unsupported config file extension: '{}'", other);
+            return Err(Error::StringError(format!("Unsupported config file extension: '{}'", other)));
         }
-        _ => None,
-    }
+    };
+
+    Ok(Some(config))
 }
 
 async fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> AppSettings {
@@ -466,9 +478,17 @@ pub async fn parse_args() -> AppSettings {
     };
 
     // Check if a config file path is provided, and it's not empty
-    let config_args = load_config(config_path.as_deref().unwrap_or(""))
-        .await
-        .unwrap_or_default();
+    let config_args = match load_config(config_path.as_deref().unwrap_or("")).await {
+        Ok(Some(cfg)) => cfg,
+        Ok(None) => {
+            log::warn!("No config loaded, using defaults.");
+            ConfigSettings::default()
+        }
+        Err(e) => {
+            log::error!("Error loading config: {}", e);
+            std::process::exit(1);
+        }
+    };
 
     merge_configs(clap_args, config_args).await
 }
