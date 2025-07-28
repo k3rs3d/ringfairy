@@ -5,7 +5,7 @@ use std::result::Result;
 use crate::cli::AppSettings;
 use crate::error::Error;
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 pub struct Website {
     pub slug: String,
     pub name: Option<String>,
@@ -62,7 +62,6 @@ pub async fn audit_links(
     // Collect results - unpacking the tuple inside Ok variant
     while let Some(result) = tasks.next().await {
         match result {
-            // Here, we directly get the tuple (website, bool) from Ok
             Ok((website, true, _)) => compliant_sites.push(website),
             Ok((website, false, Some(reason))) => {
                 log::warn!("Site failed audit: {} | REASON: {}", website.url, reason)
@@ -106,7 +105,7 @@ pub async fn does_html_contain_links(
         settings.prev_url_text
     );
 
-    //log::debug!("Expected next/previous URLs: {}, {}", &next_link, &prev_link);
+    //log::trace!("Expected next/previous URLs: {}, {}", &next_link, &prev_link);
 
     let mut next_exists = false;
     let mut previous_exists = false;

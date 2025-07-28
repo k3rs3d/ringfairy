@@ -7,7 +7,7 @@ use tera::{Context, Tera};
 use super::*;
 use crate::cli::AppSettings;
 use crate::error::Error;
-use crate::gen::{webring::WebringSite, Generator, PrecomputedTags};
+use crate::gen::{webring::WebringSite, webring::WebringSiteList, Generator, PrecomputedTags};
 
 pub struct HtmlGenerator {
     tera: Tera,
@@ -46,17 +46,17 @@ impl Generator for HtmlGenerator {
 
     async fn generate_content(
         &self,
-        webring: &[WebringSite],
+        webring: &WebringSiteList,
         settings: &AppSettings,
     ) -> Result<(), Error> {
         self.ensure_output_directory(&settings.path_output).await?;
         let precomputed = <HtmlGenerator as Generator>::precompute_tags(webring, settings).await;
         let context = self
-            .generate_context(webring, &precomputed, settings)
+            .generate_context(&webring, &precomputed, settings)
             .await?;
 
-        self.generate_html(webring, settings, &context).await?;
-        self.generate_opml(webring, settings).await?;
+        self.generate_html(&webring, settings, &context).await?;
+        self.generate_opml(&webring.sites, settings).await?;
 
         Ok(())
     }
@@ -65,13 +65,13 @@ impl Generator for HtmlGenerator {
 impl HtmlGenerator {
     async fn generate_html(
         &self,
-        webring: &[WebringSite],
+        webring: &WebringSiteList,
         settings: &AppSettings,
         context: &Context,
     ) -> Result<(), Error> {
         // Generate site-specific pages
-        for site in webring {
-            self.generate_site(site, webring, context, &settings.path_output, settings)
+        for site in &webring.sites {
+            self.generate_site(&site, webring, context, &settings.path_output, settings)
                 .await?;
         }
 
@@ -124,7 +124,7 @@ impl HtmlGenerator {
     async fn generate_site(
         &self,
         site: &WebringSite,
-        webring: &[WebringSite],
+        webring: &WebringSiteList,
         context: &Context,
         path_output: &str,
         settings: &AppSettings,
@@ -133,8 +133,8 @@ impl HtmlGenerator {
         fs::create_dir_all(site_path.join(&settings.next_url_text))?;
         fs::create_dir_all(site_path.join(&settings.prev_url_text))?;
 
-        let previous_site = &webring[site.previous].website.url;
-        let next_site = &webring[site.next].website.url;
+        let previous_site = &webring.sites[site.previous].website.url;
+        let next_site = &webring.sites[site.next].website.url;
 
         self.render_and_write(
             &site_path,
@@ -158,14 +158,14 @@ impl HtmlGenerator {
 
     async fn generate_random_site(
         &self,
-        webring: &[WebringSite],
+        webring: &WebringSiteList,
         context: &Context,
         path_output: &str,
         settings: &AppSettings,
     ) -> Result<(), Error> {
         let site_path = Path::new(path_output);
 
-        let site_list: Vec<&str> = webring
+        let site_list: Vec<&str> = webring.sites
             .iter()
             .map(|site| site.website.url.as_str())
             .collect();
@@ -206,7 +206,7 @@ impl HtmlGenerator {
     async fn generate_custom_templates(
         &self,
         settings: &AppSettings,
-        webring: &[WebringSite],
+        webring: &WebringSiteList,
     ) -> Result<(), Error> {
         let path_output = &settings.path_output;
 
@@ -228,15 +228,15 @@ impl HtmlGenerator {
 
     async fn generate_context(
         &self,
-        websites: &[WebringSite],
+        webring: &WebringSiteList,
         precomputed: &PrecomputedTags,
         settings: &AppSettings,
     ) -> Result<Context, Error> {
         let mut context = Context::new();
         // Many of these are redundant
         // Keeping them for compatibility (for now)
-        context.insert("table_of_sites", &build_sites_table_html(websites).await);
-        context.insert("grid_of_sites", &build_sites_grid_html(websites).await);
+        context.insert("table_of_sites", &build_sites_table_html(&webring.sites).await);
+        context.insert("grid_of_sites", &build_sites_grid_html(&webring.sites).await);
         context.insert("base_url", &settings.base_url);
         context.insert("ring_name", &settings.ring_name);
         context.insert("ring_description", &settings.ring_description);
@@ -251,7 +251,8 @@ impl HtmlGenerator {
         context.insert("featured_site_url", &precomputed.featured_site_url);
         context.insert("current_time", &precomputed.current_time);
         context.insert("opml", &precomputed.opml_link);
-        context.insert("sites", websites); // Insert the whole list
+        context.insert("sites", &webring.sites); // Insert the whole list
+        context.insert("failed_sites", &webring.failed_sites);
 
         Ok(context)
     }

@@ -16,6 +16,11 @@ pub struct WebringSite {
     pub previous: usize,
 }
 
+pub struct WebringSiteList {
+    pub sites: Vec<WebringSite>,
+    pub failed_sites: Vec<Website>
+}
+
 /// Checks each Website to ensure it has a valid URL, and tries to detect duplicate entries.
 pub fn verify_websites(websites: &[Website]) -> Result<(), Error> {
     let mut slugs = HashSet::new();
@@ -102,6 +107,7 @@ pub async fn build_webring_sequence(
 /// Based on the provided settings, tries to load a list of websites, then generate & save files to create the webring.
 pub async fn generate_webring_files(settings: &AppSettings) -> Result<(), Error> {
     let websites = parse_website_list(&settings).await?;
+    let mut failed_sites: Vec<Website> = Vec::new(); 
 
     // Verify websites entries if required (offline)
     if !settings.skip_verify {
@@ -112,10 +118,14 @@ pub async fn generate_webring_files(settings: &AppSettings) -> Result<(), Error>
 
     // Audit websites to ensure they contain webring links (online)
     let client = setup_client(settings).await?;
+
     let audited_websites = if settings.audit {
         let websites_len = websites.len(); // capture length of website list
         log::info!("Auditing sites for webring links...");
         let audited_websites = audit_links(&client, websites.clone(), settings).await?;
+        let audited_set: HashSet<_> = audited_websites.iter().collect();
+        failed_sites = websites.iter().filter(|w| !audited_set.contains(w)).cloned().collect();
+
         log::info!(
             "Audit complete. Detected links on {} out of {} sites.",
             audited_websites.len(),
@@ -134,7 +144,10 @@ pub async fn generate_webring_files(settings: &AppSettings) -> Result<(), Error>
     }
 
     // Organize sites into the webring sequence
-    let webring = build_webring_sequence(audited_websites, settings).await;
+    let webring = WebringSiteList {
+        sites: build_webring_sequence(audited_websites, settings).await,
+        failed_sites,
+    };
 
     // Proceed with HTML generation (if not a dry run)
     if !settings.dry_run {

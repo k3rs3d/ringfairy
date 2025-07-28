@@ -13,7 +13,7 @@ pub mod webring;
 use crate::cli::AppSettings;
 use crate::error::Error;
 use crate::file::copy_asset_files;
-use crate::gen::webring::WebringSite;
+use crate::gen::webring::WebringSiteList;
 
 ///Entry point (for now)
 pub async fn make_ringfairy_go_now(settings: &AppSettings) -> Result<(), Error> {
@@ -36,7 +36,7 @@ pub trait Generator: Send + Sync {
 
     async fn generate_content(
         &self,
-        webring: &[WebringSite],
+        webring: &WebringSiteList,
         settings: &AppSettings,
     ) -> Result<(), Error>;
 
@@ -45,11 +45,11 @@ pub trait Generator: Send + Sync {
         Ok(())
     }
 
-    async fn precompute_tags(webring: &[WebringSite], settings: &AppSettings) -> PrecomputedTags {
-        let featured_site = webring.choose(&mut rand::thread_rng()).unwrap();
+    async fn precompute_tags(webring: &WebringSiteList, settings: &AppSettings) -> PrecomputedTags {
+        let featured_site = webring.sites.choose(&mut rand::thread_rng()).unwrap();
 
         PrecomputedTags {
-            number_of_sites: webring.len(),
+            number_of_sites: webring.sites.len(),
             current_time: chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
             featured_site_name: featured_site
                 .website
