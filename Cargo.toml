@@ -1,8 +1,8 @@
 [package]
 name = "ringfairy"
-version = "0.1.3"
+version = "0.2.0"
 edition = "2021"
-authors = ["Kern AKA Kersed <human@kernespinoza.com>", "Shom Bandopadhaya <shom@bandopadhaya.com>"]
+authors = ["Kern AKA Kersed <dev@kersed.net>", "Shom Bandopadhaya <shom@bandopadhaya.com>"]
 license = "GPL-3.0"
 description = "Creates a webring by generating HTML files for a set of websites, linking them together."
 readme = "README.md"
