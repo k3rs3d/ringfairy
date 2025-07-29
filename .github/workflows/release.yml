@@ -5,6 +5,10 @@ on:
     tags:
       - "v*.*.*" 
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Git Tag/Version for Release (must already exist)'
+        required: true
 
 jobs:
   build:
@@ -58,7 +62,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: ringfairy-linux.tar.gz
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -67,7 +71,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: ringfairy-mac.tar.gz
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -76,6 +80,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: ringfairy-windows.zip
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
