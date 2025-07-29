@@ -1,0 +1,77 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'   # trigger on new version 
+
+jobs:
+  build:
+    name: Build & Archive per-platform
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Build (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: cargo build --release
+
+      - name: Strip (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: strip target/release/ringfairy
+
+      - name: Build (Windows)
+        if: matrix.os == 'windows-latest'
+        run: cargo build --release
+
+      # Archive the build, README, LICENSE for each OS
+      - name: Archive linux binary
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cp LICENSE README.md target/release/
+          tar -czvf ringfairy-linux.tar.gz -C target/release ringfairy LICENSE README.md
+
+      - name: Archive windows binary
+        if: matrix.os == 'windows-latest'
+        run: |
+          copy LICENSE target\release\
+          copy README.md target\release\
+          Compress-Archive -Path target\release\ringfairy.exe,target\release\LICENSE,target\release\README.md -DestinationPath ringfairy-windows.zip
+
+      - name: Archive macos binary
+        if: matrix.os == 'macos-latest'
+        run: |
+          cp LICENSE README.md target/release/
+          tar -czvf ringfairy-mac.tar.gz -C target/release ringfairy LICENSE README.md
+
+      # Upload only the relevant artifact to the release
+      - name: Upload Linux archive
+        if: matrix.os == 'ubuntu-latest'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ringfairy-linux.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload macOS archive
+        if: matrix.os == 'macos-latest'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ringfairy-mac.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Windows archive
+        if: matrix.os == 'windows-latest'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ringfairy-windows.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
