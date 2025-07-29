@@ -75,9 +75,6 @@ impl HtmlGenerator {
                 .await?;
         }
 
-        self.generate_random_site(webring, context, &settings.path_output, settings)
-            .await?;
-
         // Process all other custom templates
         self.generate_custom_templates(settings, webring).await?;
         Ok(())
@@ -156,32 +153,6 @@ impl HtmlGenerator {
         Ok(())
     }
 
-    async fn generate_random_site(
-        &self,
-        webring: &WebringSiteList,
-        context: &Context,
-        path_output: &str,
-        settings: &AppSettings,
-    ) -> Result<(), Error> {
-        let site_path = Path::new(path_output);
-
-        let site_list: Vec<&str> = webring.sites
-            .iter()
-            .map(|site| site.website.url.as_str())
-            .collect();
-
-        let mut url_context = context.clone();
-        url_context.insert("url_list", &site_list);
-
-        let content = self
-            .tera
-            .render(&settings.filename_template_random, &url_context)?;
-        self.write_content(&site_path.join("random.html"), &content)
-            .await?;
-
-        Ok(())
-    }
-
     async fn render_and_write(
         &self,
         site_path: &Path,
@@ -214,7 +185,6 @@ impl HtmlGenerator {
 
         for template_name in self.tera.get_template_names().filter(|name| {
             *name != settings.filename_template_redirect
-                && *name != settings.filename_template_random
         }) {
             let context = self
                 .generate_context(webring, &precomputed, settings)

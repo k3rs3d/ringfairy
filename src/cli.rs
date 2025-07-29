@@ -16,7 +16,6 @@ pub struct AppSettings {
     pub toml_lists: Vec<String>,
     pub filepath_list: Vec<String>,
     pub filename_template_redirect: String,
-    pub filename_template_random: String,
     pub path_output: String,
     pub path_assets: String,
     pub path_templates: String,
@@ -48,7 +47,6 @@ impl Default for AppSettings {
             json_lists: Vec::new(),
             toml_lists: Vec::new(),
             filepath_list: vec!["./websites.json".to_string()],
-            filename_template_random: "random.html".into(),
             filename_template_redirect: "redirect.html".into(),
             path_output: "./webring".into(),
             path_assets: "./data/assets".into(),
@@ -381,10 +379,6 @@ async fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> 
         .filename_template_redirect
         .or(config.filename_template_redirect)
         .unwrap_or(final_settings.filename_template_redirect);
-    final_settings.filename_template_random = cli_args
-        .filename_template_random
-        .or(config.filename_template_random)
-        .unwrap_or(final_settings.filename_template_random);
     final_settings.path_output = cli_args
         .path_output
         .or(config.path_output)

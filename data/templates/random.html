@@ -14,9 +14,11 @@
 
 <script>
 	var links = []
-	{% for url in url_list %}
-		links.push("{{ url | safe }}")
-	{% endfor %}
+	{% if sites %}
+		{% for site in sites %}
+			links.push("{{ site.website.url }}")
+		{% endfor %}
+	{% endif %}
 	window.location.replace(links[Math.floor(Math.random() * links.length)])
 </script>
 
