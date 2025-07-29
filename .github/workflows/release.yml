@@ -1,9 +1,9 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'   # trigger on new version 
+  release:
+    types: [published]
+  workflow_dispatch:
 
 jobs:
   build:
