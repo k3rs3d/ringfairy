@@ -80,7 +80,6 @@ pub struct ConfigSettings {
     pub toml_list: Option<Vec<String>>,
     pub filepath_list: Option<Vec<String>>,
     pub filename_template_redirect: Option<String>,
-    pub filename_template_random: Option<String>,
     pub path_output: Option<String>,
     pub path_assets: Option<String>,
     pub path_templates: Option<String>,
