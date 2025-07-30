@@ -5,6 +5,17 @@ use crate::website::Website;
 use std::fs;
 use std::path::Path;
 
+fn parse_csv_websites(csv_data: &str) -> Result<Vec<Website>, Error> {
+    let mut rdr = csv::Reader::from_reader(csv_data.as_bytes());
+    let mut websites = Vec::new();
+    for result in rdr.deserialize() {
+        let website: Website = result
+            .map_err(|e| Error::StringError(format!("Failed to parse CSV row: {}", e)))?;
+        websites.push(website);
+    }
+    Ok(websites)
+}
+
 /// Loads the given file(s) with acquire_file_data(), returns a vec of Websites for each site in the file
 pub async fn parse_website_list(settings: &AppSettings) -> Result<Vec<Website>, Error> {
     let mut all_websites = Vec::new();
@@ -32,7 +43,9 @@ pub async fn parse_website_list(settings: &AppSettings) -> Result<Vec<Website>, 
                 .map_err(|e| Error::StringError(format!("Failed to parse JSON file '{}': {}", path, e)))?,
             "toml" => toml::from_str::<Vec<Website>>(&file_data)
                 .map_err(|e| Error::StringError(format!("Failed to parse TOML file '{}': {}", path, e)))?,
-            _ => return Err(Error::StringError(format!("Unsupported file format '{}'", ext)))
+            "csv" => parse_csv_websites(&file_data)
+                .map_err(|e| Error::StringError(format!("Failed to parse CSV file '{}': {}", path, e)))?,
+            other => return Err(Error::StringError(format!("Unsupported file format '{}'", other))),
         };
         all_websites.append(&mut list);
     }

@@ -19,7 +19,8 @@
         "slug": "Example3",
 		"about": "Example Website 3!",
         "url": "https://example3.com",
-        "rss": "https://example.3com/rss/index.xml",
+        "rss": "https://example3.com/rss/index.xml",
+        "atom": "https://example3.com/atom.xml",
 		"owner": "owner 3"
     },
     {
@@ -34,6 +35,16 @@
         "slug": "Example5",
 		"about": "Example Website 5!",
         "url": "https://example5.com",
+        "atom": "https://example5.com/atom.xml",
 		"owner": "owner 5"
+    },
+    {
+        "name": "Example 6 Site",
+        "slug": "Example6",
+		"about": "Example Website 6!",
+        "url": "https://example6.com",
+        "atom": "https://example6.com/atom.xml",
+        "rss": "https://example6.com/rss/index.xml",
+		"owner": "owner 6"
     }
 ]

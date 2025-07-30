@@ -102,7 +102,9 @@ impl HtmlGenerator {
 
         for website in webring.iter() {
             if let Some(owner) = &website.website.owner {
-                if let Some(rss_url) = website.website.rss.as_ref().filter(|url| !url.is_empty()) {
+                if let Some(atom_url) = website.website.atom.as_ref().filter(|url| !url.is_empty()) {
+                    opml.add_feed(owner, atom_url);
+                } else if let Some(rss_url) = website.website.rss.as_ref().filter(|url| !url.is_empty()) {
                     opml.add_feed(owner, rss_url);
                 }
             }
