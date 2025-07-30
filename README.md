@@ -27,7 +27,7 @@ This is a tool for anyone who has some kind of personal website or blog and wish
 
 ## 🔬 Features 
 
-- Fast
+- Fast & Lightweight
 - Ensures each site contains the webring links
 - Fully customizable via templates
 - Generates a [OPML](https://opml.org/) file with all sites that have a RSS feed
@@ -89,6 +89,9 @@ Command-line arguments take precedence over any settings in the config file.
 - *`-U`, `--client_user_agent`*: In audit mode, user-agent string to be used by the web scraper. 
 - *`-H`, `--client_header`*: In audit mode, header string to be used by the web scraper. 
 
+- *`-J`, `--json-string`*: Provide website data in JSON format. 
+- *`-T`, `--toml-string`*: Provide website data in TOML format. 
+
 ### Note: Logging
 
 By default, the application only logs error messages. 
@@ -111,13 +114,13 @@ In the templates folder, `redirect.html` is used to generate each of the `next.h
 
 Besides `redirect.html`, the templates folder can contain any other templates you want.
 
-For instance, it's a good idea for a webring to have a central hub page listing all of the sites. You can put this on `index.html`, or create a dedicated page such as `list.html`, `table.html`, etc. Simply use the tag `{{ table_of_sites }}` in the template, and `ringfairy` will generate a formatted list of the sites in the webring. 
+For instance, it's a good idea for a webring to have a central hub page listing all of the sites. You can put this on `index.html`, or create a dedicated page such as `list.html`, `table.html`, etc. ~~Simply use the tag `{{ table_of_sites }}` in the template, and `ringfairy` will generate a formatted list of the sites in the webring.~~
 
 ### Template Tags
 
 The following tags are currently usable in templates: 
 
-- *`{{ table_of_sites }}`* produces a formatted HTML table listing information for all sites in the webring. 
+- *`{{ sites }}`* provides access to information about the sites in the webring.  
 - *`{{ number_of_sites }}`* shows the current size of the webring.
 - *`{{ current_time }}`* displays the time of generating, showing when the page was last updated. 
 - *`{{ opml }}`* inserts the relative path of the ring's OPML file.
