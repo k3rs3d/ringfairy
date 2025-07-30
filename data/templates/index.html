@@ -28,7 +28,10 @@
             <td>
                 <a href="{{ site.website.url }}" target="_blank">{{ site.website.url }}</a>
                 {% if site.website.rss %}
-                    <a href="{{ site.website.rss }}" target="_blank">[rss]</a>
+                  <a href="{{ site.website.rss }}" target="_blank">[rss]</a>
+                {% endif %}
+                {% if site.website.atom %}
+                  <a href="{{ site.website.atom }}" target="_blank">[atom]</a>
                 {% endif %}
             </td>
             <td>{{ site.website.about | default(value="") }}</td>

@@ -16,6 +16,7 @@ fn create_sample_website(slug: &str, url: &str) -> Website {
         about: Some(format!("About {}", slug)),
         url: url.to_string(),
         rss: Some(format!("http://{}.tld/rss", slug)),
+        atom: Some(format!("http://{}.tld/atom.xml", slug)),
         owner: Some(format!("Owner {}", slug)),
         misc: None,
     }
@@ -161,6 +162,7 @@ fn mock_webring_site() -> WebringSiteList {
                     about: Some("About Site 1".to_string()),
                     owner: Some("owner1".to_string()),
                     rss: Some("https://site1.com/rss".to_string()),
+                    atom: Some("https://site1.com/atom.xml".to_string()),
                     misc: None,
                 },
                 previous: 1,
@@ -174,6 +176,7 @@ fn mock_webring_site() -> WebringSiteList {
                     about: Some("About Site 2".to_string()),
                     owner: Some("owner2".to_string()),
                     rss: Some("https://site2.com/rss".to_string()),
+                    atom: Some("https://site2.com/atom.xml".to_string()),
                     misc: None,
                 },
                 previous: 0,

@@ -13,6 +13,7 @@ pub struct Website {
     pub about: Option<String>,
     pub url: String,
     pub rss: Option<String>,
+    pub atom: Option<String>,
     pub owner: Option<String>,
     pub misc: Option<Value>,
 }
@@ -24,6 +25,7 @@ impl PartialEq for Website {
         self.about == other.about &&
         self.url == other.url &&
         self.rss == other.rss &&
+        self.atom == other.atom &&
         self.owner == other.owner
     }
 }
@@ -36,6 +38,7 @@ impl std::hash::Hash for Website {
         self.about.hash(state);
         self.url.hash(state);
         self.rss.hash(state);
+        self.atom.hash(state);
         self.owner.hash(state);
     }
 }
