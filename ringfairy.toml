@@ -4,7 +4,7 @@ ring_description = "A webring to connect member sites."
 ring_owner = "Webring Organization / Person"
 ring_owner_site = "https://domain.tld"
 
-filepath_list = "./websites.json"   # Website list; should be a JSON file with 'name', 'url', etc 
+filepath_list = ["./websites.json"]   # Website list; should be a JSON file with 'name', 'url', etc 
 path_output = "./webring"           # Generated files will be saved in this folder.
 path_assets = "./data/assets"       # All contents of the asset folder will be copied directly into the output directory
 path_templates = "./data/templates" # The folder containing HTML templates to use, ie, anything with {{ tags }}

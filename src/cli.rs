@@ -333,11 +333,13 @@ async fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> 
     let mut final_settings = AppSettings::default();
 
     // filepath_list from CLI or config, coalescing all values
-    let mut filepaths = cli_args.filepath_list.clone();
+    let mut de_dupe = std::collections::HashSet::new();
+    de_dupe.extend(cli_args.filepath_list.iter().cloned());
+    // Insert config filepaths if present
     if let Some(ref cfg_paths) = config.filepath_list {
-        filepaths.extend(cfg_paths.clone());
+        de_dupe.extend(cfg_paths.iter().cloned());
     }
-    final_settings.filepath_list.extend(filepaths);
+    final_settings.filepath_list = de_dupe.into_iter().collect();
 
     final_settings.json_lists = {
         let mut v = Vec::new();
