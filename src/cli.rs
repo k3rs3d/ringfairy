@@ -124,17 +124,17 @@ pub struct ClapSettings {
 
     #[clap(
         short = 'J',
-        long = "json-string", 
+        long = "json-string",
         help = "Website list as a JSON string"
     )]
     pub json_list: Vec<String>,
 
     #[clap(
         short = 'T',
-        long = "toml-string", 
+        long = "toml-string",
         help = "Website list as a TOML string"
     )]
-    pub toml_list: Vec<String>,  
+    pub toml_list: Vec<String>,
 
     #[clap(
         short = 'l',
@@ -299,7 +299,7 @@ pub async fn load_config(config_path: &str) -> Result<Option<ConfigSettings>, Er
         Ok(content) => content,
         Err(e) => {
             log::error!("Could not load config file '{}': {}", config_path, e);
-            return Err(e); 
+            return Err(e);
         }
     };
     // Ensure config file is not empty...
@@ -314,15 +314,24 @@ pub async fn load_config(config_path: &str) -> Result<Option<ConfigSettings>, Er
     let config: ConfigSettings = match ext.as_str() {
         "json" => serde_json::from_str(&config_content).map_err(|e| {
             log::error!("Failed to parse JSON config '{}': {}", config_path, e);
-            Error::StringError(format!("Failed to parse JSON config '{}': {}", config_path, e))
+            Error::StringError(format!(
+                "Failed to parse JSON config '{}': {}",
+                config_path, e
+            ))
         })?,
         "toml" => toml::from_str(&config_content).map_err(|e| {
             log::error!("Failed to parse TOML config '{}': {}", config_path, e);
-            Error::StringError(format!("Failed to parse TOML config '{}': {}", config_path, e))
+            Error::StringError(format!(
+                "Failed to parse TOML config '{}': {}",
+                config_path, e
+            ))
         })?,
         other => {
             log::error!("Unsupported config file extension: '{}'", other);
-            return Err(Error::StringError(format!("Unsupported config file extension: '{}'", other)));
+            return Err(Error::StringError(format!(
+                "Unsupported config file extension: '{}'",
+                other
+            )));
         }
     };
 
@@ -358,7 +367,6 @@ async fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> 
         }
         v
     };
-
 
     final_settings.ring_name = cli_args
         .ring_name
@@ -453,7 +461,7 @@ async fn merge_configs(cli_args: ClapSettings, config: self::ConfigSettings) -> 
     final_settings
 }
 
-pub async fn parse_args() -> AppSettings {
+pub async fn parse_args() -> Result<AppSettings, Error> {
     let clap_args = ClapSettings::parse();
 
     // If the user provides a directory, search it for the default config file
@@ -481,9 +489,9 @@ pub async fn parse_args() -> AppSettings {
         }
         Err(e) => {
             log::error!("Error loading config: {}", e);
-            std::process::exit(1);
+            return Err(e);
         }
     };
 
-    merge_configs(clap_args, config_args).await
+    Ok(merge_configs(clap_args, config_args).await)
 }
