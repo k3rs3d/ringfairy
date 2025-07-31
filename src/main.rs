@@ -8,7 +8,7 @@ mod website;
 #[tokio::main]
 async fn main() -> Result<(), error::Error> {
     // Parse arguments & get settings struct
-    let settings = cli::parse_args().await;
+    let settings = cli::parse_args().await?;
 
     // Init logging
     env_logger::init();
