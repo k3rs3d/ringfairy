@@ -1,12 +1,12 @@
 mod cli;
 mod error;
 mod file;
+mod format_errors;
 mod gen;
 mod http;
 mod website;
 
-#[tokio::main]
-async fn main() -> Result<(), error::Error> {
+async fn run_ringfairy() -> Result<(), error::Error> {
     // Parse arguments & get settings struct
     let settings = cli::parse_args().await?;
 
@@ -25,4 +25,12 @@ async fn main() -> Result<(), error::Error> {
     log::info!("Done in {} ms!", elapsed.as_millis());
 
     Ok(())
+}
+
+#[tokio::main]
+async fn main() {
+    if let Err(err) = run_ringfairy().await {
+        println!("{}", format_errors::format_error(err));
+        std::process::exit(1);
+    };
 }
