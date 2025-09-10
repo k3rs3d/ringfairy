@@ -49,6 +49,7 @@ Webrings using `ringfairy` (as far as I know):
 - [Spellcircle](https://spellcircle.neocities.org/) - for witches, wizards, and other magical beings
 - [shring](https://shring.sh) - for unix-y personal sites
 - [Catppuccin Webring](https://ctp-webr.ing/)
+- [hajakehä](https://hajakeha.usvs.xyz/) - for Finnish speakers
 
 If you decide to launch your own webring with this tool, let me know and I'll list it here! 
 
