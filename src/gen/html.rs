@@ -277,22 +277,18 @@ pub async fn build_sites_grid_html(websites: &[WebringSite]) -> String {
     for (_index, website) in websites.iter().enumerate() {
         grid_html.push_str("<article class=\"card\">\n");
         grid_html.push_str(&format!(
-            "<div class=\"card-name\">{} <span class=\"card-slug\">({})</span></div>\n",
-            website
-                .website
-                .owner
-                .as_deref()
-                .map(format_owner)
-                .unwrap_or(String::new()),
-            website.website.slug
-        ));
+						"<a href=\"{}\" target=\"_blank\"><div class=\"card-name\">{} <span class=\"card-slug\">({})</span></div></a>\n",
+						website.website.url,
+						website.website.name.as_deref().map(format_owner).unwrap_or(String::new()),
+						website.website.slug));
         grid_html.push_str("<div class=\"card-content\">\n");
         grid_html.push_str(&format!(
-            "<div class=\"card-link\"><a href=\"{}\" target=\"_blank\">{}</a>&nbsp;{}</div>\n",
+            "<div class=\"card-link\">{} <a href=\"{}\" target=\"_blank\">{}</a>&nbsp;{}</div>\n",
+            website.website.owner.as_deref().unwrap_or(""),
             website.website.url,
             website.website.url,
             if let Some(rss_url) = &website.website.rss {
-                format!(" <a href=\"{}\" target=\"_blank\">[rss]</a>", rss_url)
+                format!("<a href=\"{}\" target=\"_blank\"> [rss]</a>", rss_url)
             } else {
                 String::new()
             }
