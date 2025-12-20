@@ -112,17 +112,14 @@ Templates are located in the `./data/templates` folder by default; this path can
 
 Templates contain tags which will be replaced with generated content. You can customize generated files by adding content before/after the tags. The repo includes basic template examples to get you started. 
 
-In the templates folder, `redirect.html` is used to generate each of the `next.html`/`previous.html` pages, containing the redirects for each website. The tag `{{ url }}` is inserted by the generator in each page, and that powers the webring.
+In the templates folder, `redirect.html` is used to generate each of the `next.html`/`previous.html` pages, containing the redirects for each website. The tag `{{ url }}` is inserted by the generator in each page, and that powers the webring. Right now, `{{ url }}` is a unique tag that only works in `redirect.html` for the next/previous links.
 
 Besides `redirect.html`, the templates folder can contain any other templates you want.
-
-For instance, it's a good idea for a webring to have a central hub page listing all of the sites. You can put this on `index.html`, or create a dedicated page such as `list.html`, `table.html`, etc. ~~Simply use the tag `{{ table_of_sites }}` in the template, and `ringfairy` will generate a formatted list of the sites in the webring.~~
 
 ### Template Tags
 
 The following tags are currently usable in templates: 
 
-- *`{{ sites }}`* provides access to information about the sites in the webring.  
 - *`{{ number_of_sites }}`* shows the current size of the webring.
 - *`{{ current_time }}`* displays the time of generating, showing when the page was last updated. 
 - *`{{ opml }}`* inserts the relative path of the ring's OPML file.
@@ -134,8 +131,23 @@ The following tags are currently usable in templates:
 - *`{{ featured_site_name }}`* prints the name of the "featured site", which is random. 
 - *`{{ featured_site_description }}`* prints the description of the random featured site. 
 - *`{{ featured_site_url }}`* prints the URL of the random featured site. 
+- *`{{ sites }}`* provides access to information about the sites in the webring for creating a listing of all the sites.
 
-Right now, `{{ url }}` is a unique tag that only works in `redirect.html` for the next/previous links.
+### Ring List
+
+It's a good idea for a webring to have a central hub page listing all of the sites. You can put this on `index.html`, or create a dedicated page such as `list.html`, `table.html`, etc. This can be done by looping over the `{{ sites }}` tag and pulling out the individual properties from website.json/toml file. Here's a very basic exmaple to create an `article` :
+```html
+<div>
+	{% for site in sites %}
+		<article>
+			{{ site.website.slug }} at <a href="{{ site.website.url }}" target="_blank">{{ site.website.url }}</a>
+		</article>
+	{% endfor %}
+</div>
+```
+Refer to `data/templates/index.html` for the default layout for a fuller example.
+
+The approach above provides a lot of layout flexibility. There are a couple of old approaches that can be used to generate an entire table or a CSS grid compatible layout easily by simply using the tag `{{ table_of_sites | safe }}` or `{{ grid_of_sites | safe }}` in the template, and `ringfairy` will generate a formatted list of the sites in the webring. Refer to `data/templates/table.html` and `data/templates/grid.html` for these old layouts.
 
 ----------------------------
 
