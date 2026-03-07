@@ -125,13 +125,14 @@ pub async fn generate_webring_files(settings: &AppSettings) -> Result<(), Error>
         let audited_websites = audit_links(&client, websites.clone(), settings).await?;
         let audited_set: HashSet<_> = audited_websites.iter().collect();
         failed_sites = websites.iter().filter(|w| !audited_set.contains(w)).cloned().collect();
+        let success_sites = websites.iter().filter(|w| audited_set.contains(w)).cloned().collect();
 
         log::info!(
             "Audit complete. Detected links on {} out of {} sites.",
             audited_websites.len(),
             websites_len
         );
-        audited_websites
+        success_sites
     } else {
         websites
     };
